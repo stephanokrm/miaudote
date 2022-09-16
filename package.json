@@ -9,15 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@date-io/date-fns": "latest",
     "@emotion/cache": "latest",
     "@emotion/react": "latest",
     "@emotion/server": "latest",
     "@emotion/styled": "latest",
+    "@hookform/resolvers": "latest",
     "@mui/icons-material": "latest",
     "@mui/material": "latest",
+    "@mui/x-date-pickers": "latest",
+    "date-fns": "latest",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "react-hook-form": "latest",
+    "yup": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",

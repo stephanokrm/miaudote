@@ -6,7 +6,6 @@ import Typography from '@mui/material/Typography'
 import CardMedia from '@mui/material/CardMedia'
 import IconButton from '@mui/material/IconButton'
 import CardActionArea from '@mui/material/CardActionArea'
-import TextField from '@mui/material/TextField'
 import CakeIcon from '@mui/icons-material/Cake';
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
@@ -40,7 +39,7 @@ const Home: NextPage = () => {
             <Head>
                 <title>MiAudote</title>
             </Head>
-            <Grid container component="main" spacing={2} justifyContent="center">
+            <Grid container component="main" spacing={2} justifyContent="center" sx={{marginTop: 4}}>
                 {puppies.map((puppie) => (
                     <Grid item key={puppie.name}>
                         <Card sx={{minWidth: 275}} variant="outlined" style={{

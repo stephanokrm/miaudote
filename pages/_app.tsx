@@ -6,10 +6,10 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import CssBaseline from '@mui/material/CssBaseline';
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
-import Box from '@mui/material/Box';
 import {CacheProvider, EmotionCache} from '@emotion/react';
 import theme from '../src/theme';
 import createEmotionCache from '../src/createEmotionCache';
+import ResponsiveAppBar from "../src/components/ResponsiveAppBar";
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
@@ -36,6 +36,7 @@ export default function MyApp(props: MyAppProps) {
                     {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
                     <CssBaseline/>
                     {globalStyles}
+                    <ResponsiveAppBar/>
                     <Component {...pageProps} />
                 </LocalizationProvider>
             </ThemeProvider>

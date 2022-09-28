@@ -10,9 +10,10 @@ import Typography from "@mui/material/Typography";
 import PetsIcon from '@mui/icons-material/Pets';
 import Head from "next/head";
 import Link from "next/link";
-import {useForm, Controller} from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import {yupResolver} from '@hookform/resolvers/yup';
 import * as yup from "yup";
+import axios from "axios";
 
 const schema = yup.object({
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
@@ -30,7 +31,15 @@ const Login: NextPage = () => {
         resolver: yupResolver(schema),
         shouldUseNativeValidation: false,
     });
-    const onSubmit = (data: LoginFormValues) => console.log(data);
+    const onSubmit = async (data: LoginFormValues) => {
+        await axios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/oauth/token`, {
+            grant_type: 'password',
+            client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
+            client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
+            username: data.email,
+            password: data.password,
+        });
+    };
 
     return (
         <>
@@ -39,8 +48,8 @@ const Login: NextPage = () => {
             </Head>
             <Container maxWidth="sm">
                 <Box paddingY={3}>
-                <Grid container justifyContent="center" alignContent="center" spacing={2}>
-                    <Grid item>
+                    <Grid container justifyContent="center" alignContent="center" spacing={2}>
+                        <Grid item>
                         <Card>
                             <CardContent>
                                 <form onSubmit={handleSubmit(onSubmit)}>

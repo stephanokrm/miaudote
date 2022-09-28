@@ -21,6 +21,13 @@ const theme = responsiveFontSizes(createTheme({
         },
     },
     components: {
+        MuiAlert: {
+            styleOverrides: {
+                root: {
+                    borderRadius: '15px',
+                },
+            },
+        },
         MuiButton: {
             styleOverrides: {
                 root: {

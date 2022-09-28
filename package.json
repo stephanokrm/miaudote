@@ -21,6 +21,7 @@
     "@mui/x-date-pickers": "latest",
     "axios": "latest",
     "date-fns": "latest",
+    "libphonenumber-js": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",

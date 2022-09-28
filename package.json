@@ -16,8 +16,8 @@
     "@emotion/styled": "latest",
     "@hookform/resolvers": "latest",
     "@mui/icons-material": "latest",
-    "@mui/material": "latest",
     "@mui/lab": "latest",
+    "@mui/material": "latest",
     "@mui/x-date-pickers": "latest",
     "axios": "latest",
     "date-fns": "latest",
@@ -26,6 +26,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-hook-form": "latest",
+    "swr": "latest",
     "yup": "latest"
   },
   "devDependencies": {

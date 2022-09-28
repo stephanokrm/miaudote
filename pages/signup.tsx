@@ -14,13 +14,14 @@ import PetsIcon from '@mui/icons-material/Pets';
 import Head from "next/head";
 import Link from "next/link";
 import {DatePicker} from "@mui/x-date-pickers/DatePicker";
-import {Controller, useForm} from "react-hook-form";
-import {yupResolver} from '@hookform/resolvers/yup';
+import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, subYears} from 'date-fns';
-import axios, {AxiosError} from "axios";
+import axios from "../src/axios";
 import {useEffect, useState} from "react";
 import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
+import useService from "../src/hooks/useService";
+import useForm from "../src/hooks/useForm";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -46,8 +47,6 @@ type SignUpFormFields = {
     passwordConfirmation: string,
 };
 
-type SignUpFormField = keyof SignUpFormFields;
-
 type City = {
     id: number,
     nome: string,
@@ -63,63 +62,37 @@ const SignUp: NextPage = () => {
     const [loadingCities, setLoadingCities] = useState<boolean>(false);
     const [states, setStates] = useState<State[]>([]);
     const [cities, setCities] = useState<City[]>([]);
-    const [message, setMessage] = useState<string | null>();
-    const [loading, setLoading] = useState<boolean>(false);
     const {
         control,
         handleSubmit,
         formState: {errors},
         setValue,
         getValues,
+        trigger,
         setError,
-        trigger
     } = useForm<SignUpFormFields>({
-        mode: 'onBlur',
-        resolver: yupResolver(schema),
-        shouldUseNativeValidation: false,
+        schema,
         defaultValues: {
             bornAt: null,
             phone: '',
         }
     });
-    const onSubmit = async (data: SignUpFormFields) => {
-        setMessage(null);
-        setLoading(true);
-
-        try {
-            await axios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/users`, {
-                name: data.name,
-                born_at: data.bornAt,
-                email: data.email,
-                ibge_city_id: data.city,
-                phone: parsePhoneNumber(data.phone, 'BR').number,
-                password: data.password,
-                password_confirmation: data.passwordConfirmation,
-            });
-        } catch (e) {
-            const error = e as AxiosError<{ message?: string, errors?: { [Property in SignUpFormField]?: string[] } }>;
-
-            if (error.response?.data.message) {
-                setMessage(error.response.data.message);
-            }
-
-            if (error.response?.data.errors) {
-                (Object.keys(error.response.data.errors) as Array<SignUpFormField>)
-                    .filter(field => {
-                        const fieldErrors = error.response?.data?.errors?.[field];
-
-                        return fieldErrors && fieldErrors.length > 0;
-                    })
-                    .forEach(field => {
-                        setError(field, {
-                            message: error.response?.data?.errors?.[field]?.[0]
-                        });
-                    });
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+    const {
+        onSubmit,
+        message,
+        loading
+    } = useService<SignUpFormFields>({
+        setError,
+        handler: (data: SignUpFormFields) => axios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/users`, {
+            name: data.name,
+            born_at: data.bornAt,
+            email: data.email,
+            ibge_city_id: data.city,
+            phone: parsePhoneNumber(data.phone, 'BR').number,
+            password: data.password,
+            password_confirmation: data.passwordConfirmation,
+        })
+    })
 
     useEffect(() => {
         const getStates = async () => {

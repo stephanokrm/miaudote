@@ -72,6 +72,8 @@ const Account: NextPage = () => {
         defaultValues: {
             bornAt: null,
             phone: '',
+            name: '',
+            email: '',
         }
     });
     const {

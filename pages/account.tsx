@@ -70,7 +70,7 @@ const Account: NextPage = () => {
         schema,
         defaultValues: {
             bornAt: parseJSON(user?.born_at ?? ''),
-            phone: parsePhoneNumber(user?.phone ?? '', 'BR').formatNational(),
+            phone: user?.phone ? parsePhoneNumber(user.phone, 'BR').formatNational() : '',
             name: user?.name,
             email: user?.email,
         }

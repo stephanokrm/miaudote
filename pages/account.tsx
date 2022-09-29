@@ -57,7 +57,7 @@ const Account: NextPage = () => {
     const [loadingCities, setLoadingCities] = useState<boolean>(false);
     const [states, setStates] = useState<State[]>([]);
     const [cities, setCities] = useState<City[]>([]);
-    const { user } = useUser();
+    const {user} = useUser();
     const {
         control,
         handleSubmit,
@@ -66,13 +66,12 @@ const Account: NextPage = () => {
         getValues,
         trigger,
         setError,
+        reset,
     } = useForm<AccountFormFields>({
         schema,
         defaultValues: {
-            bornAt: parseJSON(user?.born_at ?? ''),
-            phone: user?.phone ? parsePhoneNumber(user.phone, 'BR').formatNational() : '',
-            name: user?.name,
-            email: user?.email,
+            bornAt: null,
+            phone: '',
         }
     });
     const {
@@ -108,6 +107,17 @@ const Account: NextPage = () => {
 
         getStates();
     }, [])
+
+    useEffect(() => {
+        if (user) {
+            reset({
+                bornAt: parseJSON(user?.born_at ?? ''),
+                phone: user?.phone ? parsePhoneNumber(user.phone, 'BR').formatNational() : '',
+                name: user?.name,
+                email: user?.email,
+            });
+        }
+    }, [reset, user]);
 
     const getCities = async (initials: string) => {
         setLoadingCities(true);

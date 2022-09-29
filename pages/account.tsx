@@ -110,6 +110,28 @@ const Account: NextPage = () => {
         getStates();
     }, [])
 
+    const getCity = async (id: number) => {
+        setLoadingStates(true);
+        setLoadingCities(true);
+
+        try {
+            const {data} = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${id}`);
+
+            const initials = data.microrregiao.mesorregiao.UF.sigla;
+
+            setValue('state', initials);
+
+            await getCities(initials);
+
+            setValue('city', id);
+        } catch (e) {
+
+        } finally {
+            setLoadingStates(false);
+            setLoadingCities(false);
+        }
+    };
+
     useEffect(() => {
         if (user) {
             reset({
@@ -118,6 +140,7 @@ const Account: NextPage = () => {
                 name: user?.name,
                 email: user?.email,
             });
+            getCity(user.ibge_city_id);
         }
     }, [reset, user]);
 
@@ -150,9 +173,6 @@ const Account: NextPage = () => {
                                         <Grid container spacing={2} justifyContent="center">
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
-                                            </Grid>
-                                            <Grid item xs={12}>
-                                                <Typography variant="h1" textAlign="center">MiAudote</Typography>
                                             </Grid>
                                             {message && (
                                                 <Grid item xs={12}>

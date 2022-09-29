@@ -6,9 +6,12 @@ export type User = {
     name: string,
     born_at: string,
     email: string,
+    email_verified_at: string | null,
     phone: string,
+    ibge_city_id: number,
     created_at: string,
     updated_at: string,
+    deleted_at: string | null,
 };
 
 const useUser = () => {

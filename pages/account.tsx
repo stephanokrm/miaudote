@@ -248,6 +248,7 @@ const Account: NextPage = () => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
+                                                    value={states.find(({ sigla }) => sigla === getValues().state)}
                                                     autoComplete
                                                     disabled={loadingStates || states.length === 0}
                                                     onChange={async (event, state: State | null) => {
@@ -272,6 +273,7 @@ const Account: NextPage = () => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
+                                                    value={cities.find(({ id }) => id === getValues().city)}
                                                     autoComplete
                                                     disabled={loadingCities || cities.length === 0}
                                                     onChange={(event, city) => setValue('city', city?.id ?? null)}

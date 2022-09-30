@@ -18,20 +18,32 @@ import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, subYears} from 'date-fns';
 import axios from "../src/axios";
-import {useEffect, useState} from "react";
 import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
 import useService from "../src/hooks/useService";
 import useForm from "../src/hooks/useForm";
+import useStates from "../src/hooks/useStates";
+import useCitiesByState from "../src/hooks/useCitiesByState";
+import {City, State} from "../src/types";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
+const stateObject = yup.object({
+    name: yup.string().required(),
+    initials: yup.string().required(),
+    label: yup.string().required(),
+});
 const schema = yup.object({
     name: yup.string().required('O campo nome é obrigatório.'),
     bornAt: yup.date().nullable().required('O campo data de nascimento é obrigatório.').min(minDate, 'O campo data de nascimento deve ser maior que ' + format(minDate, 'dd/MM/yyyy') + '.').max(maxDate, 'A sua idade deve ser maior que 18 anos.'),
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
     phone: yup.string().required('O campo celular é obrigatório.'),
-    state: yup.string().nullable().required('O campo estado é obrigatório.'),
-    city: yup.number().nullable().required('O campo cidade é obrigatório.'),
+    state: stateObject.required('O campo estado é obrigatório.'),
+    city: yup.object({
+        id: yup.number().required(),
+        name: yup.string().required(),
+        label: yup.string().required(),
+        state: stateObject,
+    }).nullable().required('O campo cidade é obrigatório.'),
     password: yup.string().required('O campo senha é obrigatório.'),
     passwordConfirmation: yup.string().required('O campo confirmação de senha é obrigatório.').oneOf([yup.ref('password'), null], 'O campo confirmação de senha não confere.'),
 }).required();
@@ -40,28 +52,14 @@ type SignUpFormFields = {
     name: string,
     bornAt: Date | null,
     email: string,
-    state: string | null,
-    city: number | null,
+    state: State,
+    city?: City,
     phone: string,
     password: string,
     passwordConfirmation: string,
 };
 
-type City = {
-    id: number,
-    nome: string,
-};
-
-type State = {
-    nome: string,
-    sigla: string,
-};
-
 const SignUp: NextPage = () => {
-    const [loadingStates, setLoadingStates] = useState<boolean>(false);
-    const [loadingCities, setLoadingCities] = useState<boolean>(false);
-    const [states, setStates] = useState<State[]>([]);
-    const [cities, setCities] = useState<City[]>([]);
     const {
         control,
         handleSubmit,
@@ -71,12 +69,15 @@ const SignUp: NextPage = () => {
         trigger,
         setError,
     } = useForm<SignUpFormFields>({
+        // @ts-ignore
         schema,
         defaultValues: {
             bornAt: null,
             phone: '',
         }
     });
+    const {states, loading: loadingStates} = useStates();
+    const {cities, loading: loadingCities} = useCitiesByState(getValues('state'));
     const {
         onSubmit,
         message,
@@ -87,45 +88,12 @@ const SignUp: NextPage = () => {
             name: data.name,
             born_at: data.bornAt,
             email: data.email,
-            ibge_city_id: data.city,
+            ibge_city_id: data.city?.id,
             phone: parsePhoneNumber(data.phone, 'BR').number,
             password: data.password,
             password_confirmation: data.passwordConfirmation,
         })
     })
-
-    useEffect(() => {
-        const getStates = async () => {
-            setLoadingStates(true);
-
-            try {
-                const {data} = await axios.get<State[]>('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
-
-                setStates(data.map((state: State) => ({...state, label: state.nome})));
-
-            } catch (e) {
-
-            } finally {
-                setLoadingStates(false);
-            }
-        };
-
-        getStates();
-    }, [])
-
-    const getCities = async (initials: string) => {
-        setLoadingCities(true);
-
-        try {
-            const {data} = await axios.get<City[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${initials}/municipios?orderBy=nome`);
-
-            setCities(data.map((city) => ({...city, label: city.nome})));
-        } catch (e) {
-
-        } finally {
-            setLoadingCities(false);
-        }
-    };
 
     return (
         <>
@@ -172,7 +140,7 @@ const SignUp: NextPage = () => {
                                                         return <DatePicker
                                                             label="Data de Nascimento"
                                                             inputFormat="dd/MM/yyyy"
-                                                            value={getValues().bornAt}
+                                                            value={getValues('bornAt')}
                                                             onChange={(bornAt) => setValue('bornAt', bornAt)}
                                                             onAccept={() => trigger('bornAt')}
                                                             disableFuture
@@ -220,41 +188,48 @@ const SignUp: NextPage = () => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
+                                                    value={getValues('state') ?? ''}
                                                     autoComplete
+                                                    disableClearable
                                                     disabled={loadingStates || states.length === 0}
-                                                    onChange={async (event, state: State | null) => {
-                                                        const initials = state?.sigla ?? null;
+                                                    onChange={async (event, state) => {
+                                                        setValue('city', undefined);
+                                                        setValue('state', state);
 
-                                                        setValue('state', initials);
-                                                        setValue('city', null);
-
-                                                        if (initials) {
-                                                            await getCities(initials);
-                                                        }
+                                                        await trigger(['state', 'city']);
                                                     }}
-                                                    onBlur={() => trigger('state')}
-                                                    disablePortal
                                                     options={states}
-                                                    renderInput={(params) => <TextField {...params} variant="filled"
-                                                                                        fullWidth label="Estado"
-                                                                                        error={!!errors.state}
-                                                                                        helperText={errors.state?.message}/>
-                                                    }
+                                                    renderInput={(params) => (
+                                                        <TextField {...params}
+                                                                   variant="filled"
+                                                                   fullWidth
+                                                                   label="Estado"
+                                                                   error={!!errors.state}
+                                                                   helperText={errors.state?.message}/>
+                                                    )}
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
+                                                    // @ts-ignore
+                                                    value={getValues('city') ?? ''}
                                                     autoComplete
+                                                    disableClearable
                                                     disabled={loadingCities || cities.length === 0}
-                                                    onChange={(event, city) => setValue('city', city?.id ?? null)}
-                                                    onBlur={() => trigger('city')}
-                                                    disablePortal
+                                                    onChange={async (event, city) => {
+                                                        setValue('city', city);
+
+                                                        await trigger('city');
+                                                    }}
                                                     options={cities}
-                                                    renderInput={(params) => <TextField {...params} variant="filled"
-                                                                                        fullWidth label="Cidade"
-                                                                                        error={!!errors.city}
-                                                                                        helperText={errors.city?.message}/>
-                                                    }
+                                                    renderInput={(params) => (
+                                                        <TextField {...params}
+                                                                   variant="filled"
+                                                                   fullWidth
+                                                                   label="Cidade"
+                                                                   error={!!errors.city}
+                                                                   helperText={errors.city?.message}/>
+                                                    )}
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>

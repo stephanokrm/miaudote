@@ -13,6 +13,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import PetsIcon from '@mui/icons-material/Pets';
+import useUser from "../hooks/useUser";
 
 const pages = [
     {label: 'Adote', url: '/'},
@@ -20,12 +21,12 @@ const pages = [
 ];
 const settings = [
     {label: 'Conta', url: '/account'},
-    {label: 'Sair', url: '/login'}
 ];
 
 
 const ResponsiveAppBar = () => {
     const router = useRouter();
+    const {user, logout} = useUser();
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
@@ -136,7 +137,7 @@ const ResponsiveAppBar = () => {
                             </Button>
                         ))}
                     </Box>
-                    <Box sx={{flexGrow: 0}}>
+                    {user && (<Box sx={{flexGrow: 0}}>
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
                                 <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg"/>
@@ -163,8 +164,12 @@ const ResponsiveAppBar = () => {
                                     <Typography textAlign="center">{setting.label}</Typography>
                                 </MenuItem>
                             ))}
+                            <MenuItem key="Sair" onClick={logout}>
+                                <Typography textAlign="center">Sair</Typography>
+                            </MenuItem>
                         </Menu>
                     </Box>
+                    )}
                 </Toolbar>
             </Container>
         </AppBar>

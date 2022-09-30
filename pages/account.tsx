@@ -1,4 +1,4 @@
-import {NextPage} from "next";
+import {GetServerSideProps, NextPage} from "next";
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from "@mui/material/Box";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -14,7 +14,7 @@ import Head from "next/head";
 import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {Controller} from "react-hook-form";
 import * as yup from "yup";
-import {format, subYears, parseJSON} from 'date-fns';
+import {format, parseJSON, subYears} from 'date-fns';
 import axios from "../src/axios";
 import {useEffect} from "react";
 import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
@@ -25,6 +25,7 @@ import useCitiesByState from "../src/hooks/useCitiesByState";
 import useCityById from "../src/hooks/useCityById";
 import useStates from "../src/hooks/useStates";
 import {City, State} from "../src/types";
+import authMiddleware from "../src/authMiddleware";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -277,5 +278,7 @@ const Account: NextPage = () => {
         </>
     );
 };
+
+export const getServerSideProps: GetServerSideProps = authMiddleware;
 
 export default Account;

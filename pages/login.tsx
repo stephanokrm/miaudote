@@ -1,4 +1,4 @@
-import {NextPage} from "next";
+import {GetServerSideProps, NextPage} from "next";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -18,7 +18,9 @@ import useForm from '../src/hooks/useForm';
 import useService from "../src/hooks/useService";
 import Alert from "@mui/material/Alert";
 import {useRouter} from "next/router";
-import useUser from "../src/hooks/useUser";
+import useUser, {Middleware} from "../src/hooks/useUser";
+import guestMiddleware from "../src/guestMiddleware";
+import {useCookies} from "react-cookie";
 
 const schema = yup.object({
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
@@ -32,7 +34,8 @@ type LoginFormValues = {
 
 const Login: NextPage = () => {
     const router = useRouter();
-    const {mutate} = useUser();
+    const [cookies, setCookie] = useCookies(['access_token']);
+    const {refetch} = useUser({middleware: Middleware.GUEST, redirectIfAuthenticated: '/'});
     const {control, handleSubmit, setError, formState: {errors}} = useForm<LoginFormValues>({schema});
     const {message, loading, onSubmit} = useService<LoginFormValues>({
         setError,
@@ -45,9 +48,10 @@ const Login: NextPage = () => {
                 password: data.password,
             });
 
+            setCookie('access_token', token.access_token);
             localStorage.setItem('access_token', token.access_token);
 
-            await mutate();
+            await refetch();
             await router.push('/');
         }
     })
@@ -122,5 +126,7 @@ const Login: NextPage = () => {
         </>
     );
 };
+
+export const getServerSideProps: GetServerSideProps = guestMiddleware;
 
 export default Login;

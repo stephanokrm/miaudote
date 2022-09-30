@@ -24,10 +24,10 @@
     "libphonenumber-js": "latest",
     "next": "latest",
     "react": "latest",
+    "react-cookie": "latest",
     "react-dom": "latest",
     "react-hook-form": "latest",
     "react-query": "latest",
-    "swr": "latest",
     "yup": "latest"
   },
   "devDependencies": {

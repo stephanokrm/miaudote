@@ -15,7 +15,7 @@ import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, parseJSON, subYears} from 'date-fns';
-import axios from "../src/axios";
+import {browserAxios} from "../src/axios";
 import {useEffect} from "react";
 import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
 import useService from "../src/hooks/useService";
@@ -26,6 +26,7 @@ import useCityById from "../src/hooks/useCityById";
 import useStates from "../src/hooks/useStates";
 import {City, State} from "../src/types";
 import authMiddleware from "../src/authMiddleware";
+import {useRouter} from "next/router";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -58,6 +59,7 @@ type AccountFormFields = {
 };
 
 const Account: NextPage = () => {
+    const router = useRouter();
     const {user} = useUser();
     const {
         control,
@@ -82,13 +84,17 @@ const Account: NextPage = () => {
         loading
     } = useService<AccountFormFields>({
         setError,
-        handler: (data: AccountFormFields) => axios.put(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/users/${user?.id}`, {
-            name: data.name,
-            born_at: data.bornAt,
-            email: data.email,
-            ibge_city_id: data.city?.id,
-            phone: parsePhoneNumber(data.phone, 'BR').number,
-        })
+        handler: async (data: AccountFormFields) => {
+            await browserAxios.put(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/users/${user?.id}`, {
+                name: data.name,
+                born_at: data.bornAt,
+                email: data.email,
+                ibge_city_id: data.city?.id,
+                phone: parsePhoneNumber(data.phone, 'BR').number,
+            });
+
+            await router.push('/');
+        }
     })
 
     const {states, loading: loadingStates} = useStates();

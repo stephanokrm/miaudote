@@ -17,13 +17,14 @@ import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, subYears} from 'date-fns';
-import axios from "../src/axios";
+import {browserAxios} from "../src/axios";
 import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
 import useService from "../src/hooks/useService";
 import useForm from "../src/hooks/useForm";
 import useStates from "../src/hooks/useStates";
 import useCitiesByState from "../src/hooks/useCitiesByState";
 import {City, State} from "../src/types";
+import useUser from "../src/hooks/useUser";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -76,6 +77,7 @@ const SignUp: NextPage = () => {
             phone: '',
         }
     });
+    const {login} = useUser();
     const {states, loading: loadingStates} = useStates();
     const {cities, loading: loadingCities} = useCitiesByState(getValues('state'));
     const {
@@ -84,15 +86,19 @@ const SignUp: NextPage = () => {
         loading
     } = useService<SignUpFormFields>({
         setError,
-        handler: (data: SignUpFormFields) => axios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/users`, {
-            name: data.name,
-            born_at: data.bornAt,
-            email: data.email,
-            ibge_city_id: data.city?.id,
-            phone: parsePhoneNumber(data.phone, 'BR').number,
-            password: data.password,
-            password_confirmation: data.passwordConfirmation,
-        })
+        handler: async (data: SignUpFormFields) => {
+            await browserAxios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/users`, {
+                name: data.name,
+                born_at: data.bornAt,
+                email: data.email,
+                ibge_city_id: data.city?.id,
+                phone: parsePhoneNumber(data.phone, 'BR').number,
+                password: data.password,
+                password_confirmation: data.passwordConfirmation,
+            });
+
+            await login({username: data.email, password: data.password});
+        }
     })
 
     return (

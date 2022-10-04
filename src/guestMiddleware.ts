@@ -1,5 +1,5 @@
 import {GetServerSideProps} from "next";
-import axios from "./axios";
+import {serverAxios} from "./axios";
 
 const guestMiddleware: GetServerSideProps = async (context) => {
     if (!context.req.cookies.access_token) {
@@ -9,7 +9,7 @@ const guestMiddleware: GetServerSideProps = async (context) => {
     }
 
     try {
-        const {data} = await axios.get(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
+        const {data} = await serverAxios.get(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
             headers: {
                 Authorization: `Bearer ${context.req.cookies.access_token}`,
             }

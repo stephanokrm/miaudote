@@ -13,14 +13,11 @@ import Link from "next/link";
 import {Controller} from "react-hook-form";
 import LoadingButton from '@mui/lab/LoadingButton';
 import * as yup from "yup";
-import axios from "../src/axios";
 import useForm from '../src/hooks/useForm';
 import useService from "../src/hooks/useService";
 import Alert from "@mui/material/Alert";
-import {useRouter} from "next/router";
 import useUser, {Middleware} from "../src/hooks/useUser";
 import guestMiddleware from "../src/guestMiddleware";
-import {useCookies} from "react-cookie";
 
 const schema = yup.object({
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
@@ -33,27 +30,11 @@ type LoginFormValues = {
 };
 
 const Login: NextPage = () => {
-    const router = useRouter();
-    const [cookies, setCookie] = useCookies(['access_token']);
-    const {refetch} = useUser({middleware: Middleware.GUEST, redirectIfAuthenticated: '/'});
+    const {login} = useUser({middleware: Middleware.GUEST, redirectIfAuthenticated: '/'});
     const {control, handleSubmit, setError, formState: {errors}} = useForm<LoginFormValues>({schema});
     const {message, loading, onSubmit} = useService<LoginFormValues>({
         setError,
-        handler: async (data: LoginFormValues) => {
-            const {data: token} = await axios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/oauth/token`, {
-                grant_type: 'password',
-                client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
-                client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
-                username: data.email,
-                password: data.password,
-            });
-
-            setCookie('access_token', token.access_token);
-            localStorage.setItem('access_token', token.access_token);
-
-            await refetch();
-            await router.push('/');
-        }
+        handler: (data: LoginFormValues) => login({username: data.email, password: data.password}),
     })
 
     return (

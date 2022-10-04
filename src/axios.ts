@@ -1,7 +1,11 @@
 import axios from "axios";
+import {Cookies} from 'react-cookie';
 
-axios.interceptors.request.use((config) => {
-    const token = localStorage.getItem('access_token');
+export const browserAxios = axios.create();
+export const serverAxios = axios.create();
+
+browserAxios.interceptors.request.use((config) => {
+    const token = new Cookies().get('access_token');
 
     if (token) {
         return {
@@ -15,5 +19,3 @@ axios.interceptors.request.use((config) => {
 
     return config;
 });
-
-export default axios;

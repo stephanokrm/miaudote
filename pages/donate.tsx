@@ -16,7 +16,7 @@ import Head from "next/head";
 import {Controller, useForm} from "react-hook-form";
 import {yupResolver} from '@hookform/resolvers/yup';
 import * as yup from "yup";
-import {format, subYears} from "date-fns";
+import {addDays, format, subYears} from "date-fns";
 import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
@@ -32,9 +32,12 @@ import useService from "../src/hooks/useService";
 import {browserAxios} from "../src/axios";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
+import {useRouter} from "next/router";
+import Image from 'next/image'
+import {useState} from "react";
 
 const minDate = subYears(new Date(), 30);
-const maxDate = new Date();
+const maxDate = addDays(new Date(), 1);
 const stateObject = yup.object({
     name: yup.string().required(),
     initials: yup.string().required(),
@@ -80,6 +83,8 @@ type DonateFormValues = {
 };
 
 const Donate: NextPage = () => {
+    const router = useRouter();
+    const [image, setImage] = useState<string>();
     const {
         control,
         handleSubmit,
@@ -128,12 +133,17 @@ const Donate: NextPage = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             })
+
+            await router.push('/');
         }
     });
     // @ts-ignore
     const onImageChange = (e) => {
         // @ts-ignore
-        setValue('image', e.target.files[0]);
+        const file = e.target.files[0];
+
+        setImage(URL.createObjectURL(file));
+        setValue('image', file);
     }
 
     return (
@@ -398,7 +408,19 @@ const Donate: NextPage = () => {
                                                            onChange={onImageChange}/>
                                                     <PhotoCameraIcon/>
                                                 </IconButton>
+                                                <FormHelperText>Use imagens quadradas para melhor
+                                                    experiência.</FormHelperText>
                                             </Grid>
+                                            {image && (
+                                                <Grid item xs={12}>
+                                                    <Image
+                                                        src={image}
+                                                        alt={getValues('name')}
+                                                        height="250"
+                                                        width="250"
+                                                    />
+                                                </Grid>
+                                            )}
                                             <Grid item xs={12}>
                                                 <LoadingButton fullWidth variant="contained" size="large" type="submit"
                                                                loading={loading}>

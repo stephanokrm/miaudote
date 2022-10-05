@@ -2,6 +2,7 @@ import Card from '@mui/material/Card'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 import CardContent from '@mui/material/CardContent'
+import CircularProgress from '@mui/material/CircularProgress'
 import Typography from '@mui/material/Typography'
 import CardMedia from '@mui/material/CardMedia'
 import IconButton from '@mui/material/IconButton'
@@ -11,97 +12,116 @@ import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 import type {NextPage} from 'next'
 import Head from 'next/head'
+import useAnimals from "../src/hooks/useAnimals";
+import {differenceInMonths, differenceInYears, formatDuration} from 'date-fns'
+import {ptBR} from 'date-fns/locale'
+import Container from "@mui/material/Container";
 
 const Home: NextPage = () => {
-    const puppies = [
-        {
-            name: 'Hermione',
-            address: 'Mal. Rondon, Canoas - RS',
-            age: '2 anos',
-            gender: 'Fêmea',
-            image: 'https://play-lh.googleusercontent.com/O8mvDQlw4AwmGfUrh4lviZD_PwwhRHz2etA25F77SbXrm3qEHOt2826aNkKar4D0yw=w240-h480-rw',
-            favorite: true,
-        },
-        {
-            name: 'Hary',
-            address: 'Mal. Rondon, Canoas - RS',
-            age: '2 meses',
-            gender: 'Macho',
-            image: 'https://thumbs.dreamstime.com/b/cute-cat-portrait-square-photo-beautiful-white-closeup-105311158.jpg',
-            favorite: false,
-        }
-    ];
+    const {animals, loading} = useAnimals();
 
     return (
         <>
             <Head>
                 <title>MiAudote</title>
             </Head>
-            <Grid container component="main" spacing={2} justifyContent="center" sx={{marginTop: 4}}>
-                {puppies.map((puppie) => (
-                    <Grid item key={puppie.name}>
-                        <Card sx={{minWidth: 275}} variant="outlined" style={{
-                            position: 'relative',
-                            height: '335px',
-                            width: '250px'
-                        }}>
-                            <CardActionArea>
-                                <CardMedia
-                                    component="img"
-                                    alt="green iguana"
-                                    image={puppie.image}
-                                />
-                            </CardActionArea>
-                            <Box sx={{
-                                position: 'absolute',
-                                top: '200px',
-                                width: '100%',
-                                background: 'white',
-                                borderRadius: '30px',
-                                boxShadow: '0px -15px 15px 0px rgba(0,0,0,0.1)',
-                            }}>
-                                <CardContent>
-                                    <Grid container justifyContent="space-between" alignContent="center"
-                                          spacing={1}>
-                                        <Grid item>
-                                            <Typography variant="h5">
-                                                {puppie.name}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary" gutterBottom>
-                                                {puppie.address}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item>
-                                            <IconButton color="primary">
-                                                {puppie.favorite ? <FavoriteIcon/> : <FavoriteBorderOutlinedIcon/>}
-                                            </IconButton>
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            <Typography variant="caption" color="text.secondary" gutterBottom>
-                                                <Box display="flex" alignContent="center" flexWrap="wrap">
-                                                    <CakeIcon fontSize="small"/>
-                                                    <Box paddingLeft={1}>{puppie.age}</Box>
-                                                </Box>
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            <Typography variant="caption" color="text.secondary" gutterBottom>
-                                                <Box display="flex" alignContent="center" flexWrap="wrap">
-                                                    {puppie.gender === 'Macho' ? <MaleIcon fontSize="small"/> :
-                                                        <FemaleIcon fontSize="small"/>}
-                                                    <Box paddingLeft={1}>{puppie.gender}</Box>
-                                                </Box>
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
-                                </CardContent>
-                            </Box>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
+            <Container maxWidth="lg">
+                <Grid container component="main" spacing={2} justifyContent="center"
+                      sx={{marginTop: 4, marginBottom: 4}}>
+                    {loading && (
+                        <CircularProgress color="secondary"/>
+                    )}
+                    {!loading && animals.length === 0 && (
+                        <Grid item xs={12} textAlign="center">
+                            <SentimentDissatisfiedIcon fontSize="large"/>
+                            <Typography variant="h4" color="white">Nenhuma doação disponível</Typography>
+                        </Grid>
+                    )}
+                    {animals.map((animal) => {
+                        const years = differenceInYears(new Date(), animal.bornAt);
+                        const months = differenceInMonths(new Date(), animal.bornAt);
+                        return (
+                            <Grid item key={animal.name} xs={12} md={6} lg={4} xl={3}>
+                                <Card variant="outlined" style={{
+                                    position: 'relative',
+                                    minHeight: '380px',
+                                }}>
+                                    <CardActionArea>
+                                        <CardMedia
+                                            component="img"
+                                            alt={animal.name}
+                                            image={animal.images[0]?.url}
+                                        />
+                                    </CardActionArea>
+                                    <Box sx={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        width: '100%',
+                                        background: 'white',
+                                        borderRadius: '30px',
+                                        boxShadow: '0px -15px 15px 0px rgba(0,0,0,0.1)',
+                                    }}>
+                                        <CardContent>
+                                            <Grid container alignContent="center"
+                                                  spacing={1}>
+                                                <Grid item xs={12}>
+                                                    <Grid container justifyContent="space-between" alignContent="center"
+                                                          spacing={1}>
+                                                        <Grid item>
+                                                            <Typography variant="h5">
+                                                                {animal.name}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary"
+                                                                        gutterBottom>
+                                                                {animal.city.name} - {animal.city.state.initials}
+                                                            </Typography>
+                                                        </Grid>
+                                                        <Grid item>
+                                                            <IconButton color="primary">
+                                                                {true ? <FavoriteIcon/> : <FavoriteBorderOutlinedIcon/>}
+                                                            </IconButton>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item>
+                                                    <Typography variant="caption" color="text.secondary" gutterBottom>
+                                                        <Box display="flex" alignContent="center" flexWrap="wrap">
+                                                            <CakeIcon fontSize="small"/>
+                                                            <Box paddingLeft={1}>
+                                                                {formatDuration({
+                                                                    years,
+                                                                    months: years === 0 ? (months === 0 ? 1 : months) : 0,
+                                                                }, {
+                                                                    locale: ptBR,
+                                                                    format: ['years', 'months']
+                                                                })}
+                                                            </Box>
+                                                        </Box>
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid item>
+                                                    <Typography variant="caption" color="text.secondary" gutterBottom>
+                                                        <Box display="flex" alignContent="center" flexWrap="wrap">
+                                                            {animal.gender === 'MALE' ? <MaleIcon fontSize="small"/> :
+                                                                <FemaleIcon fontSize="small"/>}
+                                                            <Box paddingLeft={1}>
+                                                                {animal.gender === 'MALE' ? 'Macho' : 'Fêmea'}
+                                                            </Box>
+                                                        </Box>
+                                                    </Typography>
+                                                </Grid>
+                                            </Grid>
+                                        </CardContent>
+                                    </Box>
+                                </Card>
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            </Container>
         </>
     )
 }

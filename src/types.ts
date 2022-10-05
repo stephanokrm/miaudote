@@ -25,3 +25,27 @@ export type City = {
     label: string,
     state: State,
 };
+
+export type Image = {
+    url: string,
+};
+
+export type Resource<T> = {
+    data: T,
+};
+
+export type RawAnimal = {
+    name: string,
+    gender: string,
+    born_at: string,
+    ibge_city_id: number,
+    images: Image[],
+};
+
+export type Animal = {
+    name: string,
+    gender: string,
+    bornAt: Date,
+    city: City,
+    images: Image[],
+};

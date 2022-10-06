@@ -62,7 +62,7 @@ const schema = yup.object({
     }).nullable().required('O campo cidade é obrigatório.'),
     breed: yup.string(),
     breedId: yup.string(),
-    image: yup.mixed().required(),
+    image: yup.mixed().required('O campo imagem é obrigatório.'),
 });
 
 type DonateFormValues = {
@@ -79,7 +79,7 @@ type DonateFormValues = {
     city?: City,
     breed?: string
     breedId?: string,
-    image: any,
+    image: Blob,
 };
 
 const Donate: NextPage = () => {
@@ -138,12 +138,14 @@ const Donate: NextPage = () => {
         }
     });
     // @ts-ignore
-    const onImageChange = (e) => {
+    const onImageChange = async (e) => {
         // @ts-ignore
-        const file = e.target.files[0];
+        const file: Blob = e.target.files[0];
 
         setImage(URL.createObjectURL(file));
         setValue('image', file);
+
+        await trigger(['image']);
     }
 
     return (
@@ -402,14 +404,19 @@ const Donate: NextPage = () => {
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
+                                                <FormLabel>Imagem</FormLabel>
+                                                <FormHelperText>Recomendamos que use uma foto quadrada.</FormHelperText>
+                                            </Grid>
+                                            <Grid item xs={12}>
                                                 <IconButton color="primary" aria-label="upload picture"
                                                             component="label">
                                                     <input hidden accept="image/*" type="file"
                                                            onChange={onImageChange}/>
                                                     <PhotoCameraIcon/>
                                                 </IconButton>
-                                                <FormHelperText>Use imagens quadradas para melhor
-                                                    experiência.</FormHelperText>
+                                                {!!errors.image && (
+                                                    <FormHelperText error>{errors.image?.message}</FormHelperText>
+                                                )}
                                             </Grid>
                                             {image && (
                                                 <Grid item xs={12}>

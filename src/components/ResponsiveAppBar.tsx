@@ -16,11 +16,12 @@ import PetsIcon from '@mui/icons-material/Pets';
 import useUser from "../hooks/useUser";
 
 const pages = [
-    {label: 'Adote', url: '/'},
+    {label: 'Adotar', url: '/'},
     {label: 'Doar', url: '/donate'}
 ];
 const settings = [
     {label: 'Conta', url: '/account'},
+    {label: 'Doações', url: '/donations'},
 ];
 
 

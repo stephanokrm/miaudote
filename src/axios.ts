@@ -1,7 +1,7 @@
 import axios from "axios";
 import {Cookies} from 'react-cookie';
 
-export const browserAxios = () => {
+const browserAxios = () => {
     const instance = axios.create();
 
     instance.interceptors.request.use((config) => {
@@ -33,7 +33,7 @@ export const browserAxios = () => {
     return instance;
 }
 
-export const serverAxios = (authorization?: string) => axios.create({
+const serverAxios = (authorization?: string) => axios.create({
     headers: {
         Authorization: authorization ? `Bearer ${authorization}` : '',
     }

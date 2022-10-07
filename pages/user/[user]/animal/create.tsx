@@ -28,7 +28,7 @@ import IconButton from "@mui/material/IconButton";
 import useCitiesByState from "../../../../src/hooks/useCitiesByState";
 import useService from "../../../../src/hooks/useService";
 import useForm from "../../../../src/hooks/useForm";
-import {browserAxios} from "../../../../src/axios";
+import axios from "../../../../src/axios";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
 import {useRouter} from "next/router";
@@ -128,7 +128,7 @@ const UserAnimalCreate: NextPage<UserAnimalCreateProps> = ({states}: UserAnimalC
     } = useService<DonateFormValues>({
         setError,
         handler: async (data: DonateFormValues) => {
-            await browserAxios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal`, {
+            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal`, {
                 name: data.name,
                 description: data.description,
                 born_at: data.bornAt,

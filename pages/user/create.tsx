@@ -17,7 +17,7 @@ import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, subYears} from 'date-fns';
-import {browserAxios} from "../../src/axios";
+import axios from "../../src/axios";
 import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
 import useService from "../../src/hooks/useService";
 import useForm from "../../src/hooks/useForm";
@@ -99,7 +99,7 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
     } = useService<SignUpFormFields>({
         setError,
         handler: async (data: SignUpFormFields) => {
-            await browserAxios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
+            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
                 name: data.name,
                 born_at: data.bornAt,
                 email: data.email,

@@ -14,19 +14,17 @@ import Head from "next/head";
 import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {Controller} from "react-hook-form";
 import * as yup from "yup";
-import {format, parseJSON, subYears} from 'date-fns';
-import {browserAxios} from "../src/axios";
-import {useEffect} from "react";
+import {format, parseISO, subYears} from 'date-fns';
+import {browserAxios} from "../../../src/axios";
+import {ChangeEvent} from "react";
 import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
-import useService from "../src/hooks/useService";
-import useForm from "../src/hooks/useForm";
-import useUser from "../src/hooks/useUser";
-import useCitiesByState from "../src/hooks/useCitiesByState";
-import useCityById from "../src/hooks/useCityById";
-import useStates from "../src/hooks/useStates";
-import {City, State} from "../src/types";
-import authMiddleware from "../src/authMiddleware";
+import useService from "../../../src/hooks/useService";
+import useForm from "../../../src/hooks/useForm";
+import useCitiesByState from "../../../src/hooks/useCitiesByState";
+import {City, State, User} from "../../../src/types";
 import {useRouter} from "next/router";
+import getUser from "../../../src/services/getUser";
+import getStates from "../../../src/services/getStates";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -37,7 +35,7 @@ const stateObject = yup.object({
 });
 const schema = yup.object({
     name: yup.string().required('O campo nome é obrigatório.'),
-    bornAt: yup.date().nullable().required('O campo data de nascimento é obrigatório.').min(minDate, 'O campo data de nascimento deve ser maior que ' + format(minDate, 'dd/MM/yyyy') + '.').max(maxDate, 'A sua idade deve ser maior que 18 anos.'),
+    bornAt: yup.date().required('O campo data de nascimento é obrigatório.').min(minDate, 'O campo data de nascimento deve ser maior que ' + format(minDate, 'dd/MM/yyyy') + '.').max(maxDate, 'A sua idade deve ser maior que 18 anos.'),
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
     phone: yup.string().required('O campo celular é obrigatório.'),
     state: stateObject.required('O campo estado é obrigatório.'),
@@ -50,7 +48,7 @@ const schema = yup.object({
 });
 
 type AccountFormFields = {
-    bornAt: Date | null,
+    bornAt: Date,
     city?: City,
     email: string,
     name: string,
@@ -58,9 +56,28 @@ type AccountFormFields = {
     state: State,
 };
 
-const Account: NextPage = () => {
+type UserShowProps = {
+    user: User,
+    states: State[],
+}
+
+export const getServerSideProps: GetServerSideProps<UserShowProps, { user: string }> = async ({params, req}) => {
+    if (!params) {
+        return {
+            notFound: true,
+        }
+    }
+
+    return {
+        props: {
+            user: await getUser({id: params.user, authorization: req.cookies.authorization}),
+            states: await getStates(),
+        }
+    }
+}
+
+const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
     const router = useRouter();
-    const {user} = useUser();
     const {
         control,
         handleSubmit,
@@ -73,9 +90,12 @@ const Account: NextPage = () => {
         // @ts-ignore
         schema,
         defaultValues: {
-            name: '',
-            email: '',
-            bornAt: null,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            bornAt: parseISO(user.bornAtISO),
+            city: user.city,
+            state: user.city.state,
         },
     });
     const {
@@ -85,7 +105,7 @@ const Account: NextPage = () => {
     } = useService<AccountFormFields>({
         setError,
         handler: async (data: AccountFormFields) => {
-            await browserAxios.put(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/users/${user?.id}`, {
+            await browserAxios.put(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user/${user.id}`, {
                 name: data.name,
                 born_at: data.bornAt,
                 email: data.email,
@@ -97,27 +117,8 @@ const Account: NextPage = () => {
         }
     })
 
-    const {states, loading: loadingStates} = useStates();
     const {cities, loading: loadingCities} = useCitiesByState(getValues('state'));
-    const {city} = useCityById(user?.ibge_city_id);
 
-    useEffect(() => {
-        if (city) {
-            setValue('city', city);
-            setValue('state', city.state);
-
-            trigger(['state', 'city']);
-        }
-    }, [setValue, city, trigger]);
-
-    useEffect(() => {
-        if (user) {
-            setValue('bornAt', parseJSON(user?.born_at ?? ''));
-            setValue('phone', user?.phone ? parsePhoneNumber(user.phone, 'BR').formatNational() : '');
-            setValue('name', user?.name);
-            setValue('email', user?.email);
-        }
-    }, [setValue, user]);
     return (
         <>
             <Head>
@@ -191,17 +192,19 @@ const Account: NextPage = () => {
                                                 <Controller
                                                     name="phone"
                                                     control={control}
-                                                    render={({field}) => {
-                                                        const props = {
-                                                            ...field,
-                                                            value: field.value ? new AsYouType('BR').input(field.value) : '',
-                                                        };
-
-                                                        return <TextField {...props} label="Celular"
-                                                                          variant="filled"
-                                                                          fullWidth error={!!errors.phone}
-                                                                          helperText={errors.phone?.message}/>
-                                                    }}
+                                                    render={({field}) => (
+                                                        <TextField
+                                                            {...field}
+                                                            label="Celular"
+                                                            variant="filled"
+                                                            fullWidth
+                                                            error={!!errors.phone}
+                                                            helperText={errors.phone?.message}
+                                                            onChange={(event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+                                                                field.onChange(new AsYouType('BR').input(event.target.value));
+                                                            }}
+                                                        />
+                                                    )}
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
@@ -209,31 +212,31 @@ const Account: NextPage = () => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    value={getValues('state') ?? ''}
+                                                    value={getValues('state')}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={loadingStates || states.length === 0}
                                                     onChange={async (event, state) => {
                                                         setValue('city', undefined);
                                                         setValue('state', state);
 
-                                                        await trigger(['state', 'city']);
+                                                        await trigger('state');
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
-                                                        <TextField {...params}
-                                                                   variant="filled"
-                                                                   fullWidth
-                                                                   label="Estado"
-                                                                   error={!!errors.state}
-                                                                   helperText={errors.state?.message}/>
+                                                        <TextField
+                                                            {...params}
+                                                            variant="filled"
+                                                            fullWidth
+                                                            label="Estado"
+                                                            error={!!errors.state}
+                                                            helperText={errors.state?.message}
+                                                        />
                                                     )}
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    // @ts-ignore
-                                                    value={getValues('city') ?? ''}
+                                                    value={getValues('city')}
                                                     autoComplete
                                                     disableClearable
                                                     disabled={loadingCities || cities.length === 0}
@@ -244,12 +247,14 @@ const Account: NextPage = () => {
                                                     }}
                                                     options={cities}
                                                     renderInput={(params) => (
-                                                        <TextField {...params}
-                                                                   variant="filled"
-                                                                   fullWidth
-                                                                   label="Cidade"
-                                                                   error={!!errors.city}
-                                                                   helperText={errors.city?.message}/>
+                                                        <TextField
+                                                            {...params}
+                                                            variant="filled"
+                                                            fullWidth
+                                                            label="Cidade"
+                                                            error={!!errors.city}
+                                                            helperText={errors.city?.message}
+                                                        />
                                                     )}
                                                 />
                                             </Grid>
@@ -285,6 +290,4 @@ const Account: NextPage = () => {
     );
 };
 
-export const getServerSideProps: GetServerSideProps = authMiddleware;
-
-export default Account;
+export default UserShow;

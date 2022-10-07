@@ -1,4 +1,4 @@
-import {NextPage} from "next";
+import {GetServerSideProps, NextPage} from "next";
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from "@mui/material/Box";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -17,14 +17,15 @@ import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, subYears} from 'date-fns';
-import {browserAxios} from "../src/axios";
+import {browserAxios} from "../../src/axios";
 import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
-import useService from "../src/hooks/useService";
-import useForm from "../src/hooks/useForm";
-import useStates from "../src/hooks/useStates";
-import useCitiesByState from "../src/hooks/useCitiesByState";
-import {City, State} from "../src/types";
-import useUser from "../src/hooks/useUser";
+import useService from "../../src/hooks/useService";
+import useForm from "../../src/hooks/useForm";
+import useCitiesByState from "../../src/hooks/useCitiesByState";
+import {City, State} from "../../src/types";
+import useUser from "../../src/hooks/useUser";
+import getStates from "../../src/services/getStates";
+import {ChangeEvent} from "react";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -60,7 +61,19 @@ type SignUpFormFields = {
     passwordConfirmation: string,
 };
 
-const SignUp: NextPage = () => {
+type SignUpProps = {
+    states: State[],
+}
+
+export const getServerSideProps: GetServerSideProps<SignUpProps> = async () => {
+    return {
+        props: {
+            states: await getStates(),
+        }
+    }
+}
+
+const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
     const {
         control,
         handleSubmit,
@@ -78,7 +91,6 @@ const SignUp: NextPage = () => {
         }
     });
     const {login} = useUser();
-    const {states, loading: loadingStates} = useStates();
     const {cities, loading: loadingCities} = useCitiesByState(getValues('state'));
     const {
         onSubmit,
@@ -87,7 +99,7 @@ const SignUp: NextPage = () => {
     } = useService<SignUpFormFields>({
         setError,
         handler: async (data: SignUpFormFields) => {
-            await browserAxios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/users`, {
+            await browserAxios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
                 name: data.name,
                 born_at: data.bornAt,
                 email: data.email,
@@ -176,17 +188,19 @@ const SignUp: NextPage = () => {
                                                 <Controller
                                                     name="phone"
                                                     control={control}
-                                                    render={({field}) => {
-                                                        const props = {
-                                                            ...field,
-                                                            value: new AsYouType('BR').input(field.value),
-                                                        };
-
-                                                        return <TextField {...props} label="Celular"
-                                                                          variant="filled"
-                                                                          fullWidth error={!!errors.phone}
-                                                                          helperText={errors.phone?.message}/>
-                                                    }}
+                                                    render={({field}) => (
+                                                        <TextField
+                                                            {...field}
+                                                            label="Celular"
+                                                            variant="filled"
+                                                            fullWidth
+                                                            error={!!errors.phone}
+                                                            helperText={errors.phone?.message}
+                                                            onChange={(event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+                                                                field.onChange(new AsYouType('BR').input(event.target.value));
+                                                            }}
+                                                        />
+                                                    )}
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
@@ -194,15 +208,14 @@ const SignUp: NextPage = () => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    value={getValues('state') ?? ''}
+                                                    value={getValues('state')}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={loadingStates || states.length === 0}
                                                     onChange={async (event, state) => {
                                                         setValue('city', undefined);
                                                         setValue('state', state);
 
-                                                        await trigger(['state', 'city']);
+                                                        await trigger('state');
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
@@ -300,4 +313,4 @@ const SignUp: NextPage = () => {
     );
 };
 
-export default SignUp;
+export default UserCreate;

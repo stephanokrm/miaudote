@@ -1,4 +1,4 @@
-import {GetServerSideProps, NextPage} from "next";
+import {NextPage} from "next";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -17,7 +17,6 @@ import useForm from '../src/hooks/useForm';
 import useService from "../src/hooks/useService";
 import Alert from "@mui/material/Alert";
 import useUser, {Middleware} from "../src/hooks/useUser";
-import guestMiddleware from "../src/guestMiddleware";
 
 const schema = yup.object({
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
@@ -90,7 +89,7 @@ const Login: NextPage = () => {
                                                 </LoadingButton>
                                             </Grid>
                                             <Grid item xs={12}>
-                                                <Link href="/signup" passHref>
+                                                <Link href="/user/create" passHref>
                                                     <Button fullWidth size="large" type="submit">
                                                         Não tem uma conta? Cadastrar-se
                                                     </Button>
@@ -107,7 +106,5 @@ const Login: NextPage = () => {
         </>
     );
 };
-
-export const getServerSideProps: GetServerSideProps = guestMiddleware;
 
 export default Login;

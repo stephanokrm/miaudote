@@ -1,7 +1,7 @@
-import axios from "axios";
-import {useQuery} from "react-query";
 import {useEffect} from "react";
-import {City, RawCity, State} from "../types";
+import {useQuery} from "react-query";
+import {City, State} from "../types";
+import getCitiesByState from "../services/getCitiesByState";
 
 type UseCitiesByState = {
     cities: City[],
@@ -15,18 +15,7 @@ const useCitiesByState = (state?: State): UseCitiesByState => {
             return [];
         }
 
-        const {data} = await axios.get<RawCity[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${state.initials}/municipios?orderBy=nome`, {signal});
-
-        return data.map((rawCity) => ({
-            id: rawCity.id,
-            name: rawCity.nome,
-            label: rawCity.nome,
-            state: {
-                label: rawCity.microrregiao.mesorregiao.UF.nome,
-                name: rawCity.microrregiao.mesorregiao.UF.nome,
-                initials: rawCity.microrregiao.mesorregiao.UF.sigla,
-            }
-        }));
+        return getCitiesByState({state, signal});
     })
 
     useEffect(() => {

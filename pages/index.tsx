@@ -29,7 +29,7 @@ const Home: NextPage = () => {
                         </Grid>
                     )}
                     {animals.map((animal) => (
-                        <Grid item key={animal.name} xs={12} sm={6} md={4} lg={3} xl={2}>
+                        <Grid item key={animal.name} xs={12} sm={6} md={4} lg={3}>
                             <AnimalCard animal={animal}/>
                         </Grid>
                     ))}

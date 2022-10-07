@@ -1,4 +1,4 @@
-import {NextPage} from "next";
+import {GetServerSideProps, NextPage} from "next";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import FormControl from "@mui/material/FormControl";
@@ -13,8 +13,7 @@ import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Head from "next/head";
-import {Controller, useForm} from "react-hook-form";
-import {yupResolver} from '@hookform/resolvers/yup';
+import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {addDays, format, subYears} from "date-fns";
 import {DatePicker} from "@mui/x-date-pickers/DatePicker";
@@ -23,18 +22,20 @@ import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import {City, State} from "../src/types";
+import {City, State} from "../../../../src/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import IconButton from "@mui/material/IconButton";
-import useStates from "../src/hooks/useStates";
-import useCitiesByState from "../src/hooks/useCitiesByState";
-import useService from "../src/hooks/useService";
-import {browserAxios} from "../src/axios";
+import useCitiesByState from "../../../../src/hooks/useCitiesByState";
+import useService from "../../../../src/hooks/useService";
+import useForm from "../../../../src/hooks/useForm";
+import {browserAxios} from "../../../../src/axios";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
 import {useRouter} from "next/router";
 import Image from 'next/image'
 import {useState} from "react";
+import getStates from "../../../../src/services/getStates";
+import PetsIcon from "@mui/icons-material/Pets";
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -46,7 +47,7 @@ const stateObject = yup.object({
 const schema = yup.object({
     name: yup.string().required('O campo nome é obrigatório.'),
     description: yup.string().required('O campo descrição é obrigatório.'),
-    bornAt: yup.date().nullable().required('O campo mês de nascimento é obrigatório.').min(minDate, 'O campo mês de nascimento deve ser maior que ' + format(minDate, 'MM/yyyy') + '.').max(maxDate, 'O campo mês de nascimento deve ser maior que hoje.'),
+    bornAt: yup.date().required('O campo mês de nascimento é obrigatório.').min(minDate, 'O campo mês de nascimento deve ser maior que ' + format(minDate, 'MM/yyyy') + '.').max(maxDate, 'O campo mês de nascimento deve ser maior que hoje.'),
     playfulness: yup.number().required('O campo playfulness é obrigatório.'),
     familyFriendly: yup.number().required('O campo family_friendly é obrigatório.'),
     petFriendly: yup.number().required('O campo family_friendly é obrigatório.'),
@@ -60,7 +61,11 @@ const schema = yup.object({
         label: yup.string().required(),
         state: stateObject,
     }).nullable().required('O campo cidade é obrigatório.'),
-    breed: yup.string(),
+    breed: yup.string().when('breedId', {
+        is: (breedId?: string) => !!breedId,
+        then: yup.string().notRequired(),
+        otherwise: yup.string().required('O campo raça é obrigatório.'),
+    }),
     breedId: yup.string(),
     image: yup.mixed().required('O campo imagem é obrigatório.'),
 });
@@ -68,7 +73,7 @@ const schema = yup.object({
 type DonateFormValues = {
     name: string,
     description: string,
-    bornAt: Date | null
+    bornAt: Date,
     playfulness: number,
     familyFriendly: number,
     petFriendly: number,
@@ -82,7 +87,19 @@ type DonateFormValues = {
     image: Blob,
 };
 
-const Donate: NextPage = () => {
+type UserAnimalCreateProps = {
+    states: State[],
+}
+
+export const getServerSideProps: GetServerSideProps<UserAnimalCreateProps> = async () => {
+    return {
+        props: {
+            states: await getStates(),
+        }
+    }
+}
+
+const UserAnimalCreate: NextPage<UserAnimalCreateProps> = ({states}: UserAnimalCreateProps) => {
     const router = useRouter();
     const [image, setImage] = useState<string>();
     const {
@@ -94,18 +111,15 @@ const Donate: NextPage = () => {
         getValues,
         trigger
     } = useForm<DonateFormValues>({
-        mode: 'onBlur',
-        resolver: yupResolver(schema),
-        shouldUseNativeValidation: false,
+        // @ts-ignore
+        schema,
         defaultValues: {
-            bornAt: null,
             playfulness: 3,
             familyFriendly: 3,
             petFriendly: 3,
             childrenFriendly: 3,
         },
     });
-    const {states, loading: loadingStates} = useStates();
     const {cities, loading: loadingCities} = useCitiesByState(getValues('state'));
     const {
         onSubmit,
@@ -114,7 +128,7 @@ const Donate: NextPage = () => {
     } = useService<DonateFormValues>({
         setError,
         handler: async (data: DonateFormValues) => {
-            await browserAxios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animals`, {
+            await browserAxios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal`, {
                 name: data.name,
                 description: data.description,
                 born_at: data.bornAt,
@@ -161,8 +175,11 @@ const Donate: NextPage = () => {
                                 <CardContent>
                                     <form onSubmit={handleSubmit(onSubmit)}>
                                         <Grid container spacing={2} justifyContent="center">
+                                            <Grid item xs={12} textAlign="center">
+                                                <PetsIcon fontSize="large" color="primary"/>
+                                            </Grid>
                                             <Grid item xs={12}>
-                                                <Typography variant="h2">Doar</Typography>
+                                                <Typography variant="h3">Doar</Typography>
                                             </Grid>
                                             {message && (
                                                 <Grid item xs={12}>
@@ -225,8 +242,10 @@ const Donate: NextPage = () => {
                                                         return <DatePicker
                                                             label="Mês de Nascimento"
                                                             inputFormat="MM/yyyy"
-                                                            value={getValues('bornAt')}
-                                                            onChange={(bornAt) => setValue('bornAt', bornAt)}
+                                                            value={getValues('bornAt') ?? ''}
+                                                            onChange={(bornAt) => {
+                                                                if (bornAt) setValue('bornAt', bornAt)
+                                                            }}
                                                             disableFuture
                                                             openTo="year"
                                                             views={['year', 'month']}
@@ -255,11 +274,10 @@ const Donate: NextPage = () => {
                                                     value={getValues('breed') ?? ''}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={loadingStates || states.length === 0}
                                                     onChange={async (event, breed) => {
                                                         setValue('breed', breed);
 
-                                                        await trigger(['breed']);
+                                                        await trigger('breed');
                                                     }}
                                                     options={['Vira-lata']}
                                                     renderInput={(params) => (
@@ -274,24 +292,25 @@ const Donate: NextPage = () => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    value={getValues('state') ?? ''}
+                                                    value={getValues('state')}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={loadingStates || states.length === 0}
                                                     onChange={async (event, state) => {
                                                         setValue('city', undefined);
                                                         setValue('state', state);
 
-                                                        await trigger(['state', 'city']);
+                                                        await trigger('state');
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
-                                                        <TextField {...params}
-                                                                   variant="filled"
-                                                                   fullWidth
-                                                                   label="Estado"
-                                                                   error={!!errors.state}
-                                                                   helperText={errors.state?.message}/>
+                                                        <TextField
+                                                            {...params}
+                                                            variant="filled"
+                                                            fullWidth
+                                                            label="Estado"
+                                                            error={!!errors.state}
+                                                            helperText={errors.state?.message}
+                                                        />
                                                     )}
                                                 />
                                             </Grid>
@@ -309,14 +328,22 @@ const Donate: NextPage = () => {
                                                     }}
                                                     options={cities}
                                                     renderInput={(params) => (
-                                                        <TextField {...params}
-                                                                   variant="filled"
-                                                                   fullWidth
-                                                                   label="Cidade"
-                                                                   error={!!errors.city}
-                                                                   helperText={errors.city?.message}/>
+                                                        <TextField
+                                                            {...params}
+                                                            variant="filled"
+                                                            fullWidth
+                                                            label="Cidade"
+                                                            error={!!errors.city}
+                                                            helperText={errors.city?.message}
+                                                        />
                                                     )}
                                                 />
+                                            </Grid>
+                                            <Grid item xs={12} alignContent="center">
+                                                <FormLabel>Brincadeiras</FormLabel>
+                                                <FormHelperText sx={{display: 'flex'}}>
+                                                    O quão brincalhão é
+                                                </FormHelperText>
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Stack spacing={2} direction="row" alignItems="center">
@@ -336,6 +363,12 @@ const Donate: NextPage = () => {
                                                     <ThumbUpOffAltIcon/>
                                                 </Stack>
                                             </Grid>
+                                            <Grid item xs={12} alignContent="center">
+                                                <FormLabel>Amigável Com Família</FormLabel>
+                                                <FormHelperText sx={{display: 'flex'}}>
+                                                    O quão bem é carinhoso com a família
+                                                </FormHelperText>
+                                            </Grid>
                                             <Grid item xs={12}>
                                                 <Stack spacing={2} direction="row" alignItems="center">
                                                     <ThumbDownOffAltIcon/>
@@ -354,6 +387,12 @@ const Donate: NextPage = () => {
                                                     <ThumbUpOffAltIcon/>
                                                 </Stack>
                                             </Grid>
+                                            <Grid item xs={12} alignContent="center">
+                                                <FormLabel>Amigável Com Outros Animais</FormLabel>
+                                                <FormHelperText sx={{display: 'flex'}}>
+                                                    O quão bem se dá com outros animais de estimação da casa
+                                                </FormHelperText>
+                                            </Grid>
                                             <Grid item xs={12}>
                                                 <Stack spacing={2} direction="row" alignItems="center">
                                                     <ThumbDownOffAltIcon/>
@@ -371,6 +410,12 @@ const Donate: NextPage = () => {
                                                     />
                                                     <ThumbUpOffAltIcon/>
                                                 </Stack>
+                                            </Grid>
+                                            <Grid item xs={12} alignContent="center">
+                                                <FormLabel>Amigável Com Crianças</FormLabel>
+                                                <FormHelperText sx={{display: 'flex'}}>
+                                                    O quão bem se dá com crianças
+                                                </FormHelperText>
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Stack spacing={2} direction="row" alignItems="center">
@@ -446,4 +491,4 @@ const Donate: NextPage = () => {
     );
 };
 
-export default Donate;
+export default UserAnimalCreate;

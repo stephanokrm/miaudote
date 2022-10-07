@@ -1,5 +1,5 @@
 import React, {MouseEvent, useState} from 'react';
-import {useRouter} from 'next/router'
+import Link from 'next/link';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -17,16 +17,9 @@ import useUser from "../hooks/useUser";
 
 const pages = [
     {label: 'Adotar', url: '/'},
-    {label: 'Doar', url: '/donate'}
 ];
-const settings = [
-    {label: 'Conta', url: '/account'},
-    {label: 'Doações', url: '/donations'},
-];
-
 
 const ResponsiveAppBar = () => {
-    const router = useRouter();
     const {user, logout} = useUser();
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -38,16 +31,12 @@ const ResponsiveAppBar = () => {
         setAnchorElUser(event.currentTarget);
     };
 
-    const handleCloseNavMenu = async (url: string) => {
+    const handleCloseNavMenu = async () => {
         setAnchorElNav(null);
-
-        await router.push(url);
     };
 
-    const handleCloseUserMenu = async (url: string) => {
+    const handleCloseUserMenu = async () => {
         setAnchorElUser(null);
-
-        await router.push(url);
     };
 
     return (
@@ -55,23 +44,24 @@ const ResponsiveAppBar = () => {
             <Container maxWidth="xl">
                 <Toolbar disableGutters sx={{width: '100%'}}>
                     <PetsIcon sx={{display: {xs: 'none', md: 'flex'}, mr: 1}}/>
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        component="a"
-                        href="/"
-                        sx={{
-                            mr: 2,
-                            display: {xs: 'none', md: 'flex'},
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        MIAUDOTE
-                    </Typography>
+                    <Link href="/" passHref>
+                        <Typography
+                            variant="h6"
+                            noWrap
+                            component="a"
+                            sx={{
+                                mr: 2,
+                                display: {xs: 'none', md: 'flex'},
+                                fontFamily: 'monospace',
+                                fontWeight: 700,
+                                letterSpacing: '.3rem',
+                                color: 'inherit',
+                                textDecoration: 'none',
+                            }}
+                        >
+                            MIAUDOTE
+                        </Typography>
+                    </Link>
                     <Box sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
                         <IconButton
                             size="large"
@@ -102,9 +92,11 @@ const ResponsiveAppBar = () => {
                             }}
                         >
                             {pages.map((page) => (
-                                <MenuItem key={page.label} onClick={(e) => handleCloseNavMenu(page.url)}>
-                                    <Typography textAlign="center">{page.label}</Typography>
-                                </MenuItem>
+                                <Link key={page.label} href={page.url} passHref>
+                                    <MenuItem key={page.label}>
+                                        <Typography textAlign="center">{page.label}</Typography>
+                                    </MenuItem>
+                                </Link>
                             ))}
                         </Menu>
                     </Box>
@@ -129,14 +121,29 @@ const ResponsiveAppBar = () => {
                     </Typography>
                     <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
                         {pages.map((page) => (
-                            <Button
-                                key={page.label}
-                                onClick={() => handleCloseNavMenu(page.url)}
-                                sx={{my: 2, color: 'white', display: 'block'}}
-                            >
-                                {page.label}
-                            </Button>
+                            <Link key={page.label} href={page.url} passHref>
+                                <Button
+                                    key={page.label}
+                                    variant="text"
+                                    size="large"
+                                    sx={{color: 'white'}}
+                                >
+                                    {page.label}
+                                </Button>
+                            </Link>
                         ))}
+                        {user ? (
+                            <Link href={{pathname: '/user/[id]/animal/create', query: {id: user.id}}} passHref>
+                                <Button
+                                    key="Doar"
+                                    variant="text"
+                                    size="large"
+                                    sx={{color: 'white'}}
+                                >
+                                    Doar
+                                </Button>
+                            </Link>
+                        ) : null}
                     </Box>
                     <Box sx={{flexGrow: 0}}>
                         {user ? (
@@ -162,21 +169,24 @@ const ResponsiveAppBar = () => {
                                     open={Boolean(anchorElUser)}
                                     onClose={handleCloseUserMenu}
                                 >
-                                    {settings.map((setting) => (
-                                        <MenuItem key={setting.label} onClick={() => handleCloseUserMenu(setting.url)}>
-                                            <Typography textAlign="center">{setting.label}</Typography>
+                                    <Link href={{pathname: '/user/[id]', query: {id: user.id}}} passHref>
+                                        <MenuItem key="Conta">
+                                            <Typography textAlign="center">Conta</Typography>
                                         </MenuItem>
-                                    ))}
+                                    </Link>
                                     <MenuItem key="Sair" onClick={logout}>
                                         <Typography textAlign="center">Sair</Typography>
                                     </MenuItem>
                                 </Menu>
                             </>
                         ) : (
-                            <Button onClick={() => handleCloseNavMenu('/login')}
-                                    sx={{my: 2, color: 'white', display: 'block'}}>
-                                Entrar
-                            </Button>
+                            <Link href="/login" passHref>
+                                <Button variant="text"
+                                        size="large"
+                                        sx={{color: 'white'}}>
+                                    Entrar
+                                </Button>
+                            </Link>
                         )}
                     </Box>
                 </Toolbar>

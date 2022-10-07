@@ -1,21 +1,10 @@
-import {browserAxios} from '../axios';
+import axios from '../axios';
 import {useRouter} from "next/router";
 import {useCallback, useEffect} from "react";
 import {useQuery} from "react-query";
 import {useCookies} from "react-cookie";
-
-export type User = {
-    id: string,
-    name: string,
-    born_at: string,
-    email: string,
-    email_verified_at: string | null,
-    phone: string,
-    ibge_city_id: number,
-    created_at: string,
-    updated_at: string,
-    deleted_at: string | null,
-};
+import {RawUser, User} from "../types";
+import rawUserToUser from "../maps/rawUserToUser";
 
 export enum Middleware {
     AUTH = 'auth',
@@ -29,27 +18,27 @@ type UseUser = {
 
 const useUser = ({middleware, redirectIfAuthenticated}: UseUser = {}) => {
     const router = useRouter();
-    const [cookies, setCookie, removeCookie] = useCookies(['access_token']);
+    const [, setCookie, removeCookie] = useCookies(['authorization']);
 
     const {data: user, error, refetch} = useQuery<User | null>(['user'], async ({signal}) => {
         try {
-            const {data} = await browserAxios.get<User>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {signal});
+            const {data: rawUser} = await axios().get<RawUser>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user/me`, {signal});
 
-            return data;
+            return rawUserToUser(rawUser);
         } catch (error) {
             return null;
         }
-    });
+    }, {});
 
     const logout = useCallback(async () => {
-        removeCookie('access_token');
+        removeCookie('authorization');
 
         await router.push('/login');
         await refetch();
-    }, [removeCookie, router]);
+    }, [refetch, removeCookie, router]);
 
     const login = async (data: { username: string, password: string }) => {
-        const {data: token} = await browserAxios.post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/oauth/token`, {
+        const {data: token} = await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/oauth/token`, {
             grant_type: 'password',
             client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
             client_secret: process.env.NEXT_PUBLIC_CLIENT_SECRET,
@@ -57,7 +46,7 @@ const useUser = ({middleware, redirectIfAuthenticated}: UseUser = {}) => {
             password: data.password,
         });
 
-        setCookie('access_token', token.access_token);
+        setCookie('authorization', token.access_token);
 
         await router.push('/');
         await refetch();

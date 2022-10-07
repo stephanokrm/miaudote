@@ -1,7 +1,7 @@
-import axios from "axios";
 import {useQuery} from "react-query";
 import {useEffect} from "react";
-import {City, RawCity} from "../types";
+import {City} from "../types";
+import getCityById from "../services/getCityById";
 
 type UseCityById = {
     city?: City,
@@ -15,18 +15,7 @@ const useCityById = (id?: number): UseCityById => {
             return;
         }
 
-        const {data} = await axios.get<RawCity>(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${id}`, {signal});
-
-        return {
-            id: data.id,
-            name: data.nome,
-            label: data.nome,
-            state: {
-                label: data.microrregiao.mesorregiao.UF.nome,
-                name: data.microrregiao.mesorregiao.UF.nome,
-                initials: data.microrregiao.mesorregiao.UF.sigla,
-            }
-        };
+        return getCityById({id, signal});
     })
 
     useEffect(() => {

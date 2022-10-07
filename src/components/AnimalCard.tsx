@@ -1,4 +1,4 @@
-import {differenceInMonths, differenceInYears, formatDuration} from "date-fns";
+import {differenceInMonths, differenceInYears, formatDuration, parseISO} from "date-fns";
 import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
 import CardMedia from "@mui/material/CardMedia";
@@ -21,10 +21,13 @@ type AnimalCardProps = {
     editable?: boolean,
 };
 
+const today = new Date();
+
 const AnimalCard = (props: AnimalCardProps) => {
     const {animal, editable = false} = props;
-    const years = differenceInYears(new Date(), animal.bornAt);
-    const months = differenceInMonths(new Date(), animal.bornAt);
+    const bornAt = parseISO(animal.bornAtISO);
+    const years = differenceInYears(today, bornAt);
+    const months = differenceInMonths(today, bornAt);
 
     return <Card variant="outlined" style={{
         position: "relative",

@@ -4,12 +4,13 @@ import type {NextRequest} from 'next/server'
 export async function middleware(request: NextRequest) {
     const authenticated = request.cookies.has('authorization');
     const isLogin = request.url.includes('/login');
+    const isCreate = request.url.includes('/user/create');
 
-    if (authenticated && (isLogin || request.url.includes('/user/create'))) {
+    if (authenticated && (isLogin || isCreate)) {
         return NextResponse.redirect(new URL('/', request.url));
     }
 
-    if (authenticated || isLogin) {
+    if (!authenticated && (isLogin || isCreate)) {
         return NextResponse.next();
     }
 

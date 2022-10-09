@@ -1,6 +1,7 @@
 import {Animal, RawAnimal} from "../types";
 import getCityById from "../services/getCityById";
 import rawImageToImage from "./rawImageToImage";
+import rawBreedToBreed from "./rawBreedToBreed";
 
 const rawAnimalToAnimal = async (rawAnimal: RawAnimal): Promise<Animal> => ({
     id: rawAnimal.id,
@@ -16,6 +17,7 @@ const rawAnimalToAnimal = async (rawAnimal: RawAnimal): Promise<Animal> => ({
     city: await getCityById({id: rawAnimal.ibge_city_id}),
     userId: rawAnimal.user_id,
     breedId: rawAnimal.breed_id,
+    breed: await rawBreedToBreed(rawAnimal.breed),
     createdAt: null,
     createdAtISO: rawAnimal.created_at,
     updatedAt: null,

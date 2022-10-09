@@ -98,6 +98,13 @@ const ResponsiveAppBar = () => {
                                     </MenuItem>
                                 </Link>
                             ))}
+                            {user ? (
+                                <Link href={{pathname: '/user/[user]/animal/create', query: {user: user.id}}} passHref>
+                                    <MenuItem key="Doar">
+                                        <Typography textAlign="center">Doar</Typography>
+                                    </MenuItem>
+                                </Link>
+                            ) : null}
                         </Menu>
                     </Box>
                     <PetsIcon sx={{display: {xs: 'flex', md: 'none'}, mr: 1}}/>
@@ -133,7 +140,7 @@ const ResponsiveAppBar = () => {
                             </Link>
                         ))}
                         {user ? (
-                            <Link href={{pathname: '/user/[id]/animal/create', query: {id: user.id}}} passHref>
+                            <Link href={{pathname: '/user/[user]/animal/create', query: {user: user.id}}} passHref>
                                 <Button
                                     key="Doar"
                                     variant="text"
@@ -169,9 +176,14 @@ const ResponsiveAppBar = () => {
                                     open={Boolean(anchorElUser)}
                                     onClose={handleCloseUserMenu}
                                 >
-                                    <Link href={{pathname: '/user/[id]', query: {id: user.id}}} passHref>
-                                        <MenuItem key="Conta">
+                                    <Link href={{pathname: '/user/[user]/edit', query: {user: user.id}}} passHref>
+                                        <MenuItem key="Conta" onClick={() => handleCloseUserMenu()}>
                                             <Typography textAlign="center">Conta</Typography>
+                                        </MenuItem>
+                                    </Link>
+                                    <Link href={{pathname: '/user/[user]/animal', query: {user: user.id}}} passHref>
+                                        <MenuItem key="Doações" onClick={() => handleCloseUserMenu()}>
+                                            <Typography textAlign="center">Doações</Typography>
                                         </MenuItem>
                                     </Link>
                                     <MenuItem key="Sair" onClick={logout}>

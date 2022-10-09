@@ -3,8 +3,8 @@ import {useRouter} from "next/router";
 import {useCallback, useEffect} from "react";
 import {useQuery} from "react-query";
 import {useCookies} from "react-cookie";
-import {RawUser, User} from "../types";
-import rawUserToUser from "../maps/rawUserToUser";
+import {User} from "../types";
+import getUser from "../services/getUser";
 
 export enum Middleware {
     AUTH = 'auth',
@@ -20,11 +20,9 @@ const useUser = ({middleware, redirectIfAuthenticated}: UseUser = {}) => {
     const router = useRouter();
     const [, setCookie, removeCookie] = useCookies(['authorization']);
 
-    const {data: user, error, refetch} = useQuery<User | null>(['user'], async ({signal}) => {
+    const {data: user, error, refetch, isLoading} = useQuery<User | null>(['user'], async ({signal}) => {
         try {
-            const {data: rawUser} = await axios().get<RawUser>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user/me`, {signal});
-
-            return rawUserToUser(rawUser);
+            return await getUser({id: 'me', signal});
         } catch (error) {
             return null;
         }
@@ -65,7 +63,7 @@ const useUser = ({middleware, redirectIfAuthenticated}: UseUser = {}) => {
     ])
 
     return {
-        user, error, refetch, logout, login,
+        user, error, refetch, logout, login, loading: isLoading,
     }
 }
 

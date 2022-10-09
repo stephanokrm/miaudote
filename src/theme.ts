@@ -1,5 +1,4 @@
 import {createTheme, responsiveFontSizes} from '@mui/material/styles';
-import {red} from '@mui/material/colors';
 
 const theme = responsiveFontSizes(createTheme({
     typography: {
@@ -16,12 +15,16 @@ const theme = responsiveFontSizes(createTheme({
         secondary: {
             main: '#ffc700',
         },
-        error: {
-            main: red.A400,
-        },
     },
     components: {
         MuiAlert: {
+            styleOverrides: {
+                root: {
+                    borderRadius: '15px',
+                },
+            },
+        },
+        MuiPaper: {
             styleOverrides: {
                 root: {
                     borderRadius: '15px',

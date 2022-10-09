@@ -5,7 +5,7 @@ import {FieldPath} from "react-hook-form/dist/types/path";
 
 type UseService<FormFields extends FieldValues = FieldValues> = {
     handler: (data: FormFields) => Promise<void>,
-    setError: UseFormSetError<FormFields>,
+    setError?: UseFormSetError<FormFields>,
 };
 
 const useService = <FormFields extends FieldValues = FieldValues>({handler, setError}: UseService<FormFields>) => {
@@ -33,7 +33,7 @@ const useService = <FormFields extends FieldValues = FieldValues>({handler, setE
                         return fieldErrors && fieldErrors.length > 0;
                     })
                     .forEach(field => {
-                        setError(field, {
+                        setError?.(field, {
                             message: error.response?.data?.errors?.[field]?.[0]
                         });
                     });

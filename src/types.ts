@@ -52,6 +52,27 @@ export type Resource<T> = {
     data: T,
 };
 
+export type RawBreed = {
+    id: string,
+    name: string,
+    species: string,
+    created_at: string,
+    updated_at: string | null,
+    deleted_at: string | null,
+};
+
+export type Breed = {
+    id: string,
+    name: string,
+    species: string,
+    createdAt: Date | null,
+    createdAtISO: string,
+    updatedAt: Date | null,
+    updatedAtISO: string | null,
+    deletedAt: Date | null,
+    deletedAtISO: string | null,
+};
+
 export type RawAnimal = {
     id: string,
     name: string,
@@ -65,6 +86,7 @@ export type RawAnimal = {
     ibge_city_id: number,
     user_id: string,
     breed_id: string,
+    breed: RawBreed,
     created_at: string,
     updated_at: string | null,
     deleted_at: string | null,
@@ -83,6 +105,7 @@ export type Animal = {
     petFriendly: number,
     childrenFriendly: number,
     city: City,
+    breed: Breed,
     userId: string,
     breedId: string,
     createdAt: Date | null,

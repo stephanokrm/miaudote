@@ -1,6 +1,6 @@
 import {useQuery} from "react-query";
 import {Animal} from "../types";
-import getAnimals from "../services/getAnimals";
+import animalIndex from "../services/animalIndex";
 
 type UseAnimals = {
     animals: Animal[],
@@ -10,7 +10,7 @@ type UseAnimals = {
 
 const useAnimals = (): UseAnimals => {
     const {data: animals, error, isLoading} = useQuery<Animal[]>(['animals'], async ({signal}) => {
-        return getAnimals({signal});
+        return animalIndex({signal});
     });
 
     return {

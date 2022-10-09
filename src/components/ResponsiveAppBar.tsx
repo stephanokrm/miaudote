@@ -99,7 +99,7 @@ const ResponsiveAppBar = () => {
                                 </Link>
                             ))}
                             {user ? (
-                                <Link href={{pathname: '/user/[user]/animal/create', query: {user: user.id}}} passHref>
+                                <Link href="/animal/create" passHref>
                                     <MenuItem key="Doar">
                                         <Typography textAlign="center">Doar</Typography>
                                     </MenuItem>
@@ -140,7 +140,7 @@ const ResponsiveAppBar = () => {
                             </Link>
                         ))}
                         {user ? (
-                            <Link href={{pathname: '/user/[user]/animal/create', query: {user: user.id}}} passHref>
+                            <Link href="/animal/create" passHref>
                                 <Button
                                     key="Doar"
                                     variant="text"

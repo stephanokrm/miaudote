@@ -22,19 +22,19 @@ import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import {City, State} from "../../../../src/types";
+import {City, State} from "../../src/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import IconButton from "@mui/material/IconButton";
-import useCitiesByState from "../../../../src/hooks/useCitiesByState";
-import useService from "../../../../src/hooks/useService";
-import useForm from "../../../../src/hooks/useForm";
-import axios from "../../../../src/axios";
+import useCitiesByState from "../../src/hooks/useCitiesByState";
+import useService from "../../src/hooks/useService";
+import useForm from "../../src/hooks/useForm";
+import axios from "../../src/axios";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
 import {useRouter} from "next/router";
 import Image from 'next/image'
 import {useState} from "react";
-import getStates from "../../../../src/services/getStates";
+import getStates from "../../src/services/getStates";
 import PetsIcon from "@mui/icons-material/Pets";
 
 const minDate = subYears(new Date(), 30);
@@ -70,7 +70,7 @@ const schema = yup.object({
     image: yup.mixed().required('O campo imagem é obrigatório.'),
 });
 
-type DonateFormValues = {
+type AnimalCreateValues = {
     name: string,
     description: string,
     bornAt: Date,
@@ -87,11 +87,11 @@ type DonateFormValues = {
     image: Blob,
 };
 
-type UserAnimalCreateProps = {
+type AnimalCreateProps = {
     states: State[],
 }
 
-export const getServerSideProps: GetServerSideProps<UserAnimalCreateProps> = async () => {
+export const getServerSideProps: GetServerSideProps<AnimalCreateProps> = async () => {
     return {
         props: {
             states: await getStates(),
@@ -99,7 +99,7 @@ export const getServerSideProps: GetServerSideProps<UserAnimalCreateProps> = asy
     }
 }
 
-const UserAnimalCreate: NextPage<UserAnimalCreateProps> = ({states}: UserAnimalCreateProps) => {
+const AnimalCreate: NextPage<AnimalCreateProps> = ({states}: AnimalCreateProps) => {
     const router = useRouter();
     const [image, setImage] = useState<string>();
     const {
@@ -110,7 +110,7 @@ const UserAnimalCreate: NextPage<UserAnimalCreateProps> = ({states}: UserAnimalC
         setValue,
         getValues,
         trigger
-    } = useForm<DonateFormValues>({
+    } = useForm<AnimalCreateValues>({
         // @ts-ignore
         schema,
         defaultValues: {
@@ -125,9 +125,9 @@ const UserAnimalCreate: NextPage<UserAnimalCreateProps> = ({states}: UserAnimalC
         onSubmit,
         message,
         loading
-    } = useService<DonateFormValues>({
+    } = useService<AnimalCreateValues>({
         setError,
-        handler: async (data: DonateFormValues) => {
+        handler: async (data: AnimalCreateValues) => {
             await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal`, {
                 name: data.name,
                 description: data.description,
@@ -491,4 +491,4 @@ const UserAnimalCreate: NextPage<UserAnimalCreateProps> = ({states}: UserAnimalC
     );
 };
 
-export default UserAnimalCreate;
+export default AnimalCreate;

@@ -25,11 +25,10 @@ import {Animal} from "../types";
 import {useState} from "react";
 import Link from 'next/link';
 import useService from "../hooks/useService";
-import axios from "../axios";
 import {useQueryClient} from "react-query";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Alert from "@mui/material/Alert";
-import {useRouter} from "next/router";
+import animalDestroy from "../services/animalDestroy";
 
 type AnimalCardProps = {
     animal: Animal,
@@ -40,8 +39,6 @@ const today = new Date();
 
 const AnimalCard = (props: AnimalCardProps) => {
     const {animal, editable = false} = props;
-    const {query} = useRouter();
-    const user = query.user as string | undefined;
     const queryClient = useQueryClient();
     const bornAt = parseISO(animal.bornAtISO);
     const years = differenceInYears(today, bornAt);
@@ -54,7 +51,7 @@ const AnimalCard = (props: AnimalCardProps) => {
         loading
     } = useService({
         handler: async () => {
-            await axios().delete(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}`);
+            await animalDestroy({ animal: animal.id });
             await handleClose();
             await queryClient.invalidateQueries('userAnimals');
         }
@@ -116,8 +113,8 @@ const AnimalCard = (props: AnimalCardProps) => {
                                                     <DeleteIcon/>
                                                 </IconButton>
                                                 <Link href={{
-                                                    pathname: '/user/[user]/animal/[animal]/edit',
-                                                    query: {user, animal: animal.id}
+                                                    pathname: '/animal/[animal]/edit',
+                                                    query: {animal: animal.id}
                                                 }} passHref>
                                                     <IconButton color="primary">
                                                         <EditIcon/>
@@ -170,7 +167,7 @@ const AnimalCard = (props: AnimalCardProps) => {
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    Desativar doação do {animal.name}?
+                    Desativar doação {animal.gender === 'MALE' ? 'do' : 'da'} {animal.name}?
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">

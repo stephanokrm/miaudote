@@ -25,19 +25,19 @@ import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import {Animal, City, State} from "../../../../../src/types";
+import {Animal, City, State} from "../../../src/types";
 import Autocomplete from "@mui/material/Autocomplete";
-import useCitiesByState from "../../../../../src/hooks/useCitiesByState";
-import useService from "../../../../../src/hooks/useService";
-import useForm from "../../../../../src/hooks/useForm";
-import axios from "../../../../../src/axios";
+import useCitiesByState from "../../../src/hooks/useCitiesByState";
+import useService from "../../../src/hooks/useService";
+import useForm from "../../../src/hooks/useForm";
+import axios from "../../../src/axios";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
 import {useRouter} from "next/router";
 import {useState} from "react";
-import getStates from "../../../../../src/services/getStates";
+import getStates from "../../../src/services/getStates";
 import PetsIcon from "@mui/icons-material/Pets";
-import getAnimalById from "../../../../../src/services/getAnimalById";
+import animalShow from "../../../src/services/animalShow";
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -72,7 +72,7 @@ const schema = yup.object({
     image: yup.mixed().required('O campo imagem é obrigatório.'),
 });
 
-type DonateFormValues = {
+type AnimalEditValues = {
     name: string,
     description: string,
     bornAt: Date,
@@ -89,15 +89,15 @@ type DonateFormValues = {
     image: Blob,
 };
 
-type UserAnimalCreateProps = {
+type AnimalEditProps = {
     states: State[],
     animal: Animal,
 }
 
-export const getServerSideProps: GetServerSideProps<UserAnimalCreateProps, { animal: string }> = async ({
-                                                                                                            params,
-                                                                                                            req
-                                                                                                        }) => {
+export const getServerSideProps: GetServerSideProps<AnimalEditProps, { animal: string }> = async ({
+                                                                                                      params,
+                                                                                                      req
+                                                                                                  }) => {
     if (!params) {
         return {
             notFound: true,
@@ -106,13 +106,13 @@ export const getServerSideProps: GetServerSideProps<UserAnimalCreateProps, { ani
 
     return {
         props: {
-            animal: await getAnimalById({animal: params.animal, authorization: req.cookies.authorization}),
+            animal: await animalShow({animal: params.animal, authorization: req.cookies.authorization}),
             states: await getStates(),
         }
     }
 }
 
-const UserAnimalEdit: NextPage<UserAnimalCreateProps> = ({animal, states}: UserAnimalCreateProps) => {
+const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps) => {
     const router = useRouter();
     const [image, setImage] = useState<string>(animal.images[0].url);
     const {
@@ -124,7 +124,7 @@ const UserAnimalEdit: NextPage<UserAnimalCreateProps> = ({animal, states}: UserA
         getValues,
         trigger,
         watch,
-    } = useForm<DonateFormValues>({
+    } = useForm<AnimalEditValues>({
         // @ts-ignore
         schema,
         defaultValues: {
@@ -146,9 +146,9 @@ const UserAnimalEdit: NextPage<UserAnimalCreateProps> = ({animal, states}: UserA
         onSubmit,
         message,
         loading
-    } = useService<DonateFormValues>({
+    } = useService<AnimalEditValues>({
         setError,
-        handler: async (data: DonateFormValues) => {
+        handler: async (data: AnimalEditValues) => {
             await axios().put(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}`, {
                 name: data.name,
                 description: data.description,
@@ -505,4 +505,4 @@ const UserAnimalEdit: NextPage<UserAnimalCreateProps> = ({animal, states}: UserA
     );
 };
 
-export default UserAnimalEdit;
+export default AnimalEdit;

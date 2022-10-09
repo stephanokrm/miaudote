@@ -7,10 +7,10 @@ type Params = {
     signal?: AbortSignal
 }
 
-const getAnimals = async ({authorization, signal}: Params): Promise<Animal[]> => {
-    const {data: {data: rawAnimals}} = await axios(authorization).get<Resource<RawAnimal[]>>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal`, {signal});
+const animalMe = async ({authorization, signal}: Params = {}): Promise<Animal[]> => {
+    const {data: {data: rawAnimals}} = await axios(authorization).get<Resource<RawAnimal[]>>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/me`, {signal});
 
     return Promise.all(rawAnimals.map(rawAnimalToAnimal));
 }
 
-export default getAnimals;
+export default animalMe;

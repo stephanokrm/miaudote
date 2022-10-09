@@ -1,8 +1,6 @@
 import {useQuery} from "react-query";
 import {Animal} from "../types";
-import getUserAnimals from "../services/getUserAnimals";
-import {useRouter} from "next/router";
-import {useEffect} from "react";
+import animalMe from "../services/animalMe";
 
 type UseAnimals = {
     animals: Animal[],
@@ -11,18 +9,9 @@ type UseAnimals = {
 };
 
 const useUserAnimals = (): UseAnimals => {
-    const {query} = useRouter();
-    const user = query.user as string | undefined;
-
-    const {data: animals, error, isLoading, refetch} = useQuery<Animal[]>(['userAnimals'], async ({signal}) => {
-        if (!user) return [];
-
-        return getUserAnimals({user, signal});
+    const {data: animals, error, isLoading} = useQuery<Animal[]>(['userAnimals'], async ({signal}) => {
+        return animalMe({signal});
     });
-
-    useEffect(() => {
-        refetch();
-    }, [refetch, user]);
 
     return {
         animals: animals ?? [],

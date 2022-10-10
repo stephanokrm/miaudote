@@ -1,3 +1,8 @@
+import Species from "./enums/Species";
+import Gender from "./enums/Gender";
+import Playfulness from "./enums/Playfulness";
+import Friendly from "./enums/Friendly";
+
 export type RawState = {
     sigla: string,
     nome: string,
@@ -55,7 +60,7 @@ export type Resource<T> = {
 export type RawBreed = {
     id: string,
     name: string,
-    species: string,
+    species: Species,
     created_at: string,
     updated_at: string | null,
     deleted_at: string | null,
@@ -64,7 +69,7 @@ export type RawBreed = {
 export type Breed = {
     id: string,
     name: string,
-    species: string,
+    species: Species,
     createdAt: Date | null,
     createdAtISO: string,
     updatedAt: Date | null,
@@ -78,11 +83,11 @@ export type RawAnimal = {
     name: string,
     description: string,
     born_at: string,
-    gender: string,
-    playfulness: number,
-    family_friendly: number,
-    pet_friendly: number,
-    children_friendly: number,
+    gender: Gender,
+    playfulness: Playfulness,
+    family_friendly: Friendly,
+    pet_friendly: Friendly,
+    children_friendly: Friendly,
     ibge_city_id: number,
     user_id: string,
     breed_id: string,
@@ -99,11 +104,11 @@ export type Animal = {
     description: string,
     bornAt: Date | null,
     bornAtISO: string,
-    gender: string,
-    playfulness: number,
-    familyFriendly: number,
-    petFriendly: number,
-    childrenFriendly: number,
+    gender: Gender,
+    playfulness: Playfulness,
+    familyFriendly: Friendly,
+    petFriendly: Friendly,
+    childrenFriendly: Friendly,
     city: City,
     breed: Breed,
     userId: string,

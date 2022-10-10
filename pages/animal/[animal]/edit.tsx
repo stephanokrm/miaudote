@@ -25,7 +25,7 @@ import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import {Animal, City, State} from "../../../src/types";
+import {Animal, Breed, Image, State} from "../../../src/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import useCitiesByState from "../../../src/hooks/useCitiesByState";
 import useService from "../../../src/hooks/useService";
@@ -34,10 +34,14 @@ import axios from "../../../src/axios";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
 import {useRouter} from "next/router";
-import {useState} from "react";
+import {ChangeEvent, useState} from "react";
 import getStates from "../../../src/services/getStates";
 import PetsIcon from "@mui/icons-material/Pets";
 import animalShow from "../../../src/services/animalShow";
+import Species from "../../../src/enums/Species";
+import Gender from "../../../src/enums/Gender";
+import breedIndex from "../../../src/services/breedIndex";
+import animalToRawAnimal from "../../../src/maps/animalToRawAnimal";
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -50,48 +54,29 @@ const schema = yup.object({
     name: yup.string().required('O campo nome é obrigatório.'),
     description: yup.string().required('O campo descrição é obrigatório.'),
     bornAt: yup.date().required('O campo mês de nascimento é obrigatório.').min(minDate, 'O campo mês de nascimento deve ser maior que ' + format(minDate, 'MM/yyyy') + '.').max(maxDate, 'O campo mês de nascimento deve ser maior que hoje.'),
+    gender: yup.string().oneOf(Object.values(Gender)).required('O campo espécie é obrigatório.'),
     playfulness: yup.number().required('O campo playfulness é obrigatório.'),
-    familyFriendly: yup.number().required('O campo family_friendly é obrigatório.'),
-    petFriendly: yup.number().required('O campo family_friendly é obrigatório.'),
-    childrenFriendly: yup.number().required('O campo family_friendly é obrigatório.'),
-    species: yup.string().oneOf(['DOG', 'CAT']).required('O campo espécie é obrigatório.'),
-    gender: yup.string().oneOf(['MALE', 'FEMALE']).required('O campo sexo é obrigatório.'),
-    state: stateObject.required('O campo estado é obrigatório.'),
+    familyFriendly: yup.number().required('O campo familyFriendly é obrigatório.'),
+    petFriendly: yup.number().required('O campo petFriendly é obrigatório.'),
+    childrenFriendly: yup.number().required('O campo childrenFriendly é obrigatório.'),
     city: yup.object({
         id: yup.number().required(),
         name: yup.string().required(),
         label: yup.string().required(),
         state: stateObject,
-    }).nullable().required('O campo cidade é obrigatório.'),
-    breed: yup.string().when('breedId', {
-        is: (breedId?: string) => !!breedId,
-        then: yup.string().notRequired(),
-        otherwise: yup.string().required('O campo raça é obrigatório.'),
-    }),
-    breedId: yup.string(),
-    image: yup.mixed().required('O campo imagem é obrigatório.'),
+    }).required('O campo cidade é obrigatório.'),
+    breed: yup.object({
+        id: yup.string(),
+        name: yup.string(),
+        species: yup.string().oneOf(Object.values(Species)),
+    }).required('O campo raça é obrigatório.'),
+    images: yup.array().of(yup.object()).required(),
 });
-
-type AnimalEditValues = {
-    name: string,
-    description: string,
-    bornAt: Date,
-    playfulness: number,
-    familyFriendly: number,
-    petFriendly: number,
-    childrenFriendly: number,
-    species: string,
-    gender: string,
-    state: State,
-    city?: City,
-    breed?: string
-    breedId?: string,
-    image: Blob,
-};
 
 type AnimalEditProps = {
     states: State[],
     animal: Animal,
+    breeds: Breed[],
 }
 
 export const getServerSideProps: GetServerSideProps<AnimalEditProps, { animal: string }> = async ({
@@ -106,15 +91,16 @@ export const getServerSideProps: GetServerSideProps<AnimalEditProps, { animal: s
 
     return {
         props: {
-            animal: await animalShow({animal: params.animal, authorization: req.cookies.authorization}),
             states: await getStates(),
+            animal: await animalShow({animal: params.animal, authorization: req.cookies.authorization}),
+            breeds: await breedIndex({authorization: req.cookies.authorization}),
         }
     }
 }
 
-const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps) => {
+const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalEditProps) => {
     const router = useRouter();
-    const [image, setImage] = useState<string>(animal.images[0].url);
+    const [file, setFile] = useState<File>();
     const {
         control,
         handleSubmit,
@@ -124,63 +110,58 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps
         getValues,
         trigger,
         watch,
-    } = useForm<AnimalEditValues>({
+    } = useForm<Animal>({
         // @ts-ignore
         schema,
         defaultValues: {
-            name: animal.name,
-            description: animal.description,
+            ...animal,
             bornAt: parseISO(animal.bornAtISO),
-            gender: animal.gender,
-            playfulness: animal.playfulness,
-            familyFriendly: animal.familyFriendly,
-            petFriendly: animal.petFriendly,
-            childrenFriendly: animal.childrenFriendly,
-            city: animal.city,
-            state: animal.city.state,
-            species: animal.breed.species,
         },
     });
-    const {cities, loading: loadingCities} = useCitiesByState(getValues('state'));
+    const {cities, loading: loadingCities} = useCitiesByState(getValues('city.state'));
     const {
         onSubmit,
         message,
         loading
-    } = useService<AnimalEditValues>({
+    } = useService<Animal>({
         setError,
-        handler: async (data: AnimalEditValues) => {
-            await axios().put(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}`, {
-                name: data.name,
-                description: data.description,
-                born_at: data.bornAt,
-                gender: data.gender,
-                playfulness: data.playfulness,
-                family_friendly: data.familyFriendly,
-                pet_friendly: data.petFriendly,
-                children_friendly: data.childrenFriendly,
-                species: data.species,
-                ibge_city_id: data.city?.id,
-                breed: data.breed,
-                breed_id: data.breedId,
-                image: data.image,
+        handler: async (data: Animal) => {
+            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}`, {
+                ...await animalToRawAnimal(data),
+                _method: 'PUT',
+                image: file,
             }, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             })
 
-            await router.push('/');
+            await router.push(`/user/${animal.userId}/animal`);
         }
     });
-    // @ts-ignore
-    const onImageChange = async (e) => {
-        const file: Blob = e.target.files[0];
 
-        setImage(URL.createObjectURL(file));
-        setValue('image', file);
+    const onImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.currentTarget.files?.[0];
 
-        await trigger(['image']);
+        if (!file) {
+            return setError('images', {
+                message: 'Invalid upload',
+            });
+        }
+
+        setFile(file);
+
+        const image: Image = {
+            ...getValues('images.0'),
+            url: URL.createObjectURL(file),
+        }
+
+        setValue('images.0', image);
+
+        await trigger('images');
     }
+
+    console.log({errors});
 
     return (
         <>
@@ -198,25 +179,23 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
                                             </Grid>
-                                            {image && (
-                                                <Grid item xs={12} justifyContent="center" display="flex">
-                                                    <Badge
-                                                        overlap="circular"
-                                                        anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-                                                        badgeContent={
-                                                            <Fab color="primary" aria-label="upload picture"
-                                                                 component="label">
-                                                                <input hidden accept="image/*" type="file"
-                                                                       onChange={onImageChange}/>
-                                                                <PhotoCameraIcon/>
-                                                            </Fab>
-                                                        }
-                                                    >
-                                                        <Avatar alt={getValues('name')} src={image}
-                                                                sx={{width: 200, height: 200}}/>
-                                                    </Badge>
-                                                </Grid>
-                                            )}
+                                            <Grid item xs={12} justifyContent="center" display="flex">
+                                                <Badge
+                                                    overlap="circular"
+                                                    anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
+                                                    badgeContent={
+                                                        <Fab color="primary" aria-label="upload picture"
+                                                             component="label">
+                                                            <input hidden accept="image/*" type="file"
+                                                                   onChange={onImageChange}/>
+                                                            <PhotoCameraIcon/>
+                                                        </Fab>
+                                                    }
+                                                >
+                                                    <Avatar alt={watch('name')} src={getValues('images.0')?.url}
+                                                            sx={{width: 200, height: 200}}/>
+                                                </Badge>
+                                            </Grid>
                                             <Grid item xs={12}>
                                                 <Typography variant="h3">{watch('name')}</Typography>
                                             </Grid>
@@ -228,19 +207,27 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps
                                             <Grid item xs={12}>
                                                 <FormControl>
                                                     <FormLabel id="speciesLabel">Espécie</FormLabel>
-                                                    <Controller name="species" control={control} render={({field}) => (
-                                                        <RadioGroup
-                                                            {...field}
-                                                            aria-labelledby="speciesLabel"
-                                                        >
-                                                            <FormControlLabel value="CAT" control={<Radio/>}
-                                                                              label="Gato"/>
-                                                            <FormControlLabel value="DOG" control={<Radio/>}
-                                                                              label="Cachorro"/>
-                                                        </RadioGroup>
-                                                    )}/>
-                                                    {!!errors.species && (
-                                                        <FormHelperText error>{errors.species?.message}</FormHelperText>
+                                                    <Controller name="breed.species" control={control}
+                                                                render={({field}) => (
+                                                                    <RadioGroup
+                                                                        {...field}
+                                                                        aria-labelledby="speciesLabel"
+                                                                    >
+                                                                        <FormControlLabel
+                                                                            value={Species.Cat}
+                                                                            control={<Radio/>}
+                                                                            label="Gato"
+                                                                        />
+                                                                        <FormControlLabel
+                                                                            value={Species.Dog}
+                                                                            control={<Radio/>}
+                                                                            label="Cachorro"
+                                                                        />
+                                                                    </RadioGroup>
+                                                                )}/>
+                                                    {!!errors.breed?.species && (
+                                                        <FormHelperText
+                                                            error>{errors.breed?.species?.message}</FormHelperText>
                                                     )}
                                                 </FormControl>
                                             </Grid>
@@ -252,10 +239,16 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps
                                                             {...field}
                                                             aria-labelledby="speciesLabel"
                                                         >
-                                                            <FormControlLabel value="FEMALE" control={<Radio/>}
-                                                                              label="Fêmea"/>
-                                                            <FormControlLabel value="MALE" control={<Radio/>}
-                                                                              label="Macho"/>
+                                                            <FormControlLabel
+                                                                value={Gender.Female}
+                                                                control={<Radio/>}
+                                                                label="Fêmea"
+                                                            />
+                                                            <FormControlLabel
+                                                                value={Gender.Male}
+                                                                control={<Radio/>}
+                                                                label="Macho"
+                                                            />
                                                         </RadioGroup>
                                                     )}/>
                                                     {!!errors.gender && (
@@ -310,15 +303,16 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    value={getValues('breed') ?? ''}
+                                                    value={getValues('breed')}
                                                     autoComplete
                                                     disableClearable
+                                                    getOptionLabel={({name}) => name}
                                                     onChange={async (event, breed) => {
                                                         setValue('breed', breed);
 
                                                         await trigger('breed');
                                                     }}
-                                                    options={['Vira-lata']}
+                                                    options={breeds.filter(({species}) => species === getValues('breed.species'))}
                                                     renderInput={(params) => (
                                                         <TextField {...params}
                                                                    variant="filled"
@@ -331,14 +325,18 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    value={getValues('state')}
+                                                    value={getValues('city.state')}
                                                     autoComplete
                                                     disableClearable
                                                     onChange={async (event, state) => {
-                                                        setValue('city', undefined);
-                                                        setValue('state', state);
+                                                        setValue('city', {
+                                                            id: 0,
+                                                            label: '',
+                                                            name: '',
+                                                            state,
+                                                        });
 
-                                                        await trigger('state');
+                                                        await trigger('city');
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
@@ -347,15 +345,14 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, states}: AnimalEditProps
                                                             variant="filled"
                                                             fullWidth
                                                             label="Estado"
-                                                            error={!!errors.state}
-                                                            helperText={errors.state?.message}
+                                                            error={!!errors.city?.state}
+                                                            helperText={errors.city?.state?.message}
                                                         />
                                                     )}
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    // @ts-ignore
                                                     value={getValues('city') ?? ''}
                                                     autoComplete
                                                     disableClearable

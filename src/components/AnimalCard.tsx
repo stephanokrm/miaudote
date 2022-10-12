@@ -75,7 +75,7 @@ const AnimalCard = (props: AnimalCardProps) => {
                     <CardMedia
                         component="img"
                         alt={animal.name}
-                        image={animal.images[0]?.url}
+                        image={animal.avatar}
                     />
                 </CardActionArea>
                 <Box sx={{

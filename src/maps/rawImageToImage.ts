@@ -2,8 +2,7 @@ import {Image, RawImage} from "../types";
 
 const rawImageToImage = async (rawImage: RawImage): Promise<Image> => ({
     id: rawImage.id,
-    url: rawImage.url,
-    avatar: rawImage.avatar,
+    path: rawImage.path,
     profileType: rawImage.profile_type,
     profileId: rawImage.profile_id,
     createdAt: null,

@@ -33,8 +33,7 @@ export type City = {
 
 export type RawImage = {
     id: string,
-    url: string,
-    avatar: boolean
+    path: string,
     profile_type: string,
     profile_id: string,
     created_at: string,
@@ -43,8 +42,7 @@ export type RawImage = {
 
 export type Image = {
     id: string,
-    url: string,
-    avatar: boolean
+    path: string,
     profileType: string,
     profileId: string,
     createdAt: Date | null,
@@ -63,7 +61,6 @@ export type RawBreed = {
     species: Species,
     created_at: string,
     updated_at: string | null,
-    deleted_at: string | null,
 };
 
 export type Breed = {
@@ -74,8 +71,6 @@ export type Breed = {
     createdAtISO: string,
     updatedAt: Date | null,
     updatedAtISO: string | null,
-    deletedAt: Date | null,
-    deletedAtISO: string | null,
 };
 
 export type RawAnimal = {
@@ -84,6 +79,7 @@ export type RawAnimal = {
     description: string,
     born_at: string,
     gender: Gender,
+    avatar: string,
     playfulness: Playfulness,
     family_friendly: Friendly,
     pet_friendly: Friendly,
@@ -95,7 +91,6 @@ export type RawAnimal = {
     created_at: string,
     updated_at: string | null,
     deleted_at: string | null,
-    images: RawImage[],
 };
 
 export type Animal = {
@@ -105,6 +100,7 @@ export type Animal = {
     bornAt: Date | null,
     bornAtISO: string,
     gender: Gender,
+    avatar: string,
     playfulness: Playfulness,
     familyFriendly: Friendly,
     petFriendly: Friendly,
@@ -119,7 +115,6 @@ export type Animal = {
     updatedAtISO: string | null,
     deletedAt: Date | null,
     deletedAtISO: string | null,
-    images: Image[],
 };
 
 export type RawUser = {
@@ -127,11 +122,14 @@ export type RawUser = {
     name: string,
     born_at: string,
     email: string,
+    avatar: string,
     email_verified_at: string | null,
     phone: string,
+    password: string | null,
+    password_confirmation: string | null,
     ibge_city_id: number,
     created_at: string,
-    updated_at: string,
+    updated_at: string | null,
     deleted_at: string | null,
 };
 
@@ -141,9 +139,12 @@ export type User = {
     bornAt: Date | null,
     bornAtISO: string,
     email: string,
+    avatar: string,
     emailVerifiedAt: Date | null,
     emailVerifiedAtISO: string | null,
     phone: string,
+    password: string | null,
+    passwordConfirmation: string | null,
     city: City,
     createdAt: Date | null,
     createdAtISO: string,

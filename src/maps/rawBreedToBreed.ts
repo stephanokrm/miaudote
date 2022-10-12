@@ -8,8 +8,6 @@ const rawBreedToBreed = async (rawBreed: RawBreed): Promise<Breed> => ({
     createdAtISO: rawBreed.created_at,
     updatedAt: null,
     updatedAtISO: rawBreed.updated_at,
-    deletedAt: null,
-    deletedAtISO: rawBreed.deleted_at,
 });
 
 export default rawBreedToBreed;

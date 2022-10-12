@@ -1,10 +1,6 @@
-import {Animal, RawAnimal, RawBreed, RawImage} from "../types";
-import getCityById from "../services/getCityById";
-import rawImageToImage from "./rawImageToImage";
-import rawBreedToBreed from "./rawBreedToBreed";
+import {Animal, RawAnimal} from "../types";
 import {formatISO} from "date-fns";
 import breedToRawBreed from "./breedToRawBreed";
-import imageToRawImage from "./imageToRawImage";
 
 const animalToRawAnimal = async (animal: Animal): Promise<RawAnimal> => ({
     id: animal.id,
@@ -12,6 +8,7 @@ const animalToRawAnimal = async (animal: Animal): Promise<RawAnimal> => ({
     description: animal.description,
     born_at: animal.bornAt ? formatISO(animal.bornAt) : '',
     gender: animal.gender,
+    avatar: animal.avatar,
     playfulness: animal.playfulness,
     family_friendly: animal.familyFriendly,
     pet_friendly: animal.petFriendly,
@@ -23,7 +20,6 @@ const animalToRawAnimal = async (animal: Animal): Promise<RawAnimal> => ({
     created_at: animal.createdAtISO,
     updated_at: animal.updatedAtISO,
     deleted_at: animal.deletedAtISO,
-    images: await Promise.all(animal.images.map(imageToRawImage)),
 });
 
 export default animalToRawAnimal;

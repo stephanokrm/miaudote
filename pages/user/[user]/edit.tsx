@@ -16,15 +16,18 @@ import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, parseISO, subYears} from 'date-fns';
 import axios from "../../../src/axios";
-import {ChangeEvent} from "react";
-import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
+import {ChangeEvent, useState} from "react";
+import {AsYouType} from "libphonenumber-js";
 import useService from "../../../src/hooks/useService";
 import useForm from "../../../src/hooks/useForm";
 import useCitiesByState from "../../../src/hooks/useCitiesByState";
-import {City, State, User} from "../../../src/types";
+import {State, User} from "../../../src/types";
 import {useRouter} from "next/router";
 import getUser from "../../../src/services/getUser";
 import getStates from "../../../src/services/getStates";
+import {AvatarChangeEvent, InteractableAvatar} from "../../../src/components/InteractableAvatar";
+import {userToRawUser} from "../../../src/maps/userToRawUser";
+import useUser from "../../../src/hooks/useUser";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -38,7 +41,6 @@ const schema = yup.object({
     bornAt: yup.date().required('O campo data de nascimento é obrigatório.').min(minDate, 'O campo data de nascimento deve ser maior que ' + format(minDate, 'dd/MM/yyyy') + '.').max(maxDate, 'A sua idade deve ser maior que 18 anos.'),
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
     phone: yup.string().required('O campo celular é obrigatório.'),
-    state: stateObject.required('O campo estado é obrigatório.'),
     city: yup.object({
         id: yup.number().required(),
         name: yup.string().required(),
@@ -46,15 +48,6 @@ const schema = yup.object({
         state: stateObject,
     }).nullable().required('O campo cidade é obrigatório.'),
 });
-
-type AccountFormFields = {
-    bornAt: Date,
-    city?: City,
-    email: string,
-    name: string,
-    phone: string,
-    state: State,
-};
 
 type UserShowProps = {
     user: User,
@@ -78,6 +71,8 @@ export const getServerSideProps: GetServerSideProps<UserShowProps, { user: strin
 
 const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
     const router = useRouter();
+    const [avatar, setAvatar] = useState<File>();
+    const {refetch} = useUser();
     const {
         control,
         handleSubmit,
@@ -86,43 +81,56 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
         getValues,
         setError,
         trigger,
-    } = useForm<AccountFormFields>({
+        watch,
+    } = useForm<User>({
         // @ts-ignore
         schema,
         defaultValues: {
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
+            ...user,
             bornAt: parseISO(user.bornAtISO),
-            city: user.city,
-            state: user.city.state,
         },
     });
     const {
         onSubmit,
         message,
         loading
-    } = useService<AccountFormFields>({
+    } = useService<User>({
         setError,
-        handler: async (data: AccountFormFields) => {
-            await axios().put(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user/${user.id}`, {
-                name: data.name,
-                born_at: data.bornAt,
-                email: data.email,
-                ibge_city_id: data.city?.id,
-                phone: parsePhoneNumber(data.phone, 'BR').number,
-            });
+        handler: async (data: User) => {
+            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user/${user.id}`, {
+                ...await userToRawUser(data),
+                _method: 'PUT',
+                avatar,
+            }, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
 
+            await refetch();
             await router.push('/');
         }
     })
 
-    const {cities, loading: loadingCities} = useCitiesByState(getValues('state'));
+    const {cities, loading: loadingCities} = useCitiesByState(getValues('city.state'));
+
+    const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
+        if (!file || !avatar) {
+            return setError('avatar', {
+                message: 'Invalid upload',
+            });
+        }
+
+        setAvatar(file);
+        setValue('avatar', avatar);
+
+        await trigger('avatar');
+    }
 
     return (
         <>
             <Head>
-                <title>MiAudote - Conta</title>
+                <title>MiAudote - {watch('name')}</title>
             </Head>
             <Container maxWidth="sm">
                 <Box paddingY={3}>
@@ -134,6 +142,10 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
                                         <Grid container spacing={2} justifyContent="center">
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
+                                            </Grid>
+                                            <Grid item xs={12} justifyContent="center" display="flex">
+                                                <InteractableAvatar onChange={onAvatarChange} alt={watch('name')}
+                                                                    src={getValues('avatar')}/>
                                             </Grid>
                                             {message && (
                                                 <Grid item xs={12}>
@@ -212,14 +224,18 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    value={getValues('state')}
+                                                    value={getValues('city.state') ?? ''}
                                                     autoComplete
                                                     disableClearable
                                                     onChange={async (event, state) => {
-                                                        setValue('city', undefined);
-                                                        setValue('state', state);
+                                                        setValue('city', {
+                                                            id: 0,
+                                                            label: '',
+                                                            name: '',
+                                                            state,
+                                                        });
 
-                                                        await trigger('state');
+                                                        await trigger('city');
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
@@ -228,15 +244,15 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
                                                             variant="filled"
                                                             fullWidth
                                                             label="Estado"
-                                                            error={!!errors.state}
-                                                            helperText={errors.state?.message}
+                                                            error={!!errors.city?.state}
+                                                            helperText={errors.city?.state?.message}
                                                         />
                                                     )}
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    value={getValues('city')}
+                                                    value={getValues('city') ?? ''}
                                                     autoComplete
                                                     disableClearable
                                                     disabled={loadingCities || cities.length === 0}

@@ -1,6 +1,5 @@
 import {Animal, RawAnimal} from "../types";
 import getCityById from "../services/getCityById";
-import rawImageToImage from "./rawImageToImage";
 import rawBreedToBreed from "./rawBreedToBreed";
 
 const rawAnimalToAnimal = async (rawAnimal: RawAnimal): Promise<Animal> => ({
@@ -10,6 +9,7 @@ const rawAnimalToAnimal = async (rawAnimal: RawAnimal): Promise<Animal> => ({
     bornAt: null,
     bornAtISO: rawAnimal.born_at,
     gender: rawAnimal.gender,
+    avatar: rawAnimal.avatar,
     playfulness: rawAnimal.playfulness,
     familyFriendly: rawAnimal.family_friendly,
     petFriendly: rawAnimal.pet_friendly,
@@ -24,7 +24,6 @@ const rawAnimalToAnimal = async (rawAnimal: RawAnimal): Promise<Animal> => ({
     updatedAtISO: rawAnimal.updated_at,
     deletedAt: null,
     deletedAtISO: rawAnimal.deleted_at,
-    images: await Promise.all(rawAnimal.images.map(rawImageToImage)),
 });
 
 export default rawAnimalToAnimal;

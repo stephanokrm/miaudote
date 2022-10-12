@@ -1,7 +1,4 @@
 import {GetServerSideProps, NextPage} from "next";
-import Avatar from "@mui/material/Avatar";
-import Badge from "@mui/material/Badge";
-import Fab from "@mui/material/Fab";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import FormControl from "@mui/material/FormControl";
@@ -24,7 +21,6 @@ import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import {Animal, Breed, Image, State} from "../../../src/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import useCitiesByState from "../../../src/hooks/useCitiesByState";
@@ -42,6 +38,13 @@ import Species from "../../../src/enums/Species";
 import Gender from "../../../src/enums/Gender";
 import breedIndex from "../../../src/services/breedIndex";
 import animalToRawAnimal from "../../../src/maps/animalToRawAnimal";
+import {AvatarChangeEvent, InteractableAvatar} from "../../../src/components/InteractableAvatar";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import Fab from "@mui/material/Fab";
+import useImagesByAnimalId from "../../../src/hooks/useImagesByAnimalId";
+import {useQueryClient} from "react-query";
+import {InteractableImage} from "../../../src/components/InteractableImage";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -53,6 +56,7 @@ const stateObject = yup.object({
 const schema = yup.object({
     name: yup.string().required('O campo nome é obrigatório.'),
     description: yup.string().required('O campo descrição é obrigatório.'),
+    avatar: yup.string().required('O campo avatar é obrigatório.'),
     bornAt: yup.date().required('O campo mês de nascimento é obrigatório.').min(minDate, 'O campo mês de nascimento deve ser maior que ' + format(minDate, 'MM/yyyy') + '.').max(maxDate, 'O campo mês de nascimento deve ser maior que hoje.'),
     gender: yup.string().oneOf(Object.values(Gender)).required('O campo espécie é obrigatório.'),
     playfulness: yup.number().required('O campo playfulness é obrigatório.'),
@@ -70,7 +74,6 @@ const schema = yup.object({
         name: yup.string(),
         species: yup.string().oneOf(Object.values(Species)),
     }).required('O campo raça é obrigatório.'),
-    images: yup.array().of(yup.object()).required(),
 });
 
 type AnimalEditProps = {
@@ -100,7 +103,8 @@ export const getServerSideProps: GetServerSideProps<AnimalEditProps, { animal: s
 
 const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalEditProps) => {
     const router = useRouter();
-    const [file, setFile] = useState<File>();
+    const queryClient = useQueryClient();
+    const [avatar, setAvatar] = useState<File>();
     const {
         control,
         handleSubmit,
@@ -118,6 +122,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
             bornAt: parseISO(animal.bornAtISO),
         },
     });
+    const {images} = useImagesByAnimalId(animal.id);
     const {cities, loading: loadingCities} = useCitiesByState(getValues('city.state'));
     const {
         onSubmit,
@@ -129,7 +134,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
             await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}`, {
                 ...await animalToRawAnimal(data),
                 _method: 'PUT',
-                image: file,
+                avatar,
             }, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -140,33 +145,51 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
         }
     });
 
-    const onImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.currentTarget.files?.[0];
+    const {
+        onSubmit: onImageSubmit,
+        loading: addingImage,
+    } = useService<File>({
+        handler: async (image: File) => {
+            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}/image`, {
+                image,
+            }, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
-        if (!file) {
-            return setError('images', {
+            await queryClient.invalidateQueries('getImagesByAnimalId');
+        }
+    });
+
+    const {
+        onSubmit: onImageDelete,
+        loading: deletingImage,
+    } = useService<Image>({
+        handler: async (image: Image) => {
+            await axios().delete(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/image/${image.id}`);
+
+            await queryClient.invalidateQueries('getImagesByAnimalId');
+        }
+    });
+
+    const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
+        if (!file || !avatar) {
+            return setError('avatar', {
                 message: 'Invalid upload',
             });
         }
 
-        setFile(file);
+        setAvatar(file);
+        setValue('avatar', avatar);
 
-        const image: Image = {
-            ...getValues('images.0'),
-            url: URL.createObjectURL(file),
-        }
-
-        setValue('images.0', image);
-
-        await trigger('images');
+        await trigger('avatar');
     }
-
-    console.log({errors});
 
     return (
         <>
             <Head>
-                <title>MiAudote</title>
+                <title>MiAudote - {watch('name')}</title>
             </Head>
             <Container maxWidth="sm">
                 <Box paddingY={3}>
@@ -175,26 +198,13 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                             <Card>
                                 <CardContent>
                                     <form onSubmit={handleSubmit(onSubmit)}>
-                                        <Grid container spacing={2} justifyContent="center">
+                                        <Grid container spacing={2}>
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
                                             </Grid>
                                             <Grid item xs={12} justifyContent="center" display="flex">
-                                                <Badge
-                                                    overlap="circular"
-                                                    anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}
-                                                    badgeContent={
-                                                        <Fab color="primary" aria-label="upload picture"
-                                                             component="label">
-                                                            <input hidden accept="image/*" type="file"
-                                                                   onChange={onImageChange}/>
-                                                            <PhotoCameraIcon/>
-                                                        </Fab>
-                                                    }
-                                                >
-                                                    <Avatar alt={watch('name')} src={getValues('images.0')?.url}
-                                                            sx={{width: 200, height: 200}}/>
-                                                </Badge>
+                                                <InteractableAvatar onChange={onAvatarChange} alt={watch('name')}
+                                                                    src={getValues('avatar')}/>
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Typography variant="h3">{watch('name')}</Typography>
@@ -490,6 +500,35 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                                                     Atualizar
                                                 </LoadingButton>
                                             </Grid>
+                                            <Grid item xs={12} md={6}>
+                                                <Box height={250} width={250} display="flex" justifyContent="center"
+                                                     alignItems="center">
+                                                    <Fab color="primary" aria-label="Upload Picture" component="label"
+                                                         disabled={addingImage}>
+                                                        <input hidden accept="image/*" type="file"
+                                                               onChange={async (event: ChangeEvent<HTMLInputElement>) => {
+                                                                   const file = event.currentTarget.files?.[0];
+
+                                                                   if (!file) return;
+
+                                                                   await onImageSubmit(file);
+                                                               }}/>
+                                                        {addingImage ? (
+                                                            <CircularProgress color="secondary"/>
+                                                        ) : (
+                                                            <PhotoCameraIcon/>
+                                                        )}
+                                                    </Fab>
+                                                </Box>
+                                            </Grid>
+                                            {images.map((image) => (
+                                                <Grid item xs={12} md={6} key={image.id}>
+                                                    <InteractableImage alt={watch('name')}
+                                                                       onDelete={() => onImageDelete(image)}
+                                                                       src={image.path}
+                                                                       disabled={deletingImage}/>
+                                                </Grid>
+                                            ))}
                                         </Grid>
                                     </form>
                                 </CardContent>

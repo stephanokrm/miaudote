@@ -3,8 +3,7 @@ import {formatISO} from "date-fns";
 
 const rawImageToImage = async (image: Image): Promise<RawImage> => ({
     id: image.id,
-    url: image.url,
-    avatar: image.avatar,
+    path: image.path,
     profile_type: image.profileType,
     profile_id: image.profileId,
     created_at: image.createdAt ? formatISO(image.createdAt) : '',

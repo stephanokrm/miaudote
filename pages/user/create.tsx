@@ -18,14 +18,16 @@ import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, subYears} from 'date-fns';
 import axios from "../../src/axios";
-import {AsYouType, parsePhoneNumber} from "libphonenumber-js";
+import {AsYouType} from "libphonenumber-js";
 import useService from "../../src/hooks/useService";
 import useForm from "../../src/hooks/useForm";
 import useCitiesByState from "../../src/hooks/useCitiesByState";
-import {City, State} from "../../src/types";
+import {State, User} from "../../src/types";
 import useUser from "../../src/hooks/useUser";
 import getStates from "../../src/services/getStates";
-import {ChangeEvent} from "react";
+import {ChangeEvent, useState} from "react";
+import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
+import {userToRawUser} from "../../src/maps/userToRawUser";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -39,7 +41,6 @@ const schema = yup.object({
     bornAt: yup.date().nullable().required('O campo data de nascimento é obrigatório.').min(minDate, 'O campo data de nascimento deve ser maior que ' + format(minDate, 'dd/MM/yyyy') + '.').max(maxDate, 'A sua idade deve ser maior que 18 anos.'),
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
     phone: yup.string().required('O campo celular é obrigatório.'),
-    state: stateObject.required('O campo estado é obrigatório.'),
     city: yup.object({
         id: yup.number().required(),
         name: yup.string().required(),
@@ -49,17 +50,6 @@ const schema = yup.object({
     password: yup.string().required('O campo senha é obrigatório.'),
     passwordConfirmation: yup.string().required('O campo confirmação de senha é obrigatório.').oneOf([yup.ref('password'), null], 'O campo confirmação de senha não confere.'),
 }).required();
-
-type SignUpFormFields = {
-    name: string,
-    bornAt: Date | null,
-    email: string,
-    state: State,
-    city?: City,
-    phone: string,
-    password: string,
-    passwordConfirmation: string,
-};
 
 type SignUpProps = {
     states: State[],
@@ -74,6 +64,7 @@ export const getServerSideProps: GetServerSideProps<SignUpProps> = async () => {
 }
 
 const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
+    const [avatar, setAvatar] = useState<File>();
     const {
         control,
         handleSubmit,
@@ -82,7 +73,8 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
         getValues,
         trigger,
         setError,
-    } = useForm<SignUpFormFields>({
+        watch,
+    } = useForm<User>({
         // @ts-ignore
         schema,
         defaultValues: {
@@ -91,27 +83,39 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
         }
     });
     const {login} = useUser();
-    const {cities, loading: loadingCities} = useCitiesByState(getValues('state'));
+    const {cities, loading: loadingCities} = useCitiesByState(getValues('city.state'));
     const {
         onSubmit,
         message,
         loading
-    } = useService<SignUpFormFields>({
+    } = useService<User>({
         setError,
-        handler: async (data: SignUpFormFields) => {
+        handler: async (data: User) => {
             await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
-                name: data.name,
-                born_at: data.bornAt,
-                email: data.email,
-                ibge_city_id: data.city?.id,
-                phone: parsePhoneNumber(data.phone, 'BR').number,
-                password: data.password,
-                password_confirmation: data.passwordConfirmation,
-            });
+                ...await userToRawUser(data),
+                avatar,
+            }, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
 
-            await login({username: data.email, password: data.password});
+            await login({username: data.email, password: data.password ?? ''});
         }
     })
+
+    const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
+        if (!file || !avatar) {
+            return setError('avatar', {
+                message: 'Invalid upload',
+            });
+        }
+
+        setAvatar(file);
+        setValue('avatar', avatar);
+
+        await trigger('avatar');
+    }
 
     return (
         <>
@@ -129,8 +133,9 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
                                             </Grid>
-                                            <Grid item xs={12}>
-                                                <Typography variant="h1" textAlign="center">MiAudote</Typography>
+                                            <Grid item xs={12} justifyContent="center" display="flex">
+                                                <InteractableAvatar onChange={onAvatarChange} alt={watch('name')}
+                                                                    src={getValues('avatar')}/>
                                             </Grid>
                                             {message && (
                                                 <Grid item xs={12}>
@@ -158,9 +163,10 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                                                         return <DatePicker
                                                             label="Data de Nascimento"
                                                             inputFormat="dd/MM/yyyy"
-                                                            value={getValues('bornAt')}
-                                                            onChange={(bornAt) => setValue('bornAt', bornAt)}
-                                                            onAccept={() => trigger('bornAt')}
+                                                            value={getValues('bornAt') ?? ''}
+                                                            onChange={(bornAt) => {
+                                                                if (bornAt) setValue('bornAt', bornAt)
+                                                            }}
                                                             disableFuture
                                                             openTo="year"
                                                             views={['year', 'month', 'day']}
@@ -208,29 +214,34 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    value={getValues('state')}
+                                                    value={getValues('city.state') ?? ''}
                                                     autoComplete
                                                     disableClearable
                                                     onChange={async (event, state) => {
-                                                        setValue('city', undefined);
-                                                        setValue('state', state);
+                                                        setValue('city', {
+                                                            id: 0,
+                                                            label: '',
+                                                            name: '',
+                                                            state,
+                                                        });
 
-                                                        await trigger('state');
+                                                        await trigger('city');
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
-                                                        <TextField {...params}
-                                                                   variant="filled"
-                                                                   fullWidth
-                                                                   label="Estado"
-                                                                   error={!!errors.state}
-                                                                   helperText={errors.state?.message}/>
+                                                        <TextField
+                                                            {...params}
+                                                            variant="filled"
+                                                            fullWidth
+                                                            label="Estado"
+                                                            error={!!errors.city?.state}
+                                                            helperText={errors.city?.state?.message}
+                                                        />
                                                     )}
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <Autocomplete
-                                                    // @ts-ignore
                                                     value={getValues('city') ?? ''}
                                                     autoComplete
                                                     disableClearable
@@ -242,12 +253,14 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                                                     }}
                                                     options={cities}
                                                     renderInput={(params) => (
-                                                        <TextField {...params}
-                                                                   variant="filled"
-                                                                   fullWidth
-                                                                   label="Cidade"
-                                                                   error={!!errors.city}
-                                                                   helperText={errors.city?.message}/>
+                                                        <TextField
+                                                            {...params}
+                                                            variant="filled"
+                                                            fullWidth
+                                                            label="Cidade"
+                                                            error={!!errors.city}
+                                                            helperText={errors.city?.message}
+                                                        />
                                                     )}
                                                 />
                                             </Grid>

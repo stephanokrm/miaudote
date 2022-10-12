@@ -6,7 +6,6 @@ const breedToRawBreed = async (breed: Breed): Promise<RawBreed> => ({
     species: breed.species,
     created_at: breed.createdAtISO,
     updated_at: breed.updatedAtISO,
-    deleted_at: breed.deletedAtISO,
 });
 
 export default breedToRawBreed;

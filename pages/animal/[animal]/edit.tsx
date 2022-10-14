@@ -21,30 +21,28 @@ import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import {Animal, Breed, Image, State} from "../../../src/types";
+import {Animal, AnimalUpdateFieldValues, Breed, State} from "../../../src/types";
 import Autocomplete from "@mui/material/Autocomplete";
-import useCitiesByState from "../../../src/hooks/useCitiesByState";
-import useService from "../../../src/hooks/useService";
 import useForm from "../../../src/hooks/useForm";
-import axios from "../../../src/axios";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
-import {useRouter} from "next/router";
-import {ChangeEvent, useState} from "react";
+import {ChangeEvent} from "react";
 import getStates from "../../../src/services/getStates";
 import PetsIcon from "@mui/icons-material/Pets";
 import animalShow from "../../../src/services/animalShow";
 import Species from "../../../src/enums/Species";
 import Gender from "../../../src/enums/Gender";
 import breedIndex from "../../../src/services/breedIndex";
-import animalToRawAnimal from "../../../src/maps/animalToRawAnimal";
 import {AvatarChangeEvent, InteractableAvatar} from "../../../src/components/InteractableAvatar";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import Fab from "@mui/material/Fab";
-import useImagesByAnimalId from "../../../src/hooks/useImagesByAnimalId";
-import {useQueryClient} from "react-query";
 import {InteractableImage} from "../../../src/components/InteractableImage";
 import CircularProgress from "@mui/material/CircularProgress";
+import {useAnimalUpdateMutation} from "../../../src/hooks/mutations/useAnimalUpdateMutation";
+import {useAnimalImageStoreMutation} from "../../../src/hooks/mutations/useAnimalImageStoreMutation";
+import {useImageDestroyMutation} from "../../../src/hooks/mutations/useImageDestroyMutation";
+import {useGetImagesByAnimalQuery} from "../../../src/hooks/queries/useGetImagesByAnimalQuery";
+import {useGetCitiesByStateQuery} from "../../../src/hooks/queries/useGetCitiesByStateQuery";
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -102,9 +100,6 @@ export const getServerSideProps: GetServerSideProps<AnimalEditProps, { animal: s
 }
 
 const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalEditProps) => {
-    const router = useRouter();
-    const queryClient = useQueryClient();
-    const [avatar, setAvatar] = useState<File>();
     const {
         control,
         handleSubmit,
@@ -114,7 +109,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
         getValues,
         trigger,
         watch,
-    } = useForm<Animal>({
+    } = useForm<AnimalUpdateFieldValues>({
         // @ts-ignore
         schema,
         defaultValues: {
@@ -122,56 +117,24 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
             bornAt: parseISO(animal.bornAtISO),
         },
     });
-    const {images} = useImagesByAnimalId(animal.id);
-    const {cities, loading: loadingCities} = useCitiesByState(getValues('city.state'));
+    const {data: images} = useGetImagesByAnimalQuery({animal: animal.id});
     const {
-        onSubmit,
-        message,
-        loading
-    } = useService<Animal>({
-        setError,
-        handler: async (data: Animal) => {
-            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}`, {
-                ...await animalToRawAnimal(data),
-                _method: 'PUT',
-                avatar,
-            }, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-
-            await router.push(`/user/${animal.userId}/animal`);
-        }
-    });
-
+        data: cities,
+        isLoading: isLoadingCities,
+        refetch: refetchCities
+    } = useGetCitiesByStateQuery({state: getValues('city.state')});
+    const {mutate, isLoading, message} = useAnimalUpdateMutation({setError});
     const {
-        onSubmit: onImageSubmit,
-        loading: addingImage,
-    } = useService<File>({
-        handler: async (image: File) => {
-            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}/image`, {
-                image,
-            }, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            await queryClient.invalidateQueries('getImagesByAnimalId');
-        }
-    });
-
+        mutate: destroyImage,
+        isLoading: isDestroyingImage,
+        message: destroyImageMessage
+    } = useImageDestroyMutation();
     const {
-        onSubmit: onImageDelete,
-        loading: deletingImage,
-    } = useService<Image>({
-        handler: async (image: Image) => {
-            await axios().delete(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/image/${image.id}`);
-
-            await queryClient.invalidateQueries('getImagesByAnimalId');
-        }
-    });
+        mutate: storeAnimalImage,
+        isLoading: isStoringAnimalImage,
+        message: storeAnimalImageMessage
+    } = useAnimalImageStoreMutation({animal: animal.id});
+    const onSubmit = handleSubmit((data: AnimalUpdateFieldValues) => mutate(data));
 
     const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
         if (!file || !avatar) {
@@ -180,8 +143,8 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
             });
         }
 
-        setAvatar(file);
         setValue('avatar', avatar);
+        setValue('file', file);
 
         await trigger('avatar');
     }
@@ -197,7 +160,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                         <Grid item>
                             <Card>
                                 <CardContent>
-                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                    <form onSubmit={onSubmit}>
                                         <Grid container spacing={2}>
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
@@ -212,6 +175,16 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                                             {message && (
                                                 <Grid item xs={12}>
                                                     <Alert severity="error">{message}</Alert>
+                                                </Grid>
+                                            )}
+                                            {storeAnimalImageMessage && (
+                                                <Grid item xs={12}>
+                                                    <Alert severity="error">{storeAnimalImageMessage}</Alert>
+                                                </Grid>
+                                            )}
+                                            {destroyImageMessage && (
+                                                <Grid item xs={12}>
+                                                    <Alert severity="error">{destroyImageMessage}</Alert>
                                                 </Grid>
                                             )}
                                             <Grid item xs={12}>
@@ -347,6 +320,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                                                         });
 
                                                         await trigger('city');
+                                                        await refetchCities();
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
@@ -366,13 +340,13 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                                                     value={getValues('city') ?? ''}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={loadingCities || cities.length === 0}
+                                                    disabled={isLoadingCities || cities?.length === 0}
                                                     onChange={async (event, city) => {
                                                         setValue('city', city);
 
                                                         await trigger('city');
                                                     }}
-                                                    options={cities}
+                                                    options={cities ?? []}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}
@@ -496,24 +470,32 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <LoadingButton fullWidth variant="contained" size="large" type="submit"
-                                                               loading={loading}>
+                                                               loading={isLoading}>
                                                     Atualizar
                                                 </LoadingButton>
                                             </Grid>
                                             <Grid item xs={12} md={6}>
                                                 <Box height={250} width={250} display="flex" justifyContent="center"
                                                      alignItems="center">
-                                                    <Fab color="primary" aria-label="Upload Picture" component="label"
-                                                         disabled={addingImage}>
-                                                        <input hidden accept="image/*" type="file"
-                                                               onChange={async (event: ChangeEvent<HTMLInputElement>) => {
-                                                                   const file = event.currentTarget.files?.[0];
+                                                    <Fab
+                                                        color="primary"
+                                                        aria-label="Upload Picture"
+                                                        component="label"
+                                                        disabled={isStoringAnimalImage}
+                                                    >
+                                                        <input
+                                                            hidden
+                                                            accept="image/*"
+                                                            type="file"
+                                                            onChange={async (event: ChangeEvent<HTMLInputElement>) => {
+                                                                const file = event.currentTarget.files?.[0];
 
-                                                                   if (!file) return;
+                                                                if (!file) return;
 
-                                                                   await onImageSubmit(file);
-                                                               }}/>
-                                                        {addingImage ? (
+                                                                await storeAnimalImage({file});
+                                                            }}
+                                                        />
+                                                        {isStoringAnimalImage ? (
                                                             <CircularProgress color="secondary"/>
                                                         ) : (
                                                             <PhotoCameraIcon/>
@@ -521,12 +503,15 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                                                     </Fab>
                                                 </Box>
                                             </Grid>
-                                            {images.map((image) => (
+                                            {images?.map((image) => (
                                                 <Grid item xs={12} md={6} key={image.id}>
-                                                    <InteractableImage alt={watch('name')}
-                                                                       onDelete={() => onImageDelete(image)}
-                                                                       src={image.path}
-                                                                       disabled={deletingImage}/>
+                                                    <InteractableImage
+                                                        alt={watch('name')}
+                                                        onDelete={() => destroyImage(image)}
+                                                        src={image.path}
+                                                        disabled={isDestroyingImage}
+                                                        loading={isDestroyingImage}
+                                                    />
                                                 </Grid>
                                             ))}
                                         </Grid>

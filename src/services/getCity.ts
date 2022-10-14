@@ -7,10 +7,8 @@ type Params = {
     signal?: AbortSignal
 }
 
-const getCityById = async ({id, signal}: Params): Promise<City> => {
+export const getCity = async ({id, signal}: Params): Promise<City> => {
     const {data: rawCity} = await axios().get<RawCity>(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${id}`, {signal});
 
     return rawCityToCity(rawCity);
 }
-
-export default getCityById;

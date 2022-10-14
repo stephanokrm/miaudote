@@ -153,3 +153,45 @@ export type User = {
     deletedAt: Date | null,
     deletedAtISO: string | null,
 };
+
+export type UserStoreFieldValues = User & {
+    file: File,
+};
+
+export type UserStoreData = RawUser & {
+    file: File,
+};
+
+export type UserUpdateFieldValues = User & {
+    file: File,
+};
+
+export type UserUpdateData = RawUser & {
+    file: File,
+    _method: 'PUT',
+};
+
+export type AnimalStoreFieldValues = Animal & {
+    file: File,
+};
+
+export type AnimalStoreData = RawAnimal & {
+    file: File,
+};
+
+export type AnimalUpdateFieldValues = Animal & {
+    file: File,
+};
+
+export type AnimalUpdateData = RawAnimal & {
+    file: File,
+    _method: 'PUT',
+};
+
+export type AnimalImageStoreFieldValues = {
+    file: File,
+}
+
+export type AnimalImageStoreData = {
+    file: File,
+}

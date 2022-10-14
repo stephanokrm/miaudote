@@ -15,19 +15,15 @@ import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, parseISO, subYears} from 'date-fns';
-import axios from "../../../src/axios";
-import {ChangeEvent, useState} from "react";
+import {ChangeEvent} from "react";
 import {AsYouType} from "libphonenumber-js";
-import useService from "../../../src/hooks/useService";
-import useForm from "../../../src/hooks/useForm";
-import useCitiesByState from "../../../src/hooks/useCitiesByState";
-import {State, User} from "../../../src/types";
-import {useRouter} from "next/router";
-import getUser from "../../../src/services/getUser";
-import getStates from "../../../src/services/getStates";
-import {AvatarChangeEvent, InteractableAvatar} from "../../../src/components/InteractableAvatar";
-import {userToRawUser} from "../../../src/maps/userToRawUser";
-import useUser from "../../../src/hooks/useUser";
+import useForm from "../../src/hooks/useForm";
+import {State, User, UserUpdateFieldValues} from "../../src/types";
+import getUserByMe from "../../src/services/getUserByMe";
+import getStates from "../../src/services/getStates";
+import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
+import {useGetCitiesByStateQuery} from "../../src/hooks/queries/useGetCitiesByStateQuery";
+import {useUserStoreMutation} from "../../src/hooks/mutations/useUserStoreMutation";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -54,25 +50,16 @@ type UserShowProps = {
     states: State[],
 }
 
-export const getServerSideProps: GetServerSideProps<UserShowProps, { user: string }> = async ({params, req}) => {
-    if (!params) {
-        return {
-            notFound: true,
-        }
-    }
-
+export const getServerSideProps: GetServerSideProps<UserShowProps> = async ({req}) => {
     return {
         props: {
-            user: await getUser({id: params.user, authorization: req.cookies.authorization}),
+            user: await getUserByMe({authorization: req.cookies.authorization}),
             states: await getStates(),
         }
     }
 }
 
 const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
-    const router = useRouter();
-    const [avatar, setAvatar] = useState<File>();
-    const {refetch} = useUser();
     const {
         control,
         handleSubmit,
@@ -82,7 +69,7 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
         setError,
         trigger,
         watch,
-    } = useForm<User>({
+    } = useForm<UserUpdateFieldValues>({
         // @ts-ignore
         schema,
         defaultValues: {
@@ -90,29 +77,13 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
             bornAt: parseISO(user.bornAtISO),
         },
     });
+    const {mutate: updateUser, message, isLoading: isUpdatingUser} = useUserStoreMutation({setError});
+    const onSubmit = handleSubmit((data: UserUpdateFieldValues) => updateUser(data));
     const {
-        onSubmit,
-        message,
-        loading
-    } = useService<User>({
-        setError,
-        handler: async (data: User) => {
-            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user/${user.id}`, {
-                ...await userToRawUser(data),
-                _method: 'PUT',
-                avatar,
-            }, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-
-            await refetch();
-            await router.push('/');
-        }
-    })
-
-    const {cities, loading: loadingCities} = useCitiesByState(getValues('city.state'));
+        data: cities,
+        isLoading: isLoadingCities,
+        refetch: refetchCities
+    } = useGetCitiesByStateQuery({state: getValues('city.state')});
 
     const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
         if (!file || !avatar) {
@@ -121,10 +92,10 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
             });
         }
 
-        setAvatar(file);
         setValue('avatar', avatar);
+        setValue('file', file);
 
-        await trigger('avatar');
+        await trigger(['avatar', 'file']);
     }
 
     return (
@@ -138,7 +109,7 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
                         <Grid item>
                             <Card>
                                 <CardContent>
-                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                    <form onSubmit={onSubmit}>
                                         <Grid container spacing={2} justifyContent="center">
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
@@ -236,6 +207,7 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
                                                         });
 
                                                         await trigger('city');
+                                                        await refetchCities();
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
@@ -255,13 +227,13 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
                                                     value={getValues('city') ?? ''}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={loadingCities || cities.length === 0}
+                                                    disabled={isLoadingCities || cities?.length === 0}
                                                     onChange={async (event, city) => {
                                                         setValue('city', city);
 
                                                         await trigger('city');
                                                     }}
-                                                    options={cities}
+                                                    options={cities ?? []}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}
@@ -290,7 +262,7 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <LoadingButton fullWidth variant="contained" size="large" type="submit"
-                                                               loading={loading}>
+                                                               loading={isUpdatingUser}>
                                                     Atualizar
                                                 </LoadingButton>
                                             </Grid>

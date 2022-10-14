@@ -17,17 +17,14 @@ import {DatePicker} from "@mui/x-date-pickers/DatePicker";
 import {Controller} from "react-hook-form";
 import * as yup from "yup";
 import {format, subYears} from 'date-fns';
-import axios from "../../src/axios";
 import {AsYouType} from "libphonenumber-js";
-import useService from "../../src/hooks/useService";
 import useForm from "../../src/hooks/useForm";
-import useCitiesByState from "../../src/hooks/useCitiesByState";
-import {State, User} from "../../src/types";
-import useUser from "../../src/hooks/useUser";
+import {State, UserStoreFieldValues} from "../../src/types";
 import getStates from "../../src/services/getStates";
-import {ChangeEvent, useState} from "react";
+import {ChangeEvent} from "react";
 import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
-import {userToRawUser} from "../../src/maps/userToRawUser";
+import {useGetCitiesByStateQuery} from "../../src/hooks/queries/useGetCitiesByStateQuery";
+import {useUserStoreMutation} from "../../src/hooks/mutations/useUserStoreMutation";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -64,7 +61,6 @@ export const getServerSideProps: GetServerSideProps<SignUpProps> = async () => {
 }
 
 const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
-    const [avatar, setAvatar] = useState<File>();
     const {
         control,
         handleSubmit,
@@ -74,7 +70,7 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
         trigger,
         setError,
         watch,
-    } = useForm<User>({
+    } = useForm<UserStoreFieldValues>({
         // @ts-ignore
         schema,
         defaultValues: {
@@ -82,27 +78,13 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
             phone: '',
         }
     });
-    const {login} = useUser();
-    const {cities, loading: loadingCities} = useCitiesByState(getValues('city.state'));
+    const {mutate: storeUser, message, isLoading: isStoringUser} = useUserStoreMutation({setError});
     const {
-        onSubmit,
-        message,
-        loading
-    } = useService<User>({
-        setError,
-        handler: async (data: User) => {
-            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
-                ...await userToRawUser(data),
-                avatar,
-            }, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-
-            await login({username: data.email, password: data.password ?? ''});
-        }
-    })
+        data: cities,
+        isLoading: isLoadingCities,
+        refetch: refetchCities
+    } = useGetCitiesByStateQuery({state: getValues('city.state')});
+    const onSubmit = handleSubmit((data: UserStoreFieldValues) => storeUser(data));
 
     const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
         if (!file || !avatar) {
@@ -111,10 +93,10 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
             });
         }
 
-        setAvatar(file);
         setValue('avatar', avatar);
+        setValue('file', file);
 
-        await trigger('avatar');
+        await trigger(['avatar', 'file']);
     }
 
     return (
@@ -128,7 +110,7 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                         <Grid item>
                             <Card>
                                 <CardContent>
-                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                    <form onSubmit={onSubmit}>
                                         <Grid container spacing={2} justifyContent="center">
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
@@ -226,6 +208,7 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                                                         });
 
                                                         await trigger('city');
+                                                        await refetchCities();
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
@@ -245,13 +228,13 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                                                     value={getValues('city') ?? ''}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={loadingCities || cities.length === 0}
+                                                    disabled={isLoadingCities || cities?.length === 0}
                                                     onChange={async (event, city) => {
                                                         setValue('city', city);
 
                                                         await trigger('city');
                                                     }}
-                                                    options={cities}
+                                                    options={cities ?? []}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}
@@ -303,7 +286,7 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <LoadingButton fullWidth variant="contained" size="large" type="submit"
-                                                               loading={loading}>
+                                                               loading={isStoringUser}>
                                                     Cadastrar
                                                 </LoadingButton>
                                             </Grid>

@@ -14,27 +14,22 @@ import {Controller} from "react-hook-form";
 import LoadingButton from '@mui/lab/LoadingButton';
 import * as yup from "yup";
 import useForm from '../src/hooks/useForm';
-import useService from "../src/hooks/useService";
 import Alert from "@mui/material/Alert";
-import useUser, {Middleware} from "../src/hooks/useUser";
+import {useLoginMutation} from "../src/hooks/mutations/useLoginMutation";
+import {User} from "../src/types";
 
 const schema = yup.object({
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
     password: yup.string().required('O campo senha é obrigatório.'),
-}).required();
-
-type LoginFormValues = {
-    email: string,
-    password: string,
-};
+});
 
 const Login: NextPage = () => {
-    const {login} = useUser({middleware: Middleware.GUEST, redirectIfAuthenticated: '/'});
-    const {control, handleSubmit, setError, formState: {errors}} = useForm<LoginFormValues>({schema});
-    const {message, loading, onSubmit} = useService<LoginFormValues>({
-        setError,
-        handler: (data: LoginFormValues) => login({username: data.email, password: data.password}),
-    })
+    const {control, handleSubmit, formState: {errors}, setError} = useForm<User>({
+        // @ts-ignore
+        schema
+    });
+    const {mutate, isLoading, message} = useLoginMutation({setError});
+    const onSubmit = handleSubmit((user: User) => mutate(user));
 
     return (
         <>
@@ -47,7 +42,7 @@ const Login: NextPage = () => {
                         <Grid item>
                             <Card>
                                 <CardContent>
-                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                    <form onSubmit={onSubmit}>
                                         <Grid container spacing={2} justifyContent="center" textAlign="center">
                                             <Grid item xs={12}>
                                                 <PetsIcon fontSize="large" color="primary"/>
@@ -84,7 +79,7 @@ const Login: NextPage = () => {
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <LoadingButton fullWidth variant="contained" size="large" type="submit"
-                                                               loading={loading}>
+                                                               loading={isLoading}>
                                                     Entrar
                                                 </LoadingButton>
                                             </Grid>

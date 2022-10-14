@@ -24,11 +24,9 @@ import FemaleIcon from "@mui/icons-material/Female";
 import {Animal} from "../types";
 import {useState} from "react";
 import Link from 'next/link';
-import useService from "../hooks/useService";
-import {useQueryClient} from "react-query";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Alert from "@mui/material/Alert";
-import animalDestroy from "../services/animalDestroy";
+import {useAnimalDestroyMutation} from "../hooks/mutations/useAnimalDestroyMutation";
 
 type AnimalCardProps = {
     animal: Animal,
@@ -39,23 +37,11 @@ const today = new Date();
 
 const AnimalCard = (props: AnimalCardProps) => {
     const {animal, editable = false} = props;
-    const queryClient = useQueryClient();
     const bornAt = parseISO(animal.bornAtISO);
     const years = differenceInYears(today, bornAt);
     const months = differenceInMonths(today, bornAt);
     const [open, setOpen] = useState(false);
-
-    const {
-        onSubmit,
-        message,
-        loading
-    } = useService({
-        handler: async () => {
-            await animalDestroy({ animal: animal.id });
-            await handleClose();
-            await queryClient.invalidateQueries('userAnimals');
-        }
-    })
+    const {mutate: destroyAnimal, isLoading: isDestroyingAnimal, message} = useAnimalDestroyMutation();
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -63,6 +49,11 @@ const AnimalCard = (props: AnimalCardProps) => {
 
     const handleClose = async () => {
         setOpen(false);
+    };
+
+    const onDestroy = async () => {
+        await destroyAnimal(animal);
+        await handleClose();
     };
 
     return (
@@ -177,7 +168,7 @@ const AnimalCard = (props: AnimalCardProps) => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} autoFocus>Cancelar</Button>
-                    <LoadingButton color="error" loading={loading} onClick={onSubmit}>
+                    <LoadingButton color="error" loading={isDestroyingAnimal} onClick={onDestroy}>
                         Desativar
                     </LoadingButton>
                 </DialogActions>

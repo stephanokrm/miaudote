@@ -9,7 +9,6 @@ type UseForm<FormFields extends FieldValues = FieldValues> = {
 
 const useForm = <FormFields extends FieldValues = FieldValues>({schema, defaultValues}: UseForm<FormFields>) => {
     return useBaseForm<FormFields>({
-        mode: 'onChange',
         resolver: yupResolver(schema),
         shouldUseNativeValidation: false,
         defaultValues,

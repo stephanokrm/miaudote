@@ -1,5 +1,5 @@
 import {Animal, RawAnimal} from "../types";
-import getCityById from "../services/getCityById";
+import {getCity} from "../services/getCity";
 import rawBreedToBreed from "./rawBreedToBreed";
 
 const rawAnimalToAnimal = async (rawAnimal: RawAnimal): Promise<Animal> => ({
@@ -14,7 +14,7 @@ const rawAnimalToAnimal = async (rawAnimal: RawAnimal): Promise<Animal> => ({
     familyFriendly: rawAnimal.family_friendly,
     petFriendly: rawAnimal.pet_friendly,
     childrenFriendly: rawAnimal.children_friendly,
-    city: await getCityById({id: rawAnimal.ibge_city_id}),
+    city: await getCity({id: rawAnimal.ibge_city_id}),
     userId: rawAnimal.user_id,
     breedId: rawAnimal.breed_id,
     breed: await rawBreedToBreed(rawAnimal.breed),

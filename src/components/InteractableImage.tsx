@@ -3,12 +3,14 @@ import Image from "next/image";
 import Box from "@mui/material/Box";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import Fab from "@mui/material/Fab";
+import CircularProgress from "@mui/material/CircularProgress";
 
 type InteractableAvatarProps = {
     alt: string,
     onDelete: () => void,
     src: string,
     disabled?: boolean,
+    loading?: boolean,
 };
 
 export const InteractableImage: FC<InteractableAvatarProps> = (props: InteractableAvatarProps) => {
@@ -17,6 +19,7 @@ export const InteractableImage: FC<InteractableAvatarProps> = (props: Interactab
         alt,
         src,
         disabled = false,
+        loading = false,
     } = props;
 
     const [focused, setFocused] = useState<boolean>(false);
@@ -31,7 +34,7 @@ export const InteractableImage: FC<InteractableAvatarProps> = (props: Interactab
 
     return (
         <Box position="relative" onMouseEnter={onMouseOver} onMouseLeave={onMouseLeave}>
-            {focused && (
+            {(focused || loading || disabled) && (
                 <Box
                     position="absolute"
                     top={0}
@@ -45,7 +48,11 @@ export const InteractableImage: FC<InteractableAvatarProps> = (props: Interactab
                     alignItems="center"
                 >
                     <Fab color="error" onClick={onDelete} disabled={disabled}>
-                        <DeleteForeverIcon/>
+                        {loading ? (
+                            <CircularProgress color="secondary"/>
+                        ) : (
+                            <DeleteForeverIcon/>
+                        )}
                     </Fab>
                 </Box>
             )}

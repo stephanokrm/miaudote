@@ -21,23 +21,19 @@ import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import {Animal, Breed, State} from "../../src/types";
+import {AnimalStoreFieldValues, Breed, State} from "../../src/types";
 import Autocomplete from "@mui/material/Autocomplete";
-import useCitiesByState from "../../src/hooks/useCitiesByState";
-import useService from "../../src/hooks/useService";
 import useForm from "../../src/hooks/useForm";
-import axios from "../../src/axios";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
-import {useRouter} from "next/router";
-import {useState} from "react";
 import getStates from "../../src/services/getStates";
 import PetsIcon from "@mui/icons-material/Pets";
 import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
-import animalToRawAnimal from "../../src/maps/animalToRawAnimal";
 import Species from "../../src/enums/Species";
 import Gender from "../../src/enums/Gender";
 import breedIndex from "../../src/services/breedIndex";
+import {useAnimalStoreMutation} from "../../src/hooks/mutations/useAnimalStoreMutation";
+import {useGetCitiesByStateQuery} from "../../src/hooks/queries/useGetCitiesByStateQuery";
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -84,8 +80,6 @@ export const getServerSideProps: GetServerSideProps<AnimalCreateProps> = async (
 }
 
 const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreateProps) => {
-    const router = useRouter();
-    const [avatar, setAvatar] = useState<File>();
     const {
         control,
         handleSubmit,
@@ -95,7 +89,7 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
         getValues,
         trigger,
         watch,
-    } = useForm<Animal>({
+    } = useForm<AnimalStoreFieldValues>({
         // @ts-ignore
         schema,
         defaultValues: {
@@ -105,26 +99,13 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
             childrenFriendly: 3,
         },
     });
-    const {cities, loading: loadingCities} = useCitiesByState(getValues('city.state'));
     const {
-        onSubmit,
-        message,
-        loading
-    } = useService<Animal>({
-        setError,
-        handler: async (data: Animal) => {
-            await axios().post(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal`, {
-                ...await animalToRawAnimal(data),
-                avatar,
-            }, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-
-            await router.push('/');
-        }
-    });
+        data: cities,
+        isLoading: isLoadingCities,
+        refetch: refetchCities
+    } = useGetCitiesByStateQuery({state: getValues('city.state')});
+    const {mutate, isLoading, message} = useAnimalStoreMutation({setError});
+    const onSubmit = handleSubmit((data: AnimalStoreFieldValues) => mutate(data));
 
     const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
         if (!file || !avatar) {
@@ -133,10 +114,10 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
             });
         }
 
-        setAvatar(file);
         setValue('avatar', avatar);
+        setValue('file', file);
 
-        await trigger('avatar');
+        await trigger(['avatar', 'file']);
     }
 
     return (
@@ -150,7 +131,7 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
                         <Grid item>
                             <Card>
                                 <CardContent>
-                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                    <form onSubmit={onSubmit}>
                                         <Grid container spacing={2} justifyContent="center">
                                             <Grid item xs={12} textAlign="center">
                                                 <PetsIcon fontSize="large" color="primary"/>
@@ -316,6 +297,7 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
                                                         });
 
                                                         await trigger('city');
+                                                        await refetchCities();
                                                     }}
                                                     options={states}
                                                     renderInput={(params) => (
@@ -335,13 +317,13 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
                                                     value={getValues('city') ?? ''}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={loadingCities || cities.length === 0}
+                                                    disabled={isLoadingCities || cities?.length === 0}
                                                     onChange={async (event, city) => {
                                                         setValue('city', city);
 
                                                         await trigger('city');
                                                     }}
-                                                    options={cities}
+                                                    options={cities ?? []}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}
@@ -465,7 +447,7 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
                                             </Grid>
                                             <Grid item xs={12}>
                                                 <LoadingButton fullWidth variant="contained" size="large" type="submit"
-                                                               loading={loading}>
+                                                               loading={isLoading}>
                                                     Cadastrar
                                                 </LoadingButton>
                                             </Grid>

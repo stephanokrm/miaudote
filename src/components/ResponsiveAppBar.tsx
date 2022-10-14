@@ -13,16 +13,20 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import PetsIcon from '@mui/icons-material/Pets';
-import useUser from "../hooks/useUser";
+import useGetUserByMeQuery from "../hooks/queries/useGetUserByMeQuery";
+import {useLogoutMutation} from "../hooks/mutations/useLogoutMutation";
 
 const pages = [
     {label: 'Adotar', url: '/'},
 ];
 
 const ResponsiveAppBar = () => {
-    const {user, logout} = useUser();
+    const {data: user} = useGetUserByMeQuery();
+    const {mutate} = useLogoutMutation();
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+
+    const authenticated = !!user;
 
     const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
@@ -98,7 +102,7 @@ const ResponsiveAppBar = () => {
                                     </MenuItem>
                                 </Link>
                             ))}
-                            {user ? (
+                            {authenticated ? (
                                 <Link href="/animal/create" passHref>
                                     <MenuItem key="Doar">
                                         <Typography textAlign="center">Doar</Typography>
@@ -139,7 +143,7 @@ const ResponsiveAppBar = () => {
                                 </Button>
                             </Link>
                         ))}
-                        {user ? (
+                        {authenticated ? (
                             <Link href="/animal/create" passHref>
                                 <Button
                                     key="Doar"
@@ -153,7 +157,7 @@ const ResponsiveAppBar = () => {
                         ) : null}
                     </Box>
                     <Box sx={{flexGrow: 0}}>
-                        {user ? (
+                        {authenticated ? (
                             <>
                                 <Tooltip title="Open settings">
                                     <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
@@ -176,17 +180,17 @@ const ResponsiveAppBar = () => {
                                     open={Boolean(anchorElUser)}
                                     onClose={handleCloseUserMenu}
                                 >
-                                    <Link href={{pathname: '/user/[user]/edit', query: {user: user.id}}} passHref>
+                                    <Link href="/user/edit" passHref>
                                         <MenuItem key="Conta" onClick={() => handleCloseUserMenu()}>
-                                            <Typography textAlign="center">Conta</Typography>
+                                            <Typography textAlign="center">Minha Conta</Typography>
                                         </MenuItem>
                                     </Link>
-                                    <Link href={{pathname: '/user/[user]/animal', query: {user: user.id}}} passHref>
+                                    <Link href="/animal/me" passHref>
                                         <MenuItem key="Doações" onClick={() => handleCloseUserMenu()}>
-                                            <Typography textAlign="center">Doações</Typography>
+                                            <Typography textAlign="center">Minhas Doações</Typography>
                                         </MenuItem>
                                     </Link>
-                                    <MenuItem key="Sair" onClick={logout}>
+                                    <MenuItem key="Sair" onClick={mutate}>
                                         <Typography textAlign="center">Sair</Typography>
                                     </MenuItem>
                                 </Menu>

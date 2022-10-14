@@ -1,6 +1,6 @@
 import {RawUser, User} from "../types";
 import {parsePhoneNumber} from "libphonenumber-js";
-import getCityById from "../services/getCityById";
+import {getCity} from "../services/getCity";
 
 const rawUserToUser = async (rawUser: RawUser): Promise<User> => ({
     id: rawUser.id,
@@ -12,7 +12,7 @@ const rawUserToUser = async (rawUser: RawUser): Promise<User> => ({
     emailVerifiedAt: null,
     emailVerifiedAtISO: rawUser.email_verified_at,
     phone: parsePhoneNumber(rawUser.phone, 'BR').formatNational(),
-    city: await getCityById({id: rawUser.ibge_city_id}),
+    city: await getCity({id: rawUser.ibge_city_id}),
     password: rawUser.password ?? null,
     passwordConfirmation: rawUser.password_confirmation ?? null,
     createdAt: null,

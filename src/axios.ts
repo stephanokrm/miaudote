@@ -24,7 +24,7 @@ const browserAxios = () => {
         if (response.status === 401 || response.status === 403) {
             new Cookies().remove('authorization');
 
-            return location.href = '/login';
+            location.href = '/login';
         }
 
         return response;

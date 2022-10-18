@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {differenceInMonths, differenceInYears, formatDuration, parseISO} from "date-fns";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -23,7 +24,6 @@ import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
 import {Animal} from "../types";
 import {useState} from "react";
-import Link from 'next/link';
 import LoadingButton from "@mui/lab/LoadingButton";
 import Alert from "@mui/material/Alert";
 import {useAnimalDestroyMutation} from "../hooks/mutations/useAnimalDestroyMutation";
@@ -62,13 +62,15 @@ const AnimalCard = (props: AnimalCardProps) => {
                 position: "relative",
                 minHeight: "380px",
             }}>
-                <CardActionArea>
-                    <CardMedia
-                        component="img"
-                        alt={animal.name}
-                        image={animal.avatar}
-                    />
-                </CardActionArea>
+                <Link href={{pathname: '/animal/[animal]', query: {animal: animal.id}}} passHref>
+                    <CardActionArea>
+                        <CardMedia
+                            component="img"
+                            alt={animal.name}
+                            image={animal.avatar}
+                        />
+                    </CardActionArea>
+                </Link>
                 <Box sx={{
                     position: "absolute",
                     bottom: 0,

@@ -29,10 +29,10 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import {ChangeEvent} from "react";
 import getStates from "../../../src/services/getStates";
 import PetsIcon from "@mui/icons-material/Pets";
-import animalShow from "../../../src/services/animalShow";
+import {getAnimal} from "../../../src/services/getAnimal";
 import Species from "../../../src/enums/Species";
 import Gender from "../../../src/enums/Gender";
-import breedIndex from "../../../src/services/breedIndex";
+import {getBreeds} from "../../../src/services/getBreeds";
 import {AvatarChangeEvent, InteractableAvatar} from "../../../src/components/InteractableAvatar";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import Fab from "@mui/material/Fab";
@@ -93,8 +93,8 @@ export const getServerSideProps: GetServerSideProps<AnimalEditProps, { animal: s
     return {
         props: {
             states: await getStates(),
-            animal: await animalShow({animal: params.animal, authorization: req.cookies.authorization}),
-            breeds: await breedIndex({authorization: req.cookies.authorization}),
+            animal: await getAnimal({animal: params.animal, authorization: req.cookies.authorization}),
+            breeds: await getBreeds({authorization: req.cookies.authorization}),
         }
     }
 }

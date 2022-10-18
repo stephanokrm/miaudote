@@ -15,7 +15,7 @@ export const useLogoutMutation = () => {
         onSuccess: async () => {
             removeCookie('authorization');
 
-            await queryClient.invalidateQueries('getUserByMe');
+            await queryClient.clear();
             await router.push('/login');
         },
     })

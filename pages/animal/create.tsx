@@ -31,7 +31,7 @@ import PetsIcon from "@mui/icons-material/Pets";
 import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
 import Species from "../../src/enums/Species";
 import Gender from "../../src/enums/Gender";
-import breedIndex from "../../src/services/breedIndex";
+import {getBreeds} from "../../src/services/getBreeds";
 import {useAnimalStoreMutation} from "../../src/hooks/mutations/useAnimalStoreMutation";
 import {useGetCitiesByStateQuery} from "../../src/hooks/queries/useGetCitiesByStateQuery";
 
@@ -74,7 +74,7 @@ export const getServerSideProps: GetServerSideProps<AnimalCreateProps> = async (
     return {
         props: {
             states: await getStates(),
-            breeds: await breedIndex({authorization: req.cookies.authorization}),
+            breeds: await getBreeds({authorization: req.cookies.authorization}),
         }
     }
 }

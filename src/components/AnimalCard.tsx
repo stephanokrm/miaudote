@@ -83,7 +83,7 @@ const AnimalCard = (props: AnimalCardProps) => {
                         <Grid container alignContent="center"
                               spacing={1}>
                             <Grid item xs={12}>
-                                <Grid container justifyContent="space-between" alignContent="center"
+                                <Grid container justifyContent="space-between" alignItems="center"
                                       spacing={1}>
                                     {message && (
                                         <Grid item xs={12}>

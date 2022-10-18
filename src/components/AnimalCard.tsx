@@ -94,10 +94,6 @@ const AnimalCard = (props: AnimalCardProps) => {
                                         <Typography variant="h5">
                                             {animal.name}
                                         </Typography>
-                                        <Typography variant="caption" color="text.secondary"
-                                                    gutterBottom>
-                                            {animal.city.name} - {animal.city.state.initials}
-                                        </Typography>
                                     </Grid>
                                     <Grid item>
                                         {editable ? (
@@ -119,6 +115,12 @@ const AnimalCard = (props: AnimalCardProps) => {
                                                 {true ? <FavoriteIcon/> : <FavoriteBorderOutlinedIcon/>}
                                             </IconButton>
                                         )}
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Typography variant="caption" color="text.secondary"
+                                                    gutterBottom>
+                                            {animal.city.name} - {animal.city.state.initials}
+                                        </Typography>
                                     </Grid>
                                 </Grid>
                             </Grid>

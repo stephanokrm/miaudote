@@ -1,4 +1,4 @@
-import {useQueryClient} from "react-query";
+import {useQueryClient} from "@tanstack/react-query";
 import axios from "../../axios";
 import {AnimalImageStoreData, Image, RawAnimal, Resource} from "../../types";
 import {AxiosResponse} from "axios";
@@ -14,7 +14,7 @@ export const useImageDestroyMutation = () => {
         return axios().delete<Response, SuccessResponse, AnimalImageStoreData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/image/${image.id}`)
     }, {
         onSuccess: async () => {
-            await queryClient.invalidateQueries('getImagesByAnimal');
+            await queryClient.invalidateQueries(['getImagesByAnimal']);
         },
     })
 };

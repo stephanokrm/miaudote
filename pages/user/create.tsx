@@ -1,4 +1,5 @@
 import {GetServerSideProps, NextPage} from "next";
+import {dehydrate, QueryClient} from '@tanstack/react-query'
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from "@mui/material/Box";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -19,12 +20,13 @@ import * as yup from "yup";
 import {format, subYears} from 'date-fns';
 import {AsYouType} from "libphonenumber-js";
 import useForm from "../../src/hooks/useForm";
-import {State, UserStoreFieldValues} from "../../src/types";
+import {UserStoreFieldValues} from "../../src/types";
 import getStates from "../../src/services/getStates";
 import {ChangeEvent} from "react";
 import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
 import {useGetCitiesByStateQuery} from "../../src/hooks/queries/useGetCitiesByStateQuery";
 import {useUserStoreMutation} from "../../src/hooks/mutations/useUserStoreMutation";
+import {useGetStatesQuery} from "../../src/hooks/queries/useGetStatesQuery";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -48,19 +50,19 @@ const schema = yup.object({
     passwordConfirmation: yup.string().required('O campo confirmação de senha é obrigatório.').oneOf([yup.ref('password'), null], 'O campo confirmação de senha não confere.'),
 }).required();
 
-type SignUpProps = {
-    states: State[],
-}
+export const getServerSideProps: GetServerSideProps = async () => {
+    const queryClient = new QueryClient()
 
-export const getServerSideProps: GetServerSideProps<SignUpProps> = async () => {
+    await queryClient.prefetchQuery(['getStates'], () => getStates())
+
     return {
         props: {
-            states: await getStates(),
-        }
+            dehydratedState: dehydrate(queryClient),
+        },
     }
 }
 
-const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
+const UserCreate: NextPage = () => {
     const {
         control,
         handleSubmit,
@@ -78,6 +80,7 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
             phone: '',
         }
     });
+    const {data: states} = useGetStatesQuery();
     const {mutate: storeUser, message, isLoading: isStoringUser} = useUserStoreMutation({setError});
     const {
         data: cities,
@@ -210,7 +213,7 @@ const UserCreate: NextPage<SignUpProps> = ({states}: SignUpProps) => {
                                                         await trigger('city');
                                                         await refetchCities();
                                                     }}
-                                                    options={states}
+                                                    options={states ?? []}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}

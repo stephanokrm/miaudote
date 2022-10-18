@@ -1,4 +1,4 @@
-import {useQueryClient} from "react-query";
+import {useQueryClient} from "@tanstack/react-query";
 import axios from "../../axios";
 import {AnimalImageStoreData, AnimalImageStoreFieldValues, RawAnimal, Resource} from "../../types";
 import {AxiosResponse} from "axios";
@@ -23,7 +23,7 @@ export const useAnimalImageStoreMutation = ({ animal }: UseAnimalStoreMutation) 
         })
     }, {
         onSuccess: async () => {
-            await queryClient.invalidateQueries('getImagesByAnimal');
+            await queryClient.invalidateQueries(['getImagesByAnimal']);
         },
     })
 };

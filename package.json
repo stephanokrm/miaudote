@@ -19,6 +19,7 @@
     "@mui/lab": "latest",
     "@mui/material": "latest",
     "@mui/x-date-pickers": "latest",
+    "@tanstack/react-query": "latest",
     "axios": "latest",
     "date-fns": "latest",
     "libphonenumber-js": "latest",
@@ -27,10 +28,10 @@
     "react-cookie": "latest",
     "react-dom": "latest",
     "react-hook-form": "latest",
-    "react-query": "latest",
     "yup": "latest"
   },
   "devDependencies": {
+    "@tanstack/react-query-devtools": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",

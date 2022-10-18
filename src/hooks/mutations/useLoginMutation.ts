@@ -1,4 +1,4 @@
-import {useQueryClient} from "react-query";
+import {useQueryClient} from "@tanstack/react-query";
 import axios from "../../axios";
 import {User} from "../../types";
 import {AxiosResponse} from "axios";
@@ -43,7 +43,7 @@ export const useLoginMutation = ({ setError }: UseLoginMutation = {}) => {
         onSuccess: async (response: SuccessResponse) => {
             setCookie('authorization', response.data.access_token);
 
-            await queryClient.invalidateQueries('getUserByMe');
+            await queryClient.invalidateQueries(['getUserByMe']);
             await router.push('/');
         },
     })

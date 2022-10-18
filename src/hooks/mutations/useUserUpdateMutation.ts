@@ -1,4 +1,4 @@
-import {useQueryClient} from "react-query";
+import {useQueryClient} from "@tanstack/react-query";
 import axios from "../../axios";
 import {User, UserUpdateData, UserUpdateFieldValues, RawUser, Resource} from "../../types";
 import {AxiosResponse} from "axios";
@@ -28,7 +28,7 @@ export const useUserUpdateMutation = ({ setError }: UseUserStoreMutation) => {
     }, {
         setError,
         onSuccess: async () => {
-            await queryClient.invalidateQueries('getUserByMe');
+            await queryClient.invalidateQueries(['getUserByMe']);
         },
     })
 };

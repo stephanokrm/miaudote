@@ -1,4 +1,4 @@
-import {GetServerSideProps, NextPage} from "next";
+import {GetStaticPaths, GetStaticProps, NextPage} from "next";
 import {Animal} from "../../../src/types";
 import {getAnimal} from "../../../src/services/getAnimal";
 import Head from "next/head";
@@ -11,16 +11,23 @@ import CardContent from "@mui/material/CardContent";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import {intlFormatDistance, parseISO} from "date-fns";
+import getAnimals from "../../../src/services/getAnimals";
 
 type AnimalShowProps = {
     animal: Animal,
 }
 
-export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: string }> = async ({
-                                                                                                      params,
-                                                                                                      req
-                                                                                                  }) => {
-    if (!params) {
+export const getStaticPaths: GetStaticPaths = async () => {
+     const animals = await getAnimals();
+
+    return {
+        paths: animals.map((animal: Animal) => ({ params: { animal: animal.id } } )),
+        fallback: false,
+    };
+};
+
+export const getStaticProps: GetStaticProps<AnimalShowProps, { animal: string }> = async ({ params }) => {
+    if (!params?.animal) {
         return {
             notFound: true,
         }
@@ -28,10 +35,10 @@ export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: s
 
     return {
         props: {
-            animal: await getAnimal({animal: params.animal, authorization: req.cookies.authorization}),
+            animal: await getAnimal({animal: params.animal}),
         }
     }
-}
+};
 
 const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
     return (

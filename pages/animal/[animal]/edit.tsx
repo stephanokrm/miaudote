@@ -21,7 +21,7 @@ import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import {Animal, AnimalUpdateFieldValues, Breed, State} from "../../../src/types";
+import {Animal, AnimalUpdateFieldValues} from "../../../src/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import useForm from "../../../src/hooks/useForm";
 import Alert from "@mui/material/Alert";
@@ -43,6 +43,9 @@ import {useAnimalImageStoreMutation} from "../../../src/hooks/mutations/useAnima
 import {useImageDestroyMutation} from "../../../src/hooks/mutations/useImageDestroyMutation";
 import {useGetImagesByAnimalQuery} from "../../../src/hooks/queries/useGetImagesByAnimalQuery";
 import {useGetCitiesByStateQuery} from "../../../src/hooks/queries/useGetCitiesByStateQuery";
+import {dehydrate, QueryClient} from "@tanstack/react-query";
+import {useGetBreedsQuery} from "../../../src/hooks/queries/useGetBreedsQuery";
+import {useGetStatesQuery} from "../../../src/hooks/queries/useGetStatesQuery";
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -75,31 +78,33 @@ const schema = yup.object({
 });
 
 type AnimalEditProps = {
-    states: State[],
     animal: Animal,
-    breeds: Breed[],
 }
 
 export const getServerSideProps: GetServerSideProps<AnimalEditProps, { animal: string }> = async ({
                                                                                                       params,
                                                                                                       req
                                                                                                   }) => {
-    if (!params) {
+    if (!params?.animal) {
         return {
             notFound: true,
         }
     }
 
+    const queryClient = new QueryClient()
+
+    await queryClient.prefetchQuery(['getBreeds'], () => getBreeds({authorization: req.cookies.authorization}));
+    await queryClient.prefetchQuery(['getStates'], () => getStates());
+
     return {
         props: {
-            states: await getStates(),
             animal: await getAnimal({animal: params.animal, authorization: req.cookies.authorization}),
-            breeds: await getBreeds({authorization: req.cookies.authorization}),
-        }
+            dehydratedState: dehydrate(queryClient),
+        },
     }
 }
 
-const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalEditProps) => {
+const AnimalEdit: NextPage<AnimalEditProps> = ({animal}: AnimalEditProps) => {
     const {
         control,
         handleSubmit,
@@ -118,6 +123,8 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
         },
     });
     const {data: images} = useGetImagesByAnimalQuery({animal: animal.id});
+    const {data: breeds} = useGetBreedsQuery();
+    const {data: states} = useGetStatesQuery();
     const {
         data: cities,
         isLoading: isLoadingCities,
@@ -295,7 +302,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
 
                                                         await trigger('breed');
                                                     }}
-                                                    options={breeds.filter(({species}) => species === getValues('breed.species'))}
+                                                    options={breeds ? breeds.filter(({species}) => species === getValues('breed.species')) : []}
                                                     renderInput={(params) => (
                                                         <TextField {...params}
                                                                    variant="filled"
@@ -322,7 +329,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal, breeds, states}: AnimalE
                                                         await trigger('city');
                                                         await refetchCities();
                                                     }}
-                                                    options={states}
+                                                    options={states ?? []}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}

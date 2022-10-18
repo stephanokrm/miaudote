@@ -1,11 +1,9 @@
-import {useMutation} from "react-query";
 import {AxiosError} from "axios";
 import {UseFormSetError} from "react-hook-form";
 import {FieldValues} from "react-hook-form/dist/types/fields";
 import {useState} from "react";
-import {UseMutationOptions, UseMutationResult} from "react-query/types/react/types";
-import {MutationFunction} from "react-query/types/core/types";
 import {FieldPath} from "react-hook-form/dist/types/path";
+import {MutationFunction, useMutation, UseMutationOptions, UseMutationResult} from "@tanstack/react-query";
 
 type ServiceError<TFieldValues extends FieldValues> = AxiosError<{ message?: string, errors?: { [Property in FieldPath<TFieldValues>]?: string[] } }>
 

@@ -18,12 +18,14 @@ import {format, parseISO, subYears} from 'date-fns';
 import {ChangeEvent} from "react";
 import {AsYouType} from "libphonenumber-js";
 import useForm from "../../src/hooks/useForm";
-import {State, User, UserUpdateFieldValues} from "../../src/types";
+import {User, UserUpdateFieldValues} from "../../src/types";
 import getUserByMe from "../../src/services/getUserByMe";
 import getStates from "../../src/services/getStates";
 import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
 import {useGetCitiesByStateQuery} from "../../src/hooks/queries/useGetCitiesByStateQuery";
-import {useUserStoreMutation} from "../../src/hooks/mutations/useUserStoreMutation";
+import {useUserUpdateMutation} from "../../src/hooks/mutations/useUserUpdateMutation";
+import {dehydrate, QueryClient} from "@tanstack/react-query";
+import {useGetStatesQuery} from "../../src/hooks/queries/useGetStatesQuery";
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -43,23 +45,26 @@ const schema = yup.object({
         label: yup.string().required(),
         state: stateObject,
     }).nullable().required('O campo cidade é obrigatório.'),
-});
+})
 
 type UserShowProps = {
     user: User,
-    states: State[],
 }
 
-export const getServerSideProps: GetServerSideProps<UserShowProps> = async ({req}) => {
+export const getServerSideProps: GetServerSideProps = async ({req}) => {
+    const queryClient = new QueryClient()
+
+    await queryClient.prefetchQuery(['getStates'], () => getStates());
+
     return {
         props: {
             user: await getUserByMe({authorization: req.cookies.authorization}),
-            states: await getStates(),
-        }
+            dehydratedState: dehydrate(queryClient),
+        },
     }
 }
 
-const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
+const UserShow: NextPage<UserShowProps> = ({user}: UserShowProps) => {
     const {
         control,
         handleSubmit,
@@ -77,7 +82,8 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
             bornAt: parseISO(user.bornAtISO),
         },
     });
-    const {mutate: updateUser, message, isLoading: isUpdatingUser} = useUserStoreMutation({setError});
+    const {data: states} = useGetStatesQuery();
+    const {mutate: updateUser, message, isLoading: isUpdatingUser} = useUserUpdateMutation({setError});
     const onSubmit = handleSubmit((data: UserUpdateFieldValues) => updateUser(data));
     const {
         data: cities,
@@ -209,7 +215,7 @@ const UserShow: NextPage<UserShowProps> = ({user, states}: UserShowProps) => {
                                                         await trigger('city');
                                                         await refetchCities();
                                                     }}
-                                                    options={states}
+                                                    options={states ?? []}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}

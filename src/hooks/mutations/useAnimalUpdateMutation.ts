@@ -1,4 +1,4 @@
-import {useQueryClient} from "react-query";
+import {useQueryClient} from "@tanstack/react-query";
 import axios from "../../axios";
 import {Animal, AnimalUpdateData, AnimalUpdateFieldValues, RawAnimal, Resource} from "../../types";
 import {AxiosResponse} from "axios";
@@ -28,7 +28,7 @@ export const useAnimalUpdateMutation = ({ setError }: UseAnimalStoreMutation) =>
     }, {
         setError,
         onSuccess: async () => {
-            await queryClient.invalidateQueries('getAnimalByMe');
+            await queryClient.invalidateQueries(['getAnimalByMe']);
         },
     })
 };

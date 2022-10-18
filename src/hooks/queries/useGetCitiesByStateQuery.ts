@@ -1,4 +1,4 @@
-import {useQuery} from "react-query";
+import {useQuery} from "@tanstack/react-query";
 import {City, State} from "../../types";
 import getCitiesByState from "../../services/getCitiesByState";
 
@@ -7,7 +7,7 @@ type UseGetCitiesByStateQuery = {
 }
 
 export const useGetCitiesByStateQuery = ({state}: UseGetCitiesByStateQuery) => {
-    return useQuery<City[]>('getCitiesByState', async ({signal}) => {
+    return useQuery<City[]>(['getCitiesByState'], async ({signal}) => {
         return getCitiesByState({state, signal});
     }, {
         staleTime: Infinity,

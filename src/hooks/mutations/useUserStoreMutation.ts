@@ -16,7 +16,7 @@ export const useUserStoreMutation = ({ setError }: UseUserStoreMutation) => {
     const {mutate: login} = useLoginMutation();
 
     return useFormMutation<SuccessResponse, UserStoreFieldValues>(async ({file, ...user}: UserStoreFieldValues) => {
-        return axios().post<Response, SuccessResponse, UserStoreData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal`, {
+        return axios().post<Response, SuccessResponse, UserStoreData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
             ...await userToRawUser(user as User),
             file,
         }, {

@@ -10,13 +10,16 @@ import Grid from "@mui/material/Grid";
 import CardContent from "@mui/material/CardContent";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
-import {intlFormatDistance, parseISO} from "date-fns";
+import {differenceInMonths, differenceInYears, formatDuration, intlFormatDistance, parseISO} from "date-fns";
 import getAnimals from "../../../src/services/getAnimals";
 import Avatar from "@mui/material/Avatar";
+import Gender from "../../../src/enums/Gender";
 
 type AnimalShowProps = {
     animal: Animal,
 }
+
+const today = new Date();
 
 export const getStaticPaths: GetStaticPaths = async () => {
     const animals = await getAnimals();
@@ -42,6 +45,10 @@ export const getStaticProps: GetStaticProps<AnimalShowProps, { animal: string }>
 };
 
 const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
+    const bornAt = parseISO(animal.bornAtISO);
+    const years = differenceInYears(today, bornAt);
+    const months = differenceInMonths(today, bornAt);
+
     return (
         <>
             <Head>
@@ -72,25 +79,62 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                                     />
                                                 </Grid>
                                                 <Grid item xs={12} md={6}>
-                                                    <Typography variant="h3">{animal.name}</Typography>
-                                                    <Typography variant="h6">{animal.city.name} - {animal.city.state.initials}</Typography>
-                                                </Grid>
-                                                <Grid item xs={12}>
                                                     <Grid container alignItems="center" spacing={2}>
-                                                        <Grid item>
-                                                            <Avatar alt={animal?.user?.name} src={animal?.user?.avatar} sx={{width: 50, height: 50}}/>
+                                                        <Grid item xs={12}>
+                                                            <Typography variant="h3">{animal.name}</Typography>
+                                                            <Typography
+                                                                variant="h6">{animal.city.name} - {animal.city.state.initials}</Typography>
                                                         </Grid>
-                                                        <Grid item>
-                                                            <Typography variant="subtitle2">Adicionado por</Typography>
-                                                            <Typography variant="caption" color="text.secondary">{animal.user?.name}</Typography>
-                                                            <Typography variant="caption" color="text.secondary">{intlFormatDistance(parseISO(animal.createdAtISO), new Date(), {locale: ptBR.code})}</Typography>
+                                                        <Grid item justifyContent="center">
+                                                            <Typography variant="subtitle1">
+                                                                {formatDuration({
+                                                                    years: years,
+                                                                    months: years === 0 ? (months === 0 ? 1 : months) : 0,
+                                                                }, {
+                                                                    locale: ptBR,
+                                                                    format: ["years", "months"]
+                                                                })}
+                                                            </Typography>
+                                                            <Typography variant="caption"
+                                                                        color="text.secondary">Idade</Typography>
+                                                        </Grid>
+                                                        <Grid item justifyContent="center">
+                                                            <Typography variant="subtitle1">
+                                                                {animal.gender === Gender.Male ? "Macho" : "Fêmea"}
+                                                            </Typography>
+                                                            <Typography variant="caption"
+                                                                        color="text.secondary">Sexo</Typography>
+                                                        </Grid>
+                                                        <Grid item justifyContent="center">
+                                                            <Typography variant="subtitle1">
+                                                                {animal.breed.name}
+                                                            </Typography>
+                                                            <Typography variant="caption"
+                                                                        color="text.secondary">Raça</Typography>
                                                         </Grid>
                                                     </Grid>
                                                 </Grid>
                                             </Grid>
                                         </Grid>
-                                        <Grid item xs={12} md={8}>
-                                            B
+                                        <Grid item xs={12}>
+                                            <Typography
+                                                variant="h6">Sobre {animal.gender === Gender.Male ? 'o' : 'a'} {animal.name}</Typography>
+                                            <Typography variant="body1">{animal.description}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <Grid container alignItems="center" spacing={2}>
+                                                <Grid item>
+                                                    <Avatar alt={animal?.user?.name}
+                                                            src={animal?.user?.avatar}
+                                                            sx={{width: 50, height: 50}}/>
+                                                </Grid>
+                                                <Grid item>
+                                                    <Typography
+                                                        variant="subtitle2">Adicionado {intlFormatDistance(parseISO(animal.createdAtISO), today, {locale: ptBR.code})} por</Typography>
+                                                    <Typography variant="caption"
+                                                                color="text.secondary">{animal.user?.name}</Typography>
+                                                </Grid>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 </CardContent>

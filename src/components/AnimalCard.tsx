@@ -28,6 +28,7 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import Alert from "@mui/material/Alert";
 import {useAnimalDestroyMutation} from "../hooks/mutations/useAnimalDestroyMutation";
 import {useGetUserByMeQuery} from "../hooks/queries/useGetUserByMeQuery";
+import Gender from "../enums/Gender";
 
 type AnimalCardProps = {
     animal: Animal,
@@ -145,10 +146,11 @@ const AnimalCard = (props: AnimalCardProps) => {
                             <Grid item>
                                 <Typography variant="caption" color="text.secondary" gutterBottom>
                                     <Box display="flex" alignContent="center" flexWrap="wrap">
-                                        {animal.gender === "MALE" ? <MaleIcon fontSize="small"/> :
-                                            <FemaleIcon fontSize="small"/>}
+                                        {animal.gender === Gender.Male
+                                            ? <MaleIcon fontSize="small"/>
+                                            : <FemaleIcon fontSize="small"/>}
                                         <Box paddingLeft={1}>
-                                            {animal.gender === "MALE" ? "Macho" : "Fêmea"}
+                                            {animal.gender === Gender.Male ? "Macho" : "Fêmea"}
                                         </Box>
                                     </Box>
                                 </Typography>

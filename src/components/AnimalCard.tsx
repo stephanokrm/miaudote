@@ -27,6 +27,7 @@ import {useState} from "react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Alert from "@mui/material/Alert";
 import {useAnimalDestroyMutation} from "../hooks/mutations/useAnimalDestroyMutation";
+import {useGetUserByMeQuery} from "../hooks/queries/useGetUserByMeQuery";
 
 type AnimalCardProps = {
     animal: Animal,
@@ -42,6 +43,7 @@ const AnimalCard = (props: AnimalCardProps) => {
     const months = differenceInMonths(today, bornAt);
     const [open, setOpen] = useState(false);
     const {mutate: destroyAnimal, isLoading: isDestroyingAnimal, message} = useAnimalDestroyMutation();
+    const {data: user} = useGetUserByMeQuery();
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -110,11 +112,11 @@ const AnimalCard = (props: AnimalCardProps) => {
                                                     </IconButton>
                                                 </Link>
                                             </>
-                                        ) : (
+                                        ) : user ? (
                                             <IconButton color="primary">
                                                 {true ? <FavoriteIcon/> : <FavoriteBorderOutlinedIcon/>}
                                             </IconButton>
-                                        )}
+                                        ) : null}
                                     </Grid>
                                     <Grid item xs={12}>
                                         <Typography variant="caption" color="text.secondary"

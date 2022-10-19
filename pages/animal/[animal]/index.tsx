@@ -12,21 +12,22 @@ import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import {intlFormatDistance, parseISO} from "date-fns";
 import getAnimals from "../../../src/services/getAnimals";
+import Avatar from "@mui/material/Avatar";
 
 type AnimalShowProps = {
     animal: Animal,
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-     const animals = await getAnimals();
+    const animals = await getAnimals();
 
     return {
-        paths: animals.map((animal: Animal) => ({ params: { animal: animal.id } } )),
+        paths: animals.map((animal: Animal) => ({params: {animal: animal.id}})),
         fallback: false,
     };
 };
 
-export const getStaticProps: GetStaticProps<AnimalShowProps, { animal: string }> = async ({ params }) => {
+export const getStaticProps: GetStaticProps<AnimalShowProps, { animal: string }> = async ({params}) => {
     if (!params?.animal) {
         return {
             notFound: true,
@@ -69,13 +70,22 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                                         height="0"
                                                         sizes="100vw"
                                                     />
-                                                    {/*<Avatar alt={animal.name} src={animal.avatar}*/}
-                                                    {/*        sx={{width: '100%', height: '100%'}}/>*/}
                                                 </Grid>
                                                 <Grid item xs={12} md={6}>
                                                     <Typography variant="h3">{animal.name}</Typography>
                                                     <Typography variant="h6">{animal.city.name} - {animal.city.state.initials}</Typography>
-                                                    <Typography variant="subtitle2" color="text.secondary">Adicionado por {animal?.user?.name} {intlFormatDistance(parseISO(animal.createdAtISO), new Date(), { locale: ptBR.code })}</Typography>
+                                                </Grid>
+                                                <Grid item xs={12}>
+                                                    <Grid container alignItems="center" spacing={2}>
+                                                        <Grid item>
+                                                            <Avatar alt={animal?.user?.name} src={animal?.user?.avatar} sx={{width: 50, height: 50}}/>
+                                                        </Grid>
+                                                        <Grid item>
+                                                            <Typography variant="subtitle2">Adicionado por</Typography>
+                                                            <Typography variant="caption" color="text.secondary">{animal.user?.name}</Typography>
+                                                            <Typography variant="caption" color="text.secondary">{intlFormatDistance(parseISO(animal.createdAtISO), new Date(), {locale: ptBR.code})}</Typography>
+                                                        </Grid>
+                                                    </Grid>
                                                 </Grid>
                                             </Grid>
                                         </Grid>

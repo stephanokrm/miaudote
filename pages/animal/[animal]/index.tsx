@@ -79,7 +79,7 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                                     />
                                                 </Grid>
                                                 <Grid item xs={12} md={6}>
-                                                    <Grid container justifyContent="space-between" alignItems="center" spacing={2}>
+                                                    <Grid container justifyContent="space-evenly" alignItems="center">
                                                         <Grid item xs={12}>
                                                             <Typography variant="h3">{animal.name}</Typography>
                                                             <Typography

@@ -15,6 +15,7 @@ import getAnimals from "../../../src/services/getAnimals";
 import Avatar from "@mui/material/Avatar";
 import Gender from "../../../src/enums/Gender";
 import PetsIcon from "@mui/icons-material/Pets";
+import PlaceIcon from '@mui/icons-material/Place';
 
 type AnimalShowProps = {
     animal: Animal,
@@ -67,26 +68,17 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                         </Grid>
                                         <Grid item xs={12}>
                                             <Grid container justifyContent="center" alignItems="center" spacing={2}>
-                                                <Grid item xs={12} position="relative">
-                                                    <Image
-                                                        style={{
-                                                            borderRadius: '50%',
-                                                            width: '100%',
-                                                            height: 'auto'
-                                                        }}
-                                                        loading="lazy"
-                                                        alt={animal.name}
-                                                        src={animal.avatar}
-                                                        width="0"
-                                                        height="0"
-                                                        sizes="100vw"
-                                                    />
+                                                <Grid item xs={12}>
+                                                    <Avatar alt={animal.name} src={animal.avatar}
+                                                            sx={{width: 400, height: 400}}/>
                                                 </Grid>
                                                 <Grid item xs={12}>
-                                                    <Grid container justifyContent="space-evenly" alignItems="center">
+                                                    <Grid container justifyContent="space-evenly" alignItems="center"
+                                                          spacing={4}>
                                                         <Grid item xs={12} textAlign="center">
                                                             <Typography variant="h4">{animal.name}</Typography>
                                                             <Typography variant="h6" color="text.secondary">
+                                                                <PlaceIcon sx={{marginRight: 1}}/>
                                                                 {animal.city.name} - {animal.city.state.initials}
                                                             </Typography>
                                                         </Grid>

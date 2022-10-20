@@ -70,7 +70,7 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                             <Grid container justifyContent="center" alignItems="center" spacing={2}>
                                                 <Grid item xs={12}>
                                                     <Avatar alt={animal.name} src={animal.avatar}
-                                                            sx={{width: 400, height: 400}}/>
+                                                            sx={{width: 250, height: 250}}/>
                                                 </Grid>
                                                 <Grid item xs={12}>
                                                     <Grid container justifyContent="space-evenly" alignItems="center"
@@ -82,7 +82,7 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                                                 {animal.city.name} - {animal.city.state.initials}
                                                             </Typography>
                                                         </Grid>
-                                                        <Grid item textAlign="center">
+                                                        <Grid item xs={4} textAlign="center">
                                                             <Typography variant="subtitle1">
                                                                 {formatDuration({
                                                                     years: years,
@@ -95,15 +95,15 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                                             <Typography variant="caption"
                                                                         color="text.secondary">Idade</Typography>
                                                         </Grid>
-                                                        <Grid item textAlign="center">
+                                                        <Grid item xs={4} textAlign="center">
                                                             <Typography variant="subtitle1">
                                                                 {animal.gender === Gender.Male ? "Macho" : "Fêmea"}
                                                             </Typography>
                                                             <Typography variant="caption"
                                                                         color="text.secondary">Sexo</Typography>
                                                         </Grid>
-                                                        <Grid item textAlign="center">
-                                                            <Typography variant="subtitle1">
+                                                        <Grid item xs={4} textAlign="center">
+                                                            <Typography variant="subtitle1" noWrap>
                                                                 {animal.breed.name}
                                                             </Typography>
                                                             <Typography variant="caption"

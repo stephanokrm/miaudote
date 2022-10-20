@@ -68,7 +68,7 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                         </Grid>
                                         <Grid item xs={12}>
                                             <Grid container justifyContent="center" alignItems="center" spacing={2}>
-                                                <Grid item xs={12}>
+                                                <Grid item xs={12} justifyContent="center" display="flex">
                                                     <Avatar alt={animal.name} src={animal.avatar}
                                                             sx={{width: 250, height: 250}}/>
                                                 </Grid>

@@ -14,6 +14,7 @@ import {differenceInMonths, differenceInYears, formatDuration, intlFormatDistanc
 import getAnimals from "../../../src/services/getAnimals";
 import Avatar from "@mui/material/Avatar";
 import Gender from "../../../src/enums/Gender";
+import PetsIcon from "@mui/icons-material/Pets";
 
 type AnimalShowProps = {
     animal: Animal,
@@ -61,12 +62,15 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                             <Card>
                                 <CardContent>
                                     <Grid container justifyContent="center" alignContent="center" spacing={2}>
+                                        <Grid item xs={12} textAlign="center">
+                                            <PetsIcon fontSize="large" color="primary"/>
+                                        </Grid>
                                         <Grid item xs={12}>
                                             <Grid container justifyContent="center" alignItems="center" spacing={2}>
-                                                <Grid item xs={12} md={6} position="relative">
+                                                <Grid item xs={12} position="relative">
                                                     <Image
                                                         style={{
-                                                            borderRadius: '25px',
+                                                            borderRadius: '50%',
                                                             width: '100%',
                                                             height: 'auto'
                                                         }}
@@ -78,12 +82,13 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                                         sizes="100vw"
                                                     />
                                                 </Grid>
-                                                <Grid item xs={12} md={6}>
+                                                <Grid item xs={12}>
                                                     <Grid container justifyContent="space-evenly" alignItems="center">
-                                                        <Grid item xs={12}>
-                                                            <Typography variant="h3">{animal.name}</Typography>
-                                                            <Typography
-                                                                variant="h6">{animal.city.name} - {animal.city.state.initials}</Typography>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography variant="h4">{animal.name}</Typography>
+                                                            <Typography variant="h6" color="text.secondary">
+                                                                {animal.city.name} - {animal.city.state.initials}
+                                                            </Typography>
                                                         </Grid>
                                                         <Grid item textAlign="center">
                                                             <Typography variant="subtitle1">
@@ -121,6 +126,23 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                                 variant="h6">Sobre {animal.gender === Gender.Male ? 'o' : 'a'} {animal.name}</Typography>
                                             <Typography variant="body1">{animal.description}</Typography>
                                         </Grid>
+                                        {animal.images?.map((image) => (
+                                            <Grid item xs={12} md={4} key={image.id} position="relative">
+                                                <Image
+                                                    style={{
+                                                        borderRadius: '25px',
+                                                        width: '100%',
+                                                        height: 'auto'
+                                                    }}
+                                                    loading="lazy"
+                                                    alt={animal.name}
+                                                    src={image.path}
+                                                    width="0"
+                                                    height="0"
+                                                    sizes="100vw"
+                                                />
+                                            </Grid>
+                                        ))}
                                         <Grid item xs={12}>
                                             <Grid container alignItems="center" spacing={2}>
                                                 <Grid item>
@@ -129,10 +151,9 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                                             sx={{width: 50, height: 50}}/>
                                                 </Grid>
                                                 <Grid item>
-                                                    <Typography
-                                                        variant="subtitle2">Adicionado {intlFormatDistance(parseISO(animal.createdAtISO), today, {locale: ptBR.code})} por</Typography>
                                                     <Typography variant="caption"
-                                                                color="text.secondary">{animal.user?.name}</Typography>
+                                                                color="text.secondary">Adicionado {intlFormatDistance(parseISO(animal.createdAtISO), today, {locale: ptBR.code})} por</Typography>
+                                                    <Typography variant="subtitle1">{animal.user?.name}</Typography>
                                                 </Grid>
                                             </Grid>
                                         </Grid>

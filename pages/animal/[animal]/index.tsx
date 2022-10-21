@@ -28,7 +28,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
     return {
         paths: animals.map((animal: Animal) => ({params: {animal: animal.id}})),
-        fallback: false,
+        fallback: true,
     };
 };
 

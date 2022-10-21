@@ -27,12 +27,11 @@ import {ptBR} from 'date-fns/locale';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import {Animal} from '../types';
-import {useState} from 'react';
+import {ReactNode, useState} from 'react';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   useAnimalDestroyMutation,
 } from '../hooks/mutations/useAnimalDestroyMutation';
-import {useGetUserByMeQuery} from '../hooks/queries/useGetUserByMeQuery';
 import Gender from '../enums/Gender';
 import {useTheme} from '@mui/material';
 import PlaceIcon from '@mui/icons-material/Place';
@@ -40,12 +39,13 @@ import PlaceIcon from '@mui/icons-material/Place';
 type AnimalCardProps = {
   animal: Animal,
   editable?: boolean,
+  CardHeader?: ReactNode,
 };
 
 const today = new Date();
 
 const AnimalCard = (props: AnimalCardProps) => {
-  const {animal, editable = false} = props;
+  const {animal, editable = false, CardHeader = null} = props;
   const bornAt = parseISO(animal.bornAtISO);
   const years = differenceInYears(today, bornAt);
   const months = differenceInMonths(today, bornAt);
@@ -72,7 +72,8 @@ const AnimalCard = (props: AnimalCardProps) => {
 
   return (
       <>
-        <Card sx={{maxWidth: 345}}>
+        <Card>
+          {CardHeader}
           <Link
               href={{pathname: '/animal/[animal]', query: {animal: animal.id}}}
               passHref>
@@ -84,7 +85,6 @@ const AnimalCard = (props: AnimalCardProps) => {
                   sx={{
                     borderRadius: '20px',
                     boxShadow: theme.shadows[4],
-                    border: '2px solid white',
                     aspectRatio: '1 / 1',
                   }}
               />

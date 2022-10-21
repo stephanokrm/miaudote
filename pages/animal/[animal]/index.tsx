@@ -28,6 +28,7 @@ type AnimalShowProps = {
 }
 
 const today = new Date();
+const eightHours = 28800;
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const animals = await getAnimals();
@@ -48,7 +49,7 @@ export const getStaticProps: GetStaticProps<AnimalShowProps, { animal: string }>
   try {
     const animal = await getAnimal({animal: params.animal});
 
-    return {props: {animal}};
+    return {props: {animal}, revalidate: eightHours};
   } catch (e) {
     return {
       notFound: true,

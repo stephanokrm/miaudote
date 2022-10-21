@@ -39,9 +39,15 @@ export const getStaticProps: GetStaticProps<AnimalShowProps, { animal: string }>
         }
     }
 
-    return {
-        props: {
-            animal: await getAnimal({animal: params.animal}),
+    try {
+        return {
+            props: {
+                animal: await getAnimal({animal: params.animal}),
+            }
+        }
+    } catch (e) {
+        return {
+            notFound: true,
         }
     }
 };

@@ -1,4 +1,7 @@
-import {GetStaticPaths, GetStaticProps, NextPage} from 'next';
+import {
+  GetServerSideProps,
+  NextPage,
+} from 'next';
 import {Animal} from '../../../src/types';
 import {getAnimal} from '../../../src/services/getAnimal';
 import Head from 'next/head';
@@ -17,7 +20,6 @@ import {
   intlFormatDistance,
   parseISO,
 } from 'date-fns';
-import getAnimals from '../../../src/services/getAnimals';
 import Avatar from '@mui/material/Avatar';
 import Gender from '../../../src/enums/Gender';
 import PetsIcon from '@mui/icons-material/Pets';
@@ -28,18 +30,8 @@ type AnimalShowProps = {
 }
 
 const today = new Date();
-const eightHours = 28800;
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const animals = await getAnimals();
-
-  return {
-    paths: animals.map((animal: Animal) => ({params: {animal: animal.id}})),
-    fallback: true,
-  };
-};
-
-export const getStaticProps: GetStaticProps<AnimalShowProps, { animal: string }> = async ({params}) => {
+export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: string }> = async ({params}) => {
   if (!params?.animal) {
     return {
       notFound: true,
@@ -49,7 +41,7 @@ export const getStaticProps: GetStaticProps<AnimalShowProps, { animal: string }>
   try {
     const animal = await getAnimal({animal: params.animal});
 
-    return {props: {animal}, revalidate: eightHours};
+    return {props: {animal}};
   } catch (e) {
     return {
       notFound: true,

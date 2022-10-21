@@ -393,7 +393,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal}: AnimalEditProps) => {
                                             <Grid item xs={12} alignContent="center">
                                                 <FormLabel>Amigável Com Família</FormLabel>
                                                 <FormHelperText sx={{display: 'flex'}}>
-                                                    O quão bem é carinhoso com a família
+                                                    O quão carinhoso é com a família
                                                 </FormHelperText>
                                             </Grid>
                                             <Grid item xs={12}>

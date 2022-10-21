@@ -18,9 +18,13 @@ import {
   parseISO,
 } from 'date-fns';
 import Avatar from '@mui/material/Avatar';
-import Gender from '../../../src/enums/Gender';
 import PetsIcon from '@mui/icons-material/Pets';
 import AnimalCard from '../../../src/components/AnimalCard';
+import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
+import Slider from '@mui/material/Slider';
+import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
+import Stack from '@mui/material/Stack';
+import {getGenderPrefix} from '../../../src/utils';
 
 type AnimalShowProps = {
   animal: Animal,
@@ -75,11 +79,37 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                     </Grid>
                     <Grid item xs={12}>
                       <Typography
-                          variant="h6">Sobre {animal.gender === Gender.Male
-                          ? 'o'
-                          : 'a'} {animal.name}</Typography>
+                          variant="h5">Sobre {getGenderPrefix(animal.gender)} {animal.name}</Typography>
                       <Typography
                           variant="body1">{animal.description}</Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="body2">O quão brincalhão
+                        é {getGenderPrefix(animal.gender)} {animal.name}</Typography>
+                      <Stack spacing={2} direction="row" alignItems="center">
+                        <ThumbDownOffAltIcon/>
+                        <Slider defaultValue={animal.playfulness}
+                                step={1}
+                                marks
+                                disabled
+                                min={1}
+                                max={5}/>
+                        <ThumbUpOffAltIcon/>
+                      </Stack>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="body2">O quão carinhoso com a família
+                        é {getGenderPrefix(animal.gender)} {animal.name}</Typography>
+                      <Stack spacing={2} direction="row" alignItems="center">
+                        <ThumbDownOffAltIcon/>
+                        <Slider defaultValue={animal.familyFriendly}
+                                step={1}
+                                marks
+                                disabled
+                                min={1}
+                                max={5}/>
+                        <ThumbUpOffAltIcon/>
+                      </Stack>
                     </Grid>
                     {animal.images?.map((image) => (
                         <Grid item xs={12} md={4} key={image.id}

@@ -98,7 +98,7 @@ const AnimalCard = (props: AnimalCardProps) => {
                   <Grid item xs={12}>
                     <Typography variant="caption" color="text.secondary" noWrap>
                       <Box display="flex" alignContent="center">
-                        <PlaceIcon fontSize="small"/>
+                        <PlaceIcon fontSize="small" color="primary"/>
                         <Box paddingLeft={1}>
                           {animal.city.name} - {animal.city.state.initials}
                         </Box>
@@ -108,7 +108,7 @@ const AnimalCard = (props: AnimalCardProps) => {
                   <Grid item>
                     <Typography variant="caption" color="text.secondary">
                       <Box display="flex" alignContent="center">
-                        <CakeIcon fontSize="small"/>
+                        <CakeIcon fontSize="small" color="primary"/>
                         <Box paddingLeft={1}>
                           {formatDuration({
                             years: years,
@@ -127,8 +127,8 @@ const AnimalCard = (props: AnimalCardProps) => {
                     <Typography variant="caption" color="text.secondary">
                       <Box display="flex" alignContent="center">
                         {animal.gender === Gender.Male
-                            ? <MaleIcon fontSize="small"/>
-                            : <FemaleIcon fontSize="small"/>}
+                            ? <MaleIcon fontSize="small" color="primary"/>
+                            : <FemaleIcon fontSize="small" color="primary"/>}
                         <Box paddingLeft={1}>
                           {animal.gender === Gender.Male ? 'Macho' : 'Fêmea'}
                         </Box>

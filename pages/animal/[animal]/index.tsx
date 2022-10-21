@@ -1,7 +1,4 @@
-import {
-  GetServerSideProps,
-  NextPage,
-} from 'next';
+import {GetServerSideProps, NextPage} from 'next';
 import {Animal} from '../../../src/types';
 import {getAnimal} from '../../../src/services/getAnimal';
 import Head from 'next/head';
@@ -13,10 +10,7 @@ import Grid from '@mui/material/Grid';
 import CardContent from '@mui/material/CardContent';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import {
-  intlFormatDistance,
-  parseISO,
-} from 'date-fns';
+import {intlFormatDistance, parseISO} from 'date-fns';
 import Avatar from '@mui/material/Avatar';
 import PetsIcon from '@mui/icons-material/Pets';
 import AnimalCard from '../../../src/components/AnimalCard';
@@ -24,6 +18,8 @@ import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import Slider from '@mui/material/Slider';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import Stack from '@mui/material/Stack';
+import DescriptionIcon from '@mui/icons-material/Description';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import {getGenderPrefix} from '../../../src/utils';
 
 type AnimalShowProps = {
@@ -79,38 +75,79 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                     </Grid>
                     <Grid item xs={12}>
                       <Typography
-                          variant="h5">Sobre {getGenderPrefix(animal.gender)} {animal.name}</Typography>
+                          variant="h5" display="flex" alignItems="center"
+                          gutterBottom>
+                        <DescriptionIcon color="primary" sx={{mr: 1}}/>
+                        Sobre {getGenderPrefix(
+                          animal.gender)} {animal.name}</Typography>
                       <Typography
                           variant="body1">{animal.description}</Typography>
                     </Grid>
                     <Grid item xs={12}>
-                      <Typography variant="body2">O quão brincalhão
-                        é {getGenderPrefix(animal.gender)} {animal.name}</Typography>
-                      <Stack spacing={2} direction="row" alignItems="center">
-                        <ThumbDownOffAltIcon/>
-                        <Slider defaultValue={animal.playfulness}
-                                step={1}
-                                marks
-                                disabled
-                                min={1}
-                                max={5}/>
-                        <ThumbUpOffAltIcon/>
-                      </Stack>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} lg={6}>
+                          <Typography variant="body2" gutterBottom>O quão
+                            brincalhão
+                            é {getGenderPrefix(
+                                animal.gender)} {animal.name}</Typography>
+                          <Stack spacing={2} direction="row"
+                                 alignItems="center">
+                            <ThumbDownOffAltIcon/>
+                            <Slider defaultValue={animal.playfulness}
+                                    step={1}
+                                    marks
+                                    disabled
+                                    min={1}
+                                    max={5}/>
+                            <ThumbUpOffAltIcon/>
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} lg={6}>
+                          <Typography variant="body2" gutterBottom>O quão
+                            carinhoso com a
+                            família
+                            é {getGenderPrefix(
+                                animal.gender)} {animal.name}</Typography>
+                          <Stack spacing={2} direction="row"
+                                 alignItems="center">
+                            <ThumbDownOffAltIcon/>
+                            <Slider defaultValue={animal.familyFriendly}
+                                    step={1}
+                                    marks
+                                    disabled
+                                    min={1}
+                                    max={5}/>
+                            <ThumbUpOffAltIcon/>
+                          </Stack>
+                        </Grid>
+                        <Grid item xs={12} lg={6}>
+                          <Typography variant="body2" gutterBottom>O quão
+                            bem {getGenderPrefix(
+                                animal.gender)} {animal.name} se dá com outros
+                            animais de estimação da casa</Typography>
+                          <Stack spacing={2} direction="row"
+                                 alignItems="center">
+                            <ThumbDownOffAltIcon/>
+                            <Slider defaultValue={animal.familyFriendly}
+                                    step={1}
+                                    marks
+                                    disabled
+                                    min={1}
+                                    max={5}/>
+                            <ThumbUpOffAltIcon/>
+                          </Stack>
+                        </Grid>
+                      </Grid>
                     </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="body2">O quão carinhoso com a família
-                        é {getGenderPrefix(animal.gender)} {animal.name}</Typography>
-                      <Stack spacing={2} direction="row" alignItems="center">
-                        <ThumbDownOffAltIcon/>
-                        <Slider defaultValue={animal.familyFriendly}
-                                step={1}
-                                marks
-                                disabled
-                                min={1}
-                                max={5}/>
-                        <ThumbUpOffAltIcon/>
-                      </Stack>
-                    </Grid>
+                    {animal.images && animal.images?.length > 0 && (
+                        <Grid item xs={12}>
+                          <Typography variant="h5" display="flex"
+                                      alignItems="center">
+                            <PhotoLibraryIcon color="primary" sx={{mr: 1}}/>
+                            Fotos
+                          </Typography>
+                        </Grid>
+                    )}
                     {animal.images?.map((image) => (
                         <Grid item xs={12} md={4} key={image.id}
                               position="relative">

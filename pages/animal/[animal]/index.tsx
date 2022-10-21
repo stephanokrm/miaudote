@@ -139,7 +139,7 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                 position="relative">
                             <Image
                                 style={{
-                                  borderRadius: '25px',
+                                  borderRadius: '20px',
                                   width: '100%',
                                   height: 'auto',
                                 }}

@@ -42,7 +42,7 @@ export const InteractableImage: FC<InteractableAvatarProps> = (props: Interactab
                     width="100%"
                     height="100%"
                     zIndex={1}
-                    borderRadius="25px"
+                    borderRadius="20px"
                     display="flex"
                     justifyContent="center"
                     alignItems="center"
@@ -58,7 +58,7 @@ export const InteractableImage: FC<InteractableAvatarProps> = (props: Interactab
             )}
             <Image
                 style={{
-                    borderRadius: '25px',
+                    borderRadius: '20px',
                 }}
                 loading="lazy"
                 src={src}

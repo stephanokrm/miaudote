@@ -59,12 +59,15 @@ export const InteractableImage: FC<InteractableAvatarProps> = (props: Interactab
             <Image
                 style={{
                     borderRadius: '20px',
+                    width: '100%',
+                    height: 'auto',
                 }}
                 loading="lazy"
                 src={src}
                 alt={alt}
-                height={250}
-                width={250}
+                width="0"
+                height="0"
+                sizes="100vw"
             />
         </Box>
     );

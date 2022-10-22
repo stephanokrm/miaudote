@@ -35,6 +35,7 @@ import {
 import Gender from '../enums/Gender';
 import {useTheme} from '@mui/material';
 import PlaceIcon from '@mui/icons-material/Place';
+import {getAnimalGenderLabel, getAnimalMention} from '../utils';
 
 type AnimalCardProps = {
   animal: Animal,
@@ -46,6 +47,8 @@ const today = new Date();
 
 const AnimalCard = (props: AnimalCardProps) => {
   const {animal, editable = false, CardHeader = null} = props;
+  const theme = useTheme();
+  const theAnimal = getAnimalMention(animal);
   const bornAt = parseISO(animal.bornAtISO);
   const years = differenceInYears(today, bornAt);
   const months = differenceInMonths(today, bornAt);
@@ -67,8 +70,6 @@ const AnimalCard = (props: AnimalCardProps) => {
     await destroyAnimal(animal);
     await handleClose();
   };
-
-  const theme = useTheme();
 
   return (
       <>
@@ -96,7 +97,7 @@ const AnimalCard = (props: AnimalCardProps) => {
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary" noWrap>
+                    <Typography variant="subtitle2" color="text.secondary" noWrap>
                       <Box display="flex" alignContent="center">
                         <PlaceIcon fontSize="small" color="primary"/>
                         <Box paddingLeft={1}>
@@ -106,7 +107,7 @@ const AnimalCard = (props: AnimalCardProps) => {
                     </Typography>
                   </Grid>
                   <Grid item>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="subtitle2" color="text.secondary">
                       <Box display="flex" alignContent="center">
                         <CakeIcon fontSize="small" color="primary"/>
                         <Box paddingLeft={1}>
@@ -124,13 +125,13 @@ const AnimalCard = (props: AnimalCardProps) => {
                     </Typography>
                   </Grid>
                   <Grid item>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="subtitle2" color="text.secondary">
                       <Box display="flex" alignContent="center">
                         {animal.gender === Gender.Male
                             ? <MaleIcon fontSize="small" color="primary"/>
                             : <FemaleIcon fontSize="small" color="primary"/>}
                         <Box paddingLeft={1}>
-                          {animal.gender === Gender.Male ? 'Macho' : 'Fêmea'}
+                          {getAnimalGenderLabel(animal)}
                         </Box>
                       </Box>
                     </Typography>
@@ -162,9 +163,7 @@ const AnimalCard = (props: AnimalCardProps) => {
             aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Desativar doação {animal.gender === Gender.Male
-              ? 'do'
-              : 'da'} {animal.name}?
+            Desativar doação {theAnimal}?
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">

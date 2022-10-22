@@ -482,8 +482,7 @@ const AnimalEdit: NextPage<AnimalEditProps> = ({animal}: AnimalEditProps) => {
                                                 </LoadingButton>
                                             </Grid>
                                             <Grid item xs={12} md={6}>
-                                                <Box height={250} width={250} display="flex" justifyContent="center"
-                                                     alignItems="center">
+                                                <Box display="flex" justifyContent="center" alignItems="center" sx={{ aspectRatio: '1 / 1' }}>
                                                     <Fab
                                                         color="primary"
                                                         aria-label="Upload Picture"

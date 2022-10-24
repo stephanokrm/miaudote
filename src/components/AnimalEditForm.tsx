@@ -16,13 +16,12 @@ import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import {Animal, AnimalUpdateFieldValues} from '../types';
-import Autocomplete from '@mui/material/Autocomplete';
+import {Animal, AnimalUpdateFieldValues, Breed} from '../types';
+import Autocomplete, {createFilterOptions} from '@mui/material/Autocomplete';
 import useForm from '../hooks/useForm';
 import Alert from '@mui/material/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {ChangeEvent, FC} from 'react';
-import PetsIcon from '@mui/icons-material/Pets';
 import Species from '../enums/Species';
 import Gender from '../enums/Gender';
 import {AvatarChangeEvent, InteractableAvatar} from './InteractableAvatar';
@@ -90,6 +89,8 @@ type AnimalEditFormProps = {
   animal: Animal,
 }
 
+const filter = createFilterOptions<Breed>();
+
 export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditFormProps) => {
   const {
     control,
@@ -109,12 +110,13 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
     },
   });
   const {data: images} = useGetImagesByAnimalQuery(animal.id);
-  const {data: breeds} = useGetBreedsQuery();
-  const {data: states} = useGetStatesQuery();
+  const {data: breeds, isLoading: isLoadingBreeds} = useGetBreedsQuery();
+  const {data: states, isLoading: isLoadingStates} = useGetStatesQuery();
   const {
     data: cities,
     isLoading: isLoadingCities,
     refetch: refetchCities,
+    isRefetching: isRefetchingCities,
   } = useGetCitiesByStateQuery(getValues('city.state').initials);
   const {mutate, isLoading, message} = useAnimalUpdateMutation({setError});
   const {
@@ -171,24 +173,42 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
           <Grid item xs={12}>
             <FormControl>
               <FormLabel id="speciesLabel">Espécie</FormLabel>
-              <Controller name="breed.species" control={control}
-                          render={({field}) => (
-                              <RadioGroup
-                                  {...field}
-                                  aria-labelledby="speciesLabel"
-                              >
-                                <FormControlLabel
-                                    value={Species.Cat}
-                                    control={<Radio/>}
-                                    label="Gato"
-                                />
-                                <FormControlLabel
-                                    value={Species.Dog}
-                                    control={<Radio/>}
-                                    label="Cachorro"
-                                />
-                              </RadioGroup>
-                          )}/>
+              <Controller
+                  name="breed.species"
+                  control={control}
+                  render={({field}) => (
+                      <RadioGroup
+                          {...field}
+                          onChange={async (...event) => {
+                            field.onChange(...event);
+
+                            setValue('breed', {
+                              id: '',
+                              name: '',
+                              species: event[0].target.value as Species,
+                              createdAt: null,
+                              createdAtISO: '',
+                              updatedAt: null,
+                              updatedAtISO: '',
+                            });
+
+                            await trigger('breed');
+                          }}
+                          aria-labelledby="speciesLabel"
+                      >
+                        <FormControlLabel
+                            value={Species.Cat}
+                            control={<Radio/>}
+                            label="Gato"
+                        />
+                        <FormControlLabel
+                            value={Species.Dog}
+                            control={<Radio/>}
+                            label="Cachorro"
+                        />
+                      </RadioGroup>
+                  )}
+              />
               {!!errors.breed?.species && (
                   <FormHelperText
                       error>{errors.breed?.species?.message}</FormHelperText>
@@ -268,17 +288,53 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
           </Grid>
           <Grid item xs={12}>
             <Autocomplete
-                value={getValues('breed')}
-                autoComplete
-                disableClearable
-                getOptionLabel={({name}) => name}
+                value={getValues('breed') ?? ''}
+                selectOnFocus
+                clearOnBlur
+                handleHomeEndKeys
+                freeSolo
+                disabled={!watch('breed.species') || isLoadingBreeds}
+                getOptionLabel={(breed) => {
+                  if (typeof breed === 'string') return breed;
+
+                  return breed.id ? breed.name : breed.name
+                      ? `Novo: ${breed.name}`
+                      : '';
+                }}
                 onChange={async (event, breed) => {
-                  setValue('breed', breed);
+                  if (!breed) return;
+
+                  setValue('breed', typeof breed === 'string' ? {
+                    id: '',
+                    name: breed,
+                    species: getValues('breed.species'),
+                    createdAt: null,
+                    createdAtISO: '',
+                    updatedAt: null,
+                    updatedAtISO: '',
+                  } : breed);
 
                   await trigger('breed');
                 }}
-                options={breeds ? breeds.filter(
-                    ({species}) => species === getValues('breed.species')) : []}
+                filterOptions={(options, params) => {
+                  const filtered = filter(options, params);
+
+                  if (params.inputValue !== '') {
+                    filtered.push({
+                      id: '',
+                      name: params.inputValue,
+                      species: getValues('breed.species'),
+                      createdAt: null,
+                      createdAtISO: '',
+                      updatedAt: null,
+                      updatedAtISO: '',
+                    });
+                  }
+
+                  return filtered.filter(
+                      ({species}) => species === getValues('breed.species'));
+                }}
+                options={breeds ?? []}
                 renderInput={(params) => (
                     <TextField {...params}
                                variant="filled"
@@ -294,6 +350,7 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
                 value={getValues('city.state')}
                 autoComplete
                 disableClearable
+                disabled={isLoadingStates || states?.length === 0}
                 onChange={async (event, state) => {
                   setValue('city', {
                     id: 0,
@@ -323,7 +380,7 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
                 value={getValues('city') ?? ''}
                 autoComplete
                 disableClearable
-                disabled={isLoadingCities || cities?.length === 0}
+                disabled={isLoadingCities || isRefetchingCities || cities?.length === 0}
                 onChange={async (event, city) => {
                   setValue('city', city);
 

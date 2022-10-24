@@ -3,7 +3,6 @@ import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
 import LoadingButton from '@mui/lab/LoadingButton';
-import PetsIcon from '@mui/icons-material/Pets';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
@@ -82,7 +81,7 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
     isLoading: isLoadingCities,
     refetch: refetchCities,
     isRefetching: refethingCities,
-  } = useGetCitiesByStateQuery({state: getValues('city.state')});
+  } = useGetCitiesByStateQuery(getValues('city.state').initials);
 
   const loading = isLoadingStates || isUpdatingUser || isLoadingCities ||
       refethingCities;

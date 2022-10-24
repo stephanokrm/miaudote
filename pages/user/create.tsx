@@ -1,5 +1,4 @@
-import {GetServerSideProps, NextPage} from "next";
-import {dehydrate, QueryClient} from '@tanstack/react-query'
+import {NextPage} from "next";
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from "@mui/material/Box";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -21,7 +20,6 @@ import {format, subYears} from 'date-fns';
 import {AsYouType} from "libphonenumber-js";
 import useForm from "../../src/hooks/useForm";
 import {UserStoreFieldValues} from "../../src/types";
-import getStates from "../../src/services/getStates";
 import {ChangeEvent} from "react";
 import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
 import {useGetCitiesByStateQuery} from "../../src/hooks/queries/useGetCitiesByStateQuery";
@@ -50,18 +48,6 @@ const schema = yup.object({
     passwordConfirmation: yup.string().required('O campo confirmação de senha é obrigatório.').oneOf([yup.ref('password'), null], 'O campo confirmação de senha não confere.'),
 }).required();
 
-export const getServerSideProps: GetServerSideProps = async () => {
-    const queryClient = new QueryClient()
-
-    await queryClient.prefetchQuery(['getStates'], () => getStates())
-
-    return {
-        props: {
-            dehydratedState: dehydrate(queryClient),
-        },
-    }
-}
-
 const UserCreate: NextPage = () => {
     const {
         control,
@@ -80,13 +66,15 @@ const UserCreate: NextPage = () => {
             phone: '',
         }
     });
-    const {data: states} = useGetStatesQuery();
-    const {mutate: storeUser, message, isLoading: isStoringUser} = useUserStoreMutation({setError});
+    const {data: states, isLoading: isLoadingStates} = useGetStatesQuery();
     const {
         data: cities,
         isLoading: isLoadingCities,
-        refetch: refetchCities
-    } = useGetCitiesByStateQuery({state: getValues('city.state')});
+        refetch: refetchCities,
+        isRefetching: isRefetchingCities,
+    } = useGetCitiesByStateQuery(getValues('city.state')?.initials);
+
+    const {mutate: storeUser, message, isLoading: isStoringUser} = useUserStoreMutation({setError});
     const onSubmit = handleSubmit((data: UserStoreFieldValues) => storeUser(data));
 
     const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
@@ -202,6 +190,7 @@ const UserCreate: NextPage = () => {
                                                     value={getValues('city.state') ?? ''}
                                                     autoComplete
                                                     disableClearable
+                                                    disabled={isLoadingStates || states?.length === 0}
                                                     onChange={async (event, state) => {
                                                         setValue('city', {
                                                             id: 0,
@@ -231,7 +220,7 @@ const UserCreate: NextPage = () => {
                                                     value={getValues('city') ?? ''}
                                                     autoComplete
                                                     disableClearable
-                                                    disabled={isLoadingCities || cities?.length === 0}
+                                                    disabled={isLoadingCities || isRefetchingCities || cities?.length === 0}
                                                     onChange={async (event, city) => {
                                                         setValue('city', city);
 

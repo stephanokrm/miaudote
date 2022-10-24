@@ -1,12 +1,8 @@
 import {useQuery} from "@tanstack/react-query";
 import getImagesByAnimal from "../../services/getImagesByAnimal";
 
-type UseGetAnimalsQuery = {
-    animal: string,
-}
-
-export const useGetImagesByAnimalQuery = ({animal}: UseGetAnimalsQuery) => {
-    return useQuery(['getImagesByAnimal'], async ({signal}) => {
+export const useGetImagesByAnimalQuery = (animal: string) => {
+    return useQuery(['getImagesByAnimal', animal], async ({signal}) => {
         return getImagesByAnimal({animal, signal});
-    }, {staleTime: 60000});
+    }, {staleTime: 60000, enabled: !!animal});
 }

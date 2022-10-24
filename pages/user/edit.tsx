@@ -10,22 +10,22 @@ import {useGetUserByMeQuery} from '../../src/hooks/queries/useGetUserByMeQuery';
 import {UserEditForm} from '../../src/components/UserEditForm';
 
 const UserShow: NextPage = () => {
-  const {data: user, isLoading: loadingUser} = useGetUserByMeQuery();
+  const {data: user, isLoading: isLoadingUser} = useGetUserByMeQuery();
 
   return (
       <>
         <Head>
-          <title>MiAudote - {loadingUser ? 'Carregando...' : user?.name}</title>
+          <title>MiAudote - {isLoadingUser ? 'Carregando...' : user?.name}</title>
         </Head>
         <Container maxWidth="sm">
-          <Box paddingY={2}>
+          <Box paddingY={2} width="100%">
             <Card sx={{width: '100%'}}>
               <CardContent>
-                <Box paddingY={2} justifyContent="center" textAlign="center">
+                <Box display="flex" paddingY={2} justifyContent="center" textAlign="center">
                   <PetsIcon fontSize="large" color="primary"/>
                 </Box>
-                {loadingUser ? (
-                    <Box paddingY={2} justifyContent="center">
+                {isLoadingUser ? (
+                    <Box display="flex" paddingY={2} justifyContent="center">
                       <CircularProgress/>
                     </Box>
                 ) : null}

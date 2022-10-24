@@ -1,4 +1,4 @@
-import {GetServerSideProps, NextPage} from "next";
+import {NextPage} from "next";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import FormControl from "@mui/material/FormControl";
@@ -21,19 +21,19 @@ import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import {AnimalStoreFieldValues, Breed, State} from "../../src/types";
-import Autocomplete from "@mui/material/Autocomplete";
+import {AnimalStoreFieldValues, Breed} from '../../src/types';
+import Autocomplete, {createFilterOptions} from '@mui/material/Autocomplete';
 import useForm from "../../src/hooks/useForm";
 import Alert from "@mui/material/Alert";
 import LoadingButton from "@mui/lab/LoadingButton";
-import getStates from "../../src/services/getStates";
 import PetsIcon from "@mui/icons-material/Pets";
 import {AvatarChangeEvent, InteractableAvatar} from "../../src/components/InteractableAvatar";
 import Species from "../../src/enums/Species";
 import Gender from "../../src/enums/Gender";
-import {getBreeds} from "../../src/services/getBreeds";
 import {useAnimalStoreMutation} from "../../src/hooks/mutations/useAnimalStoreMutation";
 import {useGetCitiesByStateQuery} from "../../src/hooks/queries/useGetCitiesByStateQuery";
+import {useGetBreedsQuery} from '../../src/hooks/queries/useGetBreedsQuery';
+import {useGetStatesQuery} from '../../src/hooks/queries/useGetStatesQuery';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -65,21 +65,9 @@ const schema = yup.object({
     }).required('O campo raça é obrigatório.'),
 });
 
-type AnimalCreateProps = {
-    breeds: Breed[],
-    states: State[],
-}
+const filter = createFilterOptions<Breed>();
 
-export const getServerSideProps: GetServerSideProps<AnimalCreateProps> = async ({req}) => {
-    return {
-        props: {
-            states: await getStates(),
-            breeds: await getBreeds({authorization: req.cookies.authorization}),
-        }
-    }
-}
-
-const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreateProps) => {
+const AnimalCreate: NextPage = () => {
     const {
         control,
         handleSubmit,
@@ -103,7 +91,9 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
         data: cities,
         isLoading: isLoadingCities,
         refetch: refetchCities
-    } = useGetCitiesByStateQuery({state: getValues('city.state')});
+    } = useGetCitiesByStateQuery(getValues('city.state')?.initials);
+    const {data: breeds, isLoading: isLoadingBreeds} = useGetBreedsQuery();
+    const {data: states, isLoading: isLoadingStates} = useGetStatesQuery();
     const {mutate, isLoading, message} = useAnimalStoreMutation({setError});
     const onSubmit = handleSubmit((data: AnimalStoreFieldValues) => mutate(data));
 
@@ -157,6 +147,21 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
                                                                 render={({field}) => (
                                                                     <RadioGroup
                                                                         {...field}
+                                                                        onChange={async (...event) => {
+                                                                            field.onChange(...event);
+
+                                                                            setValue('breed', {
+                                                                                id: '',
+                                                                                name: '',
+                                                                                species: event[0].target.value as Species,
+                                                                                createdAt: null,
+                                                                                createdAtISO: '',
+                                                                                updatedAt: null,
+                                                                                updatedAtISO: '',
+                                                                            });
+
+                                                                            await trigger('breed');
+                                                                        }}
                                                                         aria-labelledby="speciesLabel"
                                                                     >
                                                                         <FormControlLabel
@@ -250,12 +255,15 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
                                             <Grid item xs={12}>
                                                 <Autocomplete
                                                     value={getValues('breed') ?? ''}
+                                                    selectOnFocus
+                                                    clearOnBlur
+                                                    handleHomeEndKeys
                                                     freeSolo
-                                                    disabled={!watch('breed.species')}
+                                                    disabled={!watch('breed.species') || isLoadingBreeds}
                                                     getOptionLabel={(breed) => {
                                                         if (typeof breed === 'string') return breed;
 
-                                                        return breed.name ?? '';
+                                                        return breed.id ? breed.name : breed.name ? `Novo: ${breed.name}` : '';
                                                     }}
                                                     onChange={async (event, breed) => {
                                                         if (!breed) return;
@@ -272,7 +280,24 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
 
                                                         await trigger('breed');
                                                     }}
-                                                    options={breeds.filter(({species}) => species === getValues('breed.species'))}
+                                                    filterOptions={(options, params) => {
+                                                        const filtered = filter(options, params);
+
+                                                        if (params.inputValue !== '') {
+                                                            filtered.push({
+                                                                id: '',
+                                                                name: params.inputValue,
+                                                                species: getValues('breed.species'),
+                                                                createdAt: null,
+                                                                createdAtISO: '',
+                                                                updatedAt: null,
+                                                                updatedAtISO: '',
+                                                            });
+                                                        }
+
+                                                        return filtered.filter(({species}) => species === getValues('breed.species'));
+                                                    }}
+                                                    options={breeds ?? []}
                                                     renderInput={(params) => (
                                                         <TextField {...params}
                                                                    variant="filled"
@@ -288,6 +313,7 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
                                                     value={getValues('city.state') ?? ''}
                                                     autoComplete
                                                     disableClearable
+                                                    disabled={isLoadingStates || states?.length === 0}
                                                     onChange={async (event, state) => {
                                                         setValue('city', {
                                                             id: 0,
@@ -299,7 +325,7 @@ const AnimalCreate: NextPage<AnimalCreateProps> = ({breeds, states}: AnimalCreat
                                                         await trigger('city');
                                                         await refetchCities();
                                                     }}
-                                                    options={states}
+                                                    options={states ?? []}
                                                     renderInput={(params) => (
                                                         <TextField
                                                             {...params}

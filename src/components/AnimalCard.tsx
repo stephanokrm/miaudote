@@ -27,7 +27,7 @@ import {ptBR} from 'date-fns/locale';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
 import {Animal} from '../types';
-import {ReactNode, useState} from 'react';
+import {FC, ReactNode, useState} from 'react';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   useAnimalDestroyMutation,
@@ -45,7 +45,7 @@ type AnimalCardProps = {
 
 const today = new Date();
 
-const AnimalCard = (props: AnimalCardProps) => {
+export const AnimalCard: FC<AnimalCardProps> = (props) => {
   const {animal, editable = false, CardHeader = null} = props;
   const theme = useTheme();
   const theAnimal = getAnimalMention(animal);
@@ -183,5 +183,3 @@ const AnimalCard = (props: AnimalCardProps) => {
       </>
   );
 };
-
-export default AnimalCard;

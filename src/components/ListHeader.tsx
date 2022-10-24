@@ -7,7 +7,7 @@ type ListHeaderProps = {
   loading: boolean,
 }
 
-export const ListHeader: FC<ListHeaderProps> = (props: ListHeaderProps) => {
+export const ListHeader: FC<ListHeaderProps> = (props) => {
   const {label, loading} = props;
 
   return (

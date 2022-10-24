@@ -13,7 +13,7 @@ type InteractableAvatarProps = {
     loading?: boolean,
 };
 
-export const InteractableImage: FC<InteractableAvatarProps> = (props: InteractableAvatarProps) => {
+export const InteractableImage: FC<InteractableAvatarProps> = (props) => {
     const {
         onDelete,
         alt,

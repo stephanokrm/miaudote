@@ -15,7 +15,7 @@ type InteractableAvatarProps = {
     src: string,
 };
 
-export const InteractableAvatar: FC<PropsWithChildren<InteractableAvatarProps>> = (props: PropsWithChildren<InteractableAvatarProps>) => {
+export const InteractableAvatar: FC<PropsWithChildren<InteractableAvatarProps>> = (props) => {
     const {
         onChange,
         alt,

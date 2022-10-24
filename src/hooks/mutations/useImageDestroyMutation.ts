@@ -10,7 +10,7 @@ type SuccessResponse = AxiosResponse<Response>;
 export const useImageDestroyMutation = () => {
     const queryClient = useQueryClient();
 
-    return useFormMutation<SuccessResponse, Image>(async (image: Image) => {
+    return useFormMutation<SuccessResponse, Image>(async (image) => {
         return axios().delete<Response, SuccessResponse, AnimalImageStoreData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/image/${image.id}`)
     }, {
         onSuccess: async () => {

@@ -13,7 +13,7 @@ type UseAnimalStoreMutation = {
 export const useAnimalImageStoreMutation = ({ animal }: UseAnimalStoreMutation) => {
     const queryClient = useQueryClient();
 
-    return useFormMutation<SuccessResponse, AnimalImageStoreFieldValues>(async ({file}: AnimalImageStoreFieldValues) => {
+    return useFormMutation<SuccessResponse, AnimalImageStoreFieldValues>(async ({file}) => {
         return axios().post<Response, SuccessResponse, AnimalImageStoreData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal}/image`, {
             file,
         }, {

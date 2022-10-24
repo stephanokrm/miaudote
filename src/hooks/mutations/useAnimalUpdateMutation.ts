@@ -17,7 +17,7 @@ export const useAnimalUpdateMutation = ({ setError }: UseAnimalStoreMutation) =>
     const queryClient = useQueryClient();
     const router = useRouter();
 
-    return useFormMutation<SuccessResponse, AnimalUpdateFieldValues>(async ({file, ...animal}: AnimalUpdateFieldValues) => {
+    return useFormMutation<SuccessResponse, AnimalUpdateFieldValues>(async ({file, ...animal}) => {
         return axios().post<Response, SuccessResponse, AnimalUpdateData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}`, {
             ...await animalToRawAnimal(animal as Animal),
             _method: 'PUT',

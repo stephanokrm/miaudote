@@ -15,7 +15,7 @@ type UseUserStoreMutation = {
 export const useUserStoreMutation = ({ setError }: UseUserStoreMutation) => {
     const {mutate: login} = useLoginMutation();
 
-    return useFormMutation<SuccessResponse, UserStoreFieldValues>(async ({file, ...user}: UserStoreFieldValues) => {
+    return useFormMutation<SuccessResponse, UserStoreFieldValues>(async ({file, ...user}) => {
         return axios().post<Response, SuccessResponse, UserStoreData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user`, {
             ...await userToRawUser(user as User),
             file,
@@ -26,7 +26,7 @@ export const useUserStoreMutation = ({ setError }: UseUserStoreMutation) => {
         })
     }, {
         setError,
-        onSuccess: async (response, {file, ...user}: UserStoreFieldValues) => {
+        onSuccess: async (response, {file, ...user}) => {
             await login(user);
         },
     })

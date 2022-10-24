@@ -1,5 +1,5 @@
 import axios from "../axios";
-import {City, RawCity} from "../types";
+import {RawCity} from "../types";
 import rawCityToCity from "../maps/rawCityToCity";
 
 type Params = {
@@ -7,7 +7,7 @@ type Params = {
     signal?: AbortSignal
 }
 
-export const getCity = async ({id, signal}: Params): Promise<City> => {
+export const getCity = async ({id, signal}: Params) => {
     const {data: rawCity} = await axios().get<RawCity>(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${id}`, {signal});
 
     return rawCityToCity(rawCity);

@@ -15,7 +15,7 @@ type UseUserStoreMutation = {
 export const useUserUpdateMutation = ({ setError }: UseUserStoreMutation) => {
     const queryClient = useQueryClient();
 
-    return useFormMutation<SuccessResponse, UserUpdateFieldValues>(async ({file, ...user}: UserUpdateFieldValues) => {
+    return useFormMutation<SuccessResponse, UserUpdateFieldValues>(async ({file, ...user}) => {
         return axios().post<Response, SuccessResponse, UserUpdateData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user/${user.id}`, {
             ...await userToRawUser(user as User),
             _method: 'PUT',

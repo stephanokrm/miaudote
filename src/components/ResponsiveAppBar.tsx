@@ -13,7 +13,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import PetsIcon from '@mui/icons-material/Pets';
-import useGetUserByMeQuery from "../hooks/queries/useGetUserByMeQuery";
+import {useGetUserByMeQuery} from "../hooks/queries/useGetUserByMeQuery";
 import {useLogoutMutation} from "../hooks/mutations/useLogoutMutation";
 
 const pages = [

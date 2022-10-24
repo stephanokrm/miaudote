@@ -5,7 +5,7 @@ import SentimentDissatisfiedIcon
 import {NextPage} from 'next';
 import Head from 'next/head';
 import Container from '@mui/material/Container';
-import AnimalCard from '../../src/components/AnimalCard';
+import {AnimalCard} from '../../src/components/AnimalCard';
 import {
   useGetAnimalsByMeQuery,
 } from '../../src/hooks/queries/useGetAnimalsByMeQuery';

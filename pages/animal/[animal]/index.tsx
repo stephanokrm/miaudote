@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import {intlFormatDistance, parseISO} from 'date-fns';
 import Avatar from '@mui/material/Avatar';
 import PetsIcon from '@mui/icons-material/Pets';
-import AnimalCard from '../../../src/components/AnimalCard';
+import {AnimalCard} from '../../../src/components/AnimalCard';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import Slider from '@mui/material/Slider';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';

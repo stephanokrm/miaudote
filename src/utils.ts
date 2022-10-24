@@ -5,10 +5,10 @@ const getGenderPrefix = (gender: Gender) => (
     gender === Gender.Male ? 'o' : 'a'
 );
 
-export const getAnimalMention = (animal: Animal): string => {
+export const getAnimalMention = (animal: Animal) => {
   return `${getGenderPrefix(animal.gender)} ${animal.name}`;
 }
 
-export const getAnimalGenderLabel = (animal: Animal): string => {
+export const getAnimalGenderLabel = (animal: Animal) => {
   return animal.gender === Gender.Male ? 'Macho' : 'Fêmea';
 }

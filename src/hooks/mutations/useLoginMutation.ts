@@ -30,7 +30,7 @@ export const useLoginMutation = ({ setError }: UseLoginMutation = {}) => {
     const queryClient = useQueryClient();
     const [, setCookie] = useCookies(['authorization']);
 
-    return useFormMutation<SuccessResponse, User>((user: User) => {
+    return useFormMutation<SuccessResponse, User>((user) => {
         return axios().post<Response, SuccessResponse, Data>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/oauth/token`, {
             grant_type: 'password',
             client_id: process.env.NEXT_PUBLIC_CLIENT_ID ?? '',
@@ -40,7 +40,7 @@ export const useLoginMutation = ({ setError }: UseLoginMutation = {}) => {
         })
     }, {
         setError,
-        onSuccess: async (response: SuccessResponse) => {
+        onSuccess: async (response) => {
             setCookie('authorization', response.data.access_token);
 
             await queryClient.invalidateQueries(['getUserByMe']);

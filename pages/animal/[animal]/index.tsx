@@ -18,9 +18,13 @@ import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import Slider from '@mui/material/Slider';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import DescriptionIcon from '@mui/icons-material/Description';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import {getAnimalMention} from '../../../src/utils';
+import {parsePhoneNumber} from 'libphonenumber-js';
 
 type AnimalShowProps = {
   animal: Animal,
@@ -53,6 +57,13 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
       <>
         <Head>
           <title>MiAudote - {animal.name}</title>
+          <meta name="description" content={animal.description}/>
+          <meta property="og:title" content={animal.name}/>
+          <meta property="og:url" content={location.href}/>
+          <meta property="og:description" content={animal.description}/>
+          <meta property="og:image" content={animal.avatar}/>
+          <meta property="og:type" content="article"/>
+          <meta property="og:locale" content="pt_BR"/>
         </Head>
         <Container maxWidth="xl">
           <Grid container spacing={2} sx={{marginY: 2}}>
@@ -69,6 +80,18 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                       subheader={intlFormatDistance(
                           parseISO(animal.createdAtISO),
                           today, {locale: ptBR.code})}
+                      action={
+                        <Tooltip title={`Conversar com ${animal?.user?.name}`}>
+                          <IconButton aria-label="WhatsApp" color="primary"
+                                      href={animal?.user?.phone
+                                          ? `https://wa.me/${parsePhoneNumber(
+                                              animal?.user?.phone,
+                                              'BR').number}`
+                                          : ''} target="_blank">
+                            <WhatsAppIcon/>
+                          </IconButton>
+                        </Tooltip>
+                      }
                   />
               )}/>
             </Grid>

@@ -59,7 +59,9 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
           <title>MiAudote - {animal.name}</title>
           <meta name="description" content={animal.description}/>
           <meta property="og:title" content={animal.name}/>
-          <meta property="og:url" content={location.href}/>
+          <meta property="og:url" content={typeof window === 'undefined'
+              ? `https://miaudote-alpha.vercel.app/animal/${animal.id}`
+              : window.location.href}/>
           <meta property="og:description" content={animal.description}/>
           <meta property="og:image" content={animal.avatar}/>
           <meta property="og:type" content="article"/>

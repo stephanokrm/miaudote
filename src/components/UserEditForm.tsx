@@ -104,9 +104,6 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
   return (
       <form onSubmit={onSubmit}>
         <Grid container spacing={2} justifyContent="center">
-          <Grid item xs={12} textAlign="center">
-            <PetsIcon fontSize="large" color="primary"/>
-          </Grid>
           <Grid item xs={12} justifyContent="center" display="flex">
             <InteractableAvatar onChange={onAvatarChange} alt={watch('name')}
                                 src={getValues('avatar')}/>

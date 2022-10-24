@@ -4,8 +4,8 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
 import CircularProgress from '@mui/material/CircularProgress';
+import PetsIcon from '@mui/icons-material/Pets';
 import {useGetUserByMeQuery} from '../../src/hooks/queries/useGetUserByMeQuery';
 import {UserEditForm} from '../../src/components/UserEditForm';
 
@@ -18,18 +18,20 @@ const UserShow: NextPage = () => {
           <title>MiAudote - {loadingUser ? 'Carregando...' : user?.name}</title>
         </Head>
         <Container maxWidth="sm">
-          <Box paddingY={3}>
-            <Grid container justifyContent="center" alignContent="center"
-                  spacing={2}>
-              <Grid item>
-                <Card>
-                  <CardContent>
-                    {loadingUser ? <CircularProgress/> : null}
-                    {user ? <UserEditForm user={user}/> : null}
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
+          <Box paddingY={2}>
+            <Card sx={{width: '100%'}}>
+              <CardContent>
+                <Box paddingY={2} justifyContent="center" textAlign="center">
+                  <PetsIcon fontSize="large" color="primary"/>
+                </Box>
+                {loadingUser ? (
+                    <Box paddingY={2} justifyContent="center">
+                      <CircularProgress/>
+                    </Box>
+                ) : null}
+                {user ? <UserEditForm user={user}/> : null}
+              </CardContent>
+            </Card>
           </Box>
         </Container>
       </>

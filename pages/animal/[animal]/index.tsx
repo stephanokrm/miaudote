@@ -52,20 +52,29 @@ export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: s
 
 const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
   const theAnimal = getAnimalMention(animal);
+  const url = typeof window === 'undefined'
+      ? `https://miaudote-alpha.vercel.app/animal/${animal.id}`
+      : window.location.href;
 
   return (
       <>
         <Head>
+          {/*Primary Meta Tags*/}
           <title>MiAudote - {animal.name}</title>
+          <meta name="title" content={`MiAudote - ${animal.name}`}/>
           <meta name="description" content={animal.description}/>
-          <meta property="og:title" content={animal.name}/>
-          <meta property="og:url" content={typeof window === 'undefined'
-              ? `https://miaudote-alpha.vercel.app/animal/${animal.id}`
-              : window.location.href}/>
+          {/*Open Graph / Facebook*/}
+          <meta property="og:type" content="website"/>
+          <meta property="og:url" content={url}/>
+          <meta property="og:title" content={`MiAudote - ${animal.name}`}/>
           <meta property="og:description" content={animal.description}/>
           <meta property="og:image" content={animal.avatar}/>
-          <meta property="og:type" content="article"/>
-          <meta property="og:locale" content="pt_BR"/>
+          {/*Twitter*/}
+          <meta property="twitter:card" content="summary_large_image"/>
+          <meta property="twitter:url" content={url}/>
+          <meta property="twitter:title" content={`MiAudote - ${animal.name}`}/>
+          <meta property="twitter:description" content={animal.description}/>
+          <meta property="twitter:image" content={animal.avatar}/>
         </Head>
         <Container maxWidth="xl">
           <Grid container spacing={2} sx={{marginY: 2}}>

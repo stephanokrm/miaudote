@@ -91,7 +91,7 @@ export const AnimalCard: FC<AnimalCardProps> = (props) => {
                   }}
               />
               <CardContent>
-                <Grid container spacing={2}>
+                <Grid container columnSpacing={2} rowSpacing={1}>
                   <Grid item xs={12}>
                     <Typography gutterBottom variant="h5" noWrap>
                       {animal.name}

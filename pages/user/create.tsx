@@ -95,7 +95,7 @@ const UserCreate: NextPage = () => {
             <Head>
                 <title>MiAudote - Cadastro</title>
             </Head>
-            <Container maxWidth="sm">
+            <Container maxWidth="sm" disableGutters>
                 <Box paddingY={3}>
                     <Grid container justifyContent="center" alignContent="center" spacing={2}>
                         <Grid item>

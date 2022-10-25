@@ -17,6 +17,7 @@ import useForm from '../src/hooks/useForm';
 import Alert from "@mui/material/Alert";
 import {useLoginMutation} from "../src/hooks/mutations/useLoginMutation";
 import {User} from "../src/types";
+import * as React from 'react';
 
 const schema = yup.object({
     email: yup.string().email('O campo e-mail deve ser um endereço de e-mail válido.').required('O campo e-mail é obrigatório.'),
@@ -36,8 +37,8 @@ const Login: NextPage = () => {
             <Head>
                 <title>MiAudote - Login</title>
             </Head>
-            <Container maxWidth="sm">
-                <Box paddingY={3}>
+            <Container maxWidth="sm" disableGutters>
+                <Box paddingY={10}>
                     <Grid container justifyContent="center" alignContent="center" spacing={2}>
                         <Grid item>
                             <Card>
@@ -48,7 +49,17 @@ const Login: NextPage = () => {
                                                 <PetsIcon fontSize="large" color="primary"/>
                                             </Grid>
                                             <Grid item xs={12}>
-                                                <Typography variant="h1">MiAudote</Typography>
+                                                <Typography
+                                                    variant="h2"
+                                                    sx={{
+                                                        flexGrow: 1,
+                                                        fontFamily: 'monospace',
+                                                        fontWeight: 700,
+                                                        letterSpacing: '.3rem',
+                                                    }}
+                                                >
+                                                    MIAUDOTE
+                                                </Typography>
                                             </Grid>
                                             {message && (
                                                 <Grid item xs={12}>

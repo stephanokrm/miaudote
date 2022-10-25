@@ -132,7 +132,7 @@ const AnimalCreate: NextPage = () => {
         <Head>
           <title>MiAudote - Doar</title>
         </Head>
-        <Container maxWidth="sm">
+        <Container maxWidth="sm" disableGutters>
           <Box paddingY={3}>
             <Grid container justifyContent="center" alignContent="center"
                   spacing={2}>

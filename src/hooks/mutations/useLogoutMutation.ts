@@ -16,7 +16,7 @@ export const useLogoutMutation = () => {
             removeCookie('authorization');
 
             await queryClient.clear();
-            await router.push('/login');
+            await router.push('/');
         },
     })
 };

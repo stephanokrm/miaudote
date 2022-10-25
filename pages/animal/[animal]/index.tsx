@@ -79,7 +79,6 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
           <meta property="twitter:description" content={animal.description}/>
           <meta property="twitter:image" content={animal.avatar}/>
         </Head>
-        <Container maxWidth="xl">
           <Grid container spacing={2} sx={{marginY: 2}}>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnimalCard animal={animal} CardHeader={(
@@ -253,7 +252,6 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
               </Card>
             </Grid>
           </Grid>
-        </Container>
       </>
   );
 };

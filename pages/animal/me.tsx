@@ -25,7 +25,6 @@ const AnimalMe: NextPage = () => {
         <Head>
           <title>MiAudote - Minhas Doações</title>
         </Head>
-        <Container maxWidth="xl">
           <Grid container spacing={2} sx={{marginY: 2}}>
             <Grid item xs={12} display="flex" alignItems="center">
               <ListHeader label="Minhas Doações"
@@ -47,7 +46,6 @@ const AnimalMe: NextPage = () => {
                 </Grid>
             ))}
           </Grid>
-        </Container>
       </>
   );
 };

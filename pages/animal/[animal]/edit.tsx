@@ -19,7 +19,7 @@ const AnimalEdit: NextPage = () => {
             <Head>
                 <title>MiAudote - {isLoadingAnimal ? 'Carregando...' : animal?.name}</title>
             </Head>
-            <Container maxWidth="sm">
+            <Container maxWidth="sm" disableGutters>
                 <Box paddingY={2} width="100%">
                     <Card sx={{width: '100%'}}>
                         <CardContent>

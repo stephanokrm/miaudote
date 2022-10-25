@@ -157,7 +157,7 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
 
   return (
       <Box>
-        <AppBar component="nav">
+        <AppBar component="nav" elevation={1}>
           <Toolbar>
             <Container maxWidth="xl">
               <IconButton

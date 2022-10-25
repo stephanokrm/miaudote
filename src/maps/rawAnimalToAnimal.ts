@@ -12,6 +12,7 @@ const rawAnimalToAnimal = async (rawAnimal: RawAnimal): Promise<Animal> => ({
     bornAtISO: rawAnimal.born_at,
     gender: rawAnimal.gender,
     avatar: rawAnimal.avatar,
+    castrated: rawAnimal.castrated,
     playfulness: rawAnimal.playfulness,
     familyFriendly: rawAnimal.family_friendly,
     petFriendly: rawAnimal.pet_friendly,

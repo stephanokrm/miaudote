@@ -9,6 +9,7 @@ const animalToRawAnimal = async (animal: Animal): Promise<RawAnimal> => ({
     born_at: animal.bornAt ? formatISO(animal.bornAt) : '',
     gender: animal.gender,
     avatar: animal.avatar,
+    castrated: animal.castrated,
     playfulness: animal.playfulness,
     family_friendly: animal.familyFriendly,
     pet_friendly: animal.petFriendly,

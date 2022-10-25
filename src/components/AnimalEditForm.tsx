@@ -46,6 +46,7 @@ import {
 } from '../hooks/queries/useGetCitiesByStateQuery';
 import {useGetBreedsQuery} from '../hooks/queries/useGetBreedsQuery';
 import {useGetStatesQuery} from '../hooks/queries/useGetStatesQuery';
+import {getGenderPrefix} from '../utils';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -66,6 +67,7 @@ const schema = yup.object({
   gender: yup.string().
       oneOf(Object.values(Gender)).
       required('O campo espécie é obrigatório.'),
+  castrated: yup.boolean().required('O campo castrado é obrigatório.'),
   playfulness: yup.number().required('O campo playfulness é obrigatório.'),
   familyFriendly: yup.number().
       required('O campo familyFriendly é obrigatório.'),
@@ -242,6 +244,39 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
             </FormControl>
           </Grid>
           <Grid item xs={12}>
+            <FormControl>
+              <FormLabel id="castratedLabel">
+                Castrad{getGenderPrefix(getValues('gender'))}
+              </FormLabel>
+              <Controller
+                  name="castrated"
+                  control={control}
+                  render={({field}) => (
+                      <RadioGroup
+                          {...field}
+                          aria-labelledby="castratedLabel"
+                      >
+                        <FormControlLabel
+                            value={true}
+                            control={<Radio/>}
+                            label="Sim"
+                        />
+                        <FormControlLabel
+                            value={false}
+                            control={<Radio/>}
+                            label="Não"
+                        />
+                      </RadioGroup>
+                  )}
+              />
+              {!!errors.castrated && (
+                  <FormHelperText error>
+                    {errors.castrated?.message}
+                  </FormHelperText>
+              )}
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
             <Controller
                 name="name"
                 control={control}
@@ -380,7 +415,8 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
                 value={getValues('city') ?? ''}
                 autoComplete
                 disableClearable
-                disabled={isLoadingCities || isRefetchingCities || cities?.length === 0}
+                disabled={isLoadingCities || isRefetchingCities ||
+                    cities?.length === 0}
                 onChange={async (event, city) => {
                   setValue('city', city);
 

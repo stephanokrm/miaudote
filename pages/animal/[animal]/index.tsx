@@ -14,17 +14,20 @@ import {intlFormatDistance, parseISO} from 'date-fns';
 import Avatar from '@mui/material/Avatar';
 import PetsIcon from '@mui/icons-material/Pets';
 import {AnimalCard} from '../../../src/components/AnimalCard';
-import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import Slider from '@mui/material/Slider';
-import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
-import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import DescriptionIcon from '@mui/icons-material/Description';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import CelebrationIcon from '@mui/icons-material/Celebration';
+import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
+import ChildCareSharpIcon from '@mui/icons-material/ChildCareSharp';
+import Face6Icon from '@mui/icons-material/Face6';
 import {getAnimalMention} from '../../../src/utils';
 import {parsePhoneNumber} from 'libphonenumber-js';
+import Box from '@mui/material/Box';
 
 type AnimalShowProps = {
   animal: Animal,
@@ -123,91 +126,86 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                           variant="body1">{animal.description}</Typography>
                     </Grid>
                     <Grid item xs={12}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} lg={6}>
-                          <Typography variant="body2" gutterBottom>
-                            O quão brincalhão é {theAnimal}
-                          </Typography>
-                          <Stack
-                              spacing={2}
-                              direction="row"
-                              alignItems="center"
-                          >
-                            <ThumbDownOffAltIcon color="primary"/>
-                            <Slider
-                                defaultValue={animal.playfulness}
-                                step={1}
-                                marks
-                                disabled
-                                min={1}
-                                max={5}
-                            />
-                            <ThumbUpOffAltIcon color="primary"/>
-                          </Stack>
+                      <Grid container spacing={2} justifyContent="center">
+                        <Grid item>
+                          <Card variant="outlined">
+                            <CardContent
+                                sx={{paddingBottom: '16px !important'}}>
+                              {animal.playfulness >= 3 ? (
+                                  <Box textAlign="center">
+                                    <CelebrationIcon color="primary"/>
+                                    <Typography
+                                        variant="body2">Brincalhão</Typography>
+                                  </Box>
+                              ) : (
+                                  <Box textAlign="center">
+                                    <SelfImprovementIcon color="primary"/>
+                                    <Typography
+                                        variant="subtitle2">Calmo</Typography>
+                                  </Box>
+                              )}
+                            </CardContent>
+                          </Card>
                         </Grid>
-                        <Grid item xs={12} lg={6}>
-                          <Typography variant="body2" gutterBottom>
-                            O quão carinhoso com a família é {theAnimal}
-                          </Typography>
-                          <Stack
-                              spacing={2}
-                              direction="row"
-                              alignItems="center"
-                          >
-                            <ThumbDownOffAltIcon color="primary"/>
-                            <Slider
-                                defaultValue={animal.familyFriendly}
-                                step={1}
-                                marks
-                                disabled
-                                min={1}
-                                max={5}
-                            />
-                            <ThumbUpOffAltIcon color="primary"/>
-                          </Stack>
+                        <Grid item>
+                          <Card variant="outlined">
+                            <CardContent
+                                sx={{paddingBottom: '16px !important'}}>
+                              {animal.familyFriendly >= 3 ? (
+                                  <Box textAlign="center">
+                                    <FavoriteIcon color="primary"/>
+                                    <Typography
+                                        variant="body2">Carinhoso</Typography>
+                                  </Box>
+                              ) : (
+                                  <Box textAlign="center">
+                                    <DoNotTouchIcon color="primary"/>
+                                    <Typography
+                                        variant="subtitle2">Reservado</Typography>
+                                  </Box>
+                              )}
+                            </CardContent>
+                          </Card>
                         </Grid>
-                        <Grid item xs={12} lg={6}>
-                          <Typography variant="body2" gutterBottom>
-                            O quão bem {theAnimal} se dá com outros animais de
-                            estimação da casa
-                          </Typography>
-                          <Stack
-                              spacing={2}
-                              direction="row"
-                              alignItems="center"
-                          >
-                            <ThumbDownOffAltIcon color="primary"/>
-                            <Slider
-                                defaultValue={animal.petFriendly}
-                                step={1}
-                                marks
-                                disabled
-                                min={1}
-                                max={5}
-                            />
-                            <ThumbUpOffAltIcon color="primary"/>
-                          </Stack>
+                        <Grid item>
+                          <Card variant="outlined">
+                            <CardContent
+                                sx={{paddingBottom: '16px !important'}}>
+                              {animal.petFriendly >= 3 ? (
+                                  <Box textAlign="center">
+                                    <PetsIcon color="primary"/>
+                                    <Typography variant="body2">Amigável Com
+                                      Animais</Typography>
+                                  </Box>
+                              ) : (
+                                  <Box textAlign="center">
+                                    <PetsIcon color="primary"/>
+                                    <Typography variant="subtitle2">Prefere Ser
+                                      o Único</Typography>
+                                  </Box>
+                              )}
+                            </CardContent>
+                          </Card>
                         </Grid>
-                        <Grid item xs={12} lg={6}>
-                          <Typography variant="body2" gutterBottom>
-                            O quão bem {theAnimal} se dá com crianças
-                          </Typography>
-                          <Stack
-                              alignItems="center"
-                              direction="row"
-                              spacing={2}
-                          >
-                            <ThumbDownOffAltIcon color="primary"/>
-                            <Slider
-                                defaultValue={animal.childrenFriendly}
-                                disabled
-                                marks
-                                max={5}
-                                min={1}
-                                step={1}
-                            />
-                            <ThumbUpOffAltIcon color="primary"/>
-                          </Stack>
+                        <Grid item>
+                          <Card variant="outlined">
+                            <CardContent
+                                sx={{paddingBottom: '16px !important'}}>
+                              {animal.childrenFriendly >= 3 ? (
+                                  <Box textAlign="center">
+                                    <ChildCareSharpIcon color="primary"/>
+                                    <Typography variant="body2">Amigável Com
+                                      Crianças</Typography>
+                                  </Box>
+                              ) : (
+                                  <Box textAlign="center">
+                                    <Face6Icon color="primary"/>
+                                    <Typography variant="subtitle2">Prefere
+                                      Adultos</Typography>
+                                  </Box>
+                              )}
+                            </CardContent>
+                          </Card>
                         </Grid>
                       </Grid>
                     </Grid>

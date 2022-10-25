@@ -26,6 +26,7 @@ import CakeIcon from '@mui/icons-material/Cake';
 import {ptBR} from 'date-fns/locale';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female';
+import HealingIcon from '@mui/icons-material/Healing';
 import {Animal} from '../types';
 import {FC, ReactNode, useState} from 'react';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -97,7 +98,8 @@ export const AnimalCard: FC<AnimalCardProps> = (props) => {
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2" color="text.secondary" noWrap>
+                    <Typography variant="subtitle2" color="text.secondary"
+                                noWrap>
                       <Box display="flex" alignContent="center">
                         <PlaceIcon fontSize="small" color="primary"/>
                         <Box paddingLeft={1}>
@@ -136,6 +138,18 @@ export const AnimalCard: FC<AnimalCardProps> = (props) => {
                       </Box>
                     </Typography>
                   </Grid>
+                  {animal.castrated ? (
+                      <Grid item>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          <Box display="flex" alignContent="center">
+                            <HealingIcon fontSize="small" color="primary"/>
+                            <Box paddingLeft={1}>
+                              Castrado
+                            </Box>
+                          </Box>
+                        </Typography>
+                      </Grid>
+                  ) : null}
                 </Grid>
               </CardContent>
             </CardActionArea>

@@ -161,7 +161,7 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
                                   <Box textAlign="center">
                                     <DoNotTouchIcon color="primary"/>
                                     <Typography
-                                        variant="subtitle2">Reservado</Typography>
+                                        variant="subtitle2">Envergonhado</Typography>
                                   </Box>
                               )}
                             </CardContent>

@@ -20,6 +20,7 @@ export const useAnimalStoreMutation = ({ setError }: UseAnimalStoreMutation) => 
     return useFormMutation<SuccessResponse, AnimalStoreFieldValues>(async ({file, ...animal}) => {
         return axios().post<Response, SuccessResponse, AnimalStoreData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal`, {
             ...await animalToRawAnimal(animal as Animal),
+            castrated: animal.castrated ? 1 : 0,
             file,
         }, {
             headers: {

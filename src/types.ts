@@ -181,7 +181,8 @@ export type AnimalStoreFieldValues = Animal & {
     file: File,
 };
 
-export type AnimalStoreData = RawAnimal & {
+export type AnimalStoreData = Omit<RawAnimal, 'castrated'> & {
+    castrated: 1 | 0,
     file: File,
 };
 
@@ -189,8 +190,9 @@ export type AnimalUpdateFieldValues = Animal & {
     file: File,
 };
 
-export type AnimalUpdateData = RawAnimal & {
+export type AnimalUpdateData = Omit<RawAnimal, 'castrated'> & {
     file: File,
+    castrated: 1 | 0,
     _method: 'PUT',
 };
 

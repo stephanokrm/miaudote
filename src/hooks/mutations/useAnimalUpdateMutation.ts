@@ -21,6 +21,7 @@ export const useAnimalUpdateMutation = ({ setError }: UseAnimalStoreMutation) =>
         return axios().post<Response, SuccessResponse, AnimalUpdateData>(`${process.env.NEXT_PUBLIC_SERVICE_URL}/api/animal/${animal.id}`, {
             ...await animalToRawAnimal(animal as Animal),
             _method: 'PUT',
+            castrated: animal.castrated ? 1 : 0,
             file,
         }, {
             headers: {

@@ -6,11 +6,8 @@ import {useFormMutation} from "./useFormMutation";
 
 type Response = Resource<RawAnimal>;
 type SuccessResponse = AxiosResponse<Response>;
-type UseAnimalStoreMutation = {
-    animal: string,
-};
 
-export const useAnimalImageStoreMutation = ({ animal }: UseAnimalStoreMutation) => {
+export const useAnimalImageStoreMutation = (animal: string) => {
     const queryClient = useQueryClient();
 
     return useFormMutation<SuccessResponse, AnimalImageStoreFieldValues>(async ({file}) => {
@@ -18,12 +15,13 @@ export const useAnimalImageStoreMutation = ({ animal }: UseAnimalStoreMutation) 
             file,
         }, {
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'multipart/form-data'
             }
         })
     }, {
         onSuccess: async () => {
-            await queryClient.invalidateQueries(['getImagesByAnimal']);
+            await queryClient.invalidateQueries(['getImagesByAnimal', animal]);
         },
     })
 };

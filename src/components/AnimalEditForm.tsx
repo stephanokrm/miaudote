@@ -130,7 +130,7 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
     mutate: storeAnimalImage,
     isLoading: isStoringAnimalImage,
     message: storeAnimalImageMessage,
-  } = useAnimalImageStoreMutation({animal: animal.id});
+  } = useAnimalImageStoreMutation(animal.id);
   const onSubmit = handleSubmit(
       (data: AnimalUpdateFieldValues) => mutate(data));
 

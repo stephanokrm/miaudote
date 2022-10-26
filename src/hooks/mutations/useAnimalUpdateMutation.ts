@@ -25,14 +25,18 @@ export const useAnimalUpdateMutation = ({ setError }: UseAnimalStoreMutation) =>
             file,
         }, {
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'multipart/form-data'
             }
         })
     }, {
         setError,
         onSuccess: async (response) => {
+            const animal = response.data.data.id;
+
             await queryClient.invalidateQueries(['getAnimalByMe']);
-            await router.push(`/animal/${response.data.data.id}`);
+            await queryClient.invalidateQueries(['getAnimal', animal]);
+            await router.push(`/animal/${animal}`);
         },
     })
 };

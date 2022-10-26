@@ -1,8 +1,7 @@
 import {GetServerSideProps, NextPage} from 'next';
-import {Animal} from '../../../src/types';
+import {Animal, User} from '../../../src/types';
 import {getAnimal} from '../../../src/services/getAnimal';
 import Head from 'next/head';
-import Container from '@mui/material/Container';
 import {ptBR} from 'date-fns/locale';
 import Image from 'next/image';
 import CardHeader from '@mui/material/CardHeader';
@@ -28,14 +27,23 @@ import Face6Icon from '@mui/icons-material/Face6';
 import {getAnimalMention} from '../../../src/utils';
 import {parsePhoneNumber} from 'libphonenumber-js';
 import Box from '@mui/material/Box';
+import LoadingButton from '@mui/lab/LoadingButton';
+import {
+  useAnimalInterestStoreMutation,
+} from '../../../src/hooks/mutations/useAnimalInterestStoreMutation';
+import getUserByMe from '../../../src/services/getUserByMe';
 
 type AnimalShowProps = {
   animal: Animal,
+  user?: User,
 }
 
 const today = new Date();
 
-export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: string }> = async ({params}) => {
+export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: string }> = async ({
+  req,
+  params,
+}) => {
   if (!params?.animal) {
     return {
       notFound: true,
@@ -44,8 +52,11 @@ export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: s
 
   try {
     const animal = await getAnimal({animal: params.animal});
+    const user = req.cookies.authorization
+        ? await getUserByMe({authorization: req.cookies.authorization})
+        : undefined;
 
-    return {props: {animal}};
+    return {props: {animal, user}};
   } catch (e) {
     return {
       notFound: true,
@@ -53,11 +64,20 @@ export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: s
   }
 };
 
-const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
+const AnimalShow: NextPage<AnimalShowProps> = ({
+  animal,
+  user,
+}: AnimalShowProps) => {
   const theAnimal = getAnimalMention(animal);
   const url = typeof window === 'undefined'
       ? `https://miaudote-alpha.vercel.app/animal/${animal.id}`
       : window.location.href;
+
+  const {
+    mutate,
+    isLoading,
+    isSuccess,
+  } = useAnimalInterestStoreMutation(animal.id);
 
   return (
       <>
@@ -79,179 +99,188 @@ const AnimalShow: NextPage<AnimalShowProps> = ({animal}: AnimalShowProps) => {
           <meta property="twitter:description" content={animal.description}/>
           <meta property="twitter:image" content={animal.avatar}/>
         </Head>
-          <Grid container spacing={2} sx={{marginY: 2}}>
-            <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnimalCard animal={animal} CardHeader={(
-                  <CardHeader
-                      avatar={(
-                          <Avatar
-                              alt={animal?.user?.name}
-                              src={animal?.user?.avatar}
-                          />
-                      )}
-                      title={animal.user?.name}
-                      subheader={intlFormatDistance(
-                          parseISO(animal.createdAtISO),
-                          today, {locale: ptBR.code})}
-                      action={
-                        <Tooltip title={`Conversar com ${animal?.user?.name}`}>
-                          <IconButton aria-label="WhatsApp" color="primary"
-                                      href={animal?.user?.phone
-                                          ? `https://wa.me/${parsePhoneNumber(
-                                              animal?.user?.phone,
-                                              'BR').number}`
-                                          : ''} target="_blank">
-                            <WhatsAppIcon/>
-                          </IconButton>
-                        </Tooltip>
-                      }
-                  />
-              )}/>
-            </Grid>
-            <Grid item xs={12} sm={6} md={8} lg={9}>
-              <Card>
-                <CardContent>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} textAlign="center">
-                      <PetsIcon fontSize="large" color="primary"/>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography
-                          variant="h5" display="flex" alignItems="center"
-                          gutterBottom>
-                        <DescriptionIcon color="primary" sx={{mr: 1}}/>
-                        Sobre {theAnimal}</Typography>
-                      <Typography
-                          variant="body1">{animal.description}</Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Grid container spacing={2} justifyContent="center">
-                        <Grid item>
-                          <Card variant="outlined">
-                            <CardContent
-                                sx={{paddingBottom: '16px !important'}}>
-                              {animal.playfulness >= 3 ? (
-                                  <Box textAlign="center">
-                                    <CelebrationIcon color="primary"/>
-                                    <Typography
-                                        variant="body2">Brincalhão</Typography>
-                                  </Box>
-                              ) : (
-                                  <Box textAlign="center">
-                                    <SelfImprovementIcon color="primary"/>
-                                    <Typography
-                                        variant="subtitle2">Calmo</Typography>
-                                  </Box>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </Grid>
-                        <Grid item>
-                          <Card variant="outlined">
-                            <CardContent
-                                sx={{paddingBottom: '16px !important'}}>
-                              {animal.familyFriendly >= 3 ? (
-                                  <Box textAlign="center">
-                                    <FavoriteIcon color="primary"/>
-                                    <Typography
-                                        variant="body2">Carinhoso</Typography>
-                                  </Box>
-                              ) : (
-                                  <Box textAlign="center">
-                                    <DoNotTouchIcon color="primary"/>
-                                    <Typography
-                                        variant="subtitle2">Envergonhado</Typography>
-                                  </Box>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </Grid>
-                        <Grid item>
-                          <Card variant="outlined">
-                            <CardContent
-                                sx={{paddingBottom: '16px !important'}}>
-                              {animal.petFriendly >= 3 ? (
-                                  <Box textAlign="center">
-                                    <PetsIcon color="primary"/>
-                                    <Typography variant="body2">Amigável Com
-                                      Animais</Typography>
-                                  </Box>
-                              ) : (
-                                  <Box textAlign="center">
-                                    <PetsIcon color="primary"/>
-                                    <Typography variant="subtitle2">Prefere Ser
-                                      o Único</Typography>
-                                  </Box>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </Grid>
-                        <Grid item>
-                          <Card variant="outlined">
-                            <CardContent
-                                sx={{paddingBottom: '16px !important'}}>
-                              {animal.childrenFriendly >= 3 ? (
-                                  <Box textAlign="center">
-                                    <ChildCareSharpIcon color="primary"/>
-                                    <Typography variant="body2">Amigável Com
-                                      Crianças</Typography>
-                                  </Box>
-                              ) : (
-                                  <Box textAlign="center">
-                                    <Face6Icon color="primary"/>
-                                    <Typography variant="subtitle2">Prefere
-                                      Adultos</Typography>
-                                  </Box>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </Grid>
+        <Grid container spacing={2} sx={{marginY: 2}}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
+            <AnimalCard animal={animal} CardHeader={(
+                <CardHeader
+                    avatar={(
+                        <Avatar
+                            alt={animal?.user?.name}
+                            src={animal?.user?.avatar}
+                        />
+                    )}
+                    title={animal.user?.name}
+                    subheader={intlFormatDistance(
+                        parseISO(animal.createdAtISO),
+                        today, {locale: ptBR.code})}
+                    action={
+                      <Tooltip title={`Conversar com ${animal?.user?.name}`}>
+                        <IconButton aria-label="WhatsApp" color="primary"
+                                    href={animal?.user?.phone
+                                        ? `https://wa.me/${parsePhoneNumber(
+                                            animal?.user?.phone,
+                                            'BR').number}`
+                                        : ''} target="_blank">
+                          <WhatsAppIcon/>
+                        </IconButton>
+                      </Tooltip>
+                    }
+                />
+            )}/>
+          </Grid>
+          <Grid item xs={12} sm={6} md={8} lg={9}>
+            <Card>
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} textAlign="center">
+                    <PetsIcon fontSize="large" color="primary"/>
+                  </Grid>
+                  {user ? (
+                      <Grid item xs={12}>
+                        <LoadingButton variant="contained" size="large"
+                                       loading={isLoading} disabled={isSuccess}
+                                       onClick={mutate}>
+                          {isSuccess ? 'Interesse salvo!' : 'Quero adotar!'}
+                        </LoadingButton>
+                      </Grid>
+                  ) : null}
+                  <Grid item xs={12}>
+                    <Typography
+                        variant="h5" display="flex" alignItems="center"
+                        gutterBottom>
+                      <DescriptionIcon color="primary" sx={{mr: 1}}/>
+                      Sobre {theAnimal}</Typography>
+                    <Typography
+                        variant="body1">{animal.description}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Grid container spacing={2} justifyContent="center">
+                      <Grid item>
+                        <Card variant="outlined">
+                          <CardContent
+                              sx={{paddingBottom: '16px !important'}}>
+                            {animal.playfulness >= 3 ? (
+                                <Box textAlign="center">
+                                  <CelebrationIcon color="primary"/>
+                                  <Typography
+                                      variant="body2">Brincalhão</Typography>
+                                </Box>
+                            ) : (
+                                <Box textAlign="center">
+                                  <SelfImprovementIcon color="primary"/>
+                                  <Typography
+                                      variant="subtitle2">Calmo</Typography>
+                                </Box>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item>
+                        <Card variant="outlined">
+                          <CardContent
+                              sx={{paddingBottom: '16px !important'}}>
+                            {animal.familyFriendly >= 3 ? (
+                                <Box textAlign="center">
+                                  <FavoriteIcon color="primary"/>
+                                  <Typography
+                                      variant="body2">Carinhoso</Typography>
+                                </Box>
+                            ) : (
+                                <Box textAlign="center">
+                                  <DoNotTouchIcon color="primary"/>
+                                  <Typography
+                                      variant="subtitle2">Envergonhado</Typography>
+                                </Box>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item>
+                        <Card variant="outlined">
+                          <CardContent
+                              sx={{paddingBottom: '16px !important'}}>
+                            {animal.petFriendly >= 3 ? (
+                                <Box textAlign="center">
+                                  <PetsIcon color="primary"/>
+                                  <Typography variant="body2">Amigável Com
+                                    Animais</Typography>
+                                </Box>
+                            ) : (
+                                <Box textAlign="center">
+                                  <PetsIcon color="primary"/>
+                                  <Typography variant="subtitle2">Prefere Ser
+                                    o Único</Typography>
+                                </Box>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item>
+                        <Card variant="outlined">
+                          <CardContent
+                              sx={{paddingBottom: '16px !important'}}>
+                            {animal.childrenFriendly >= 3 ? (
+                                <Box textAlign="center">
+                                  <ChildCareSharpIcon color="primary"/>
+                                  <Typography variant="body2">Amigável Com
+                                    Crianças</Typography>
+                                </Box>
+                            ) : (
+                                <Box textAlign="center">
+                                  <Face6Icon color="primary"/>
+                                  <Typography variant="subtitle2">Prefere
+                                    Adultos</Typography>
+                                </Box>
+                            )}
+                          </CardContent>
+                        </Card>
                       </Grid>
                     </Grid>
-                    {animal.images && animal.images?.length > 0 && (
-                        <Grid item xs={12}>
-                          <Typography
-                              alignItems="center"
-                              display="flex"
-                              gutterBottom
-                              variant="h5"
-                          >
-                            <PhotoLibraryIcon color="primary" sx={{mr: 1}}/>
-                            Fotos
-                          </Typography>
-                        </Grid>
-                    )}
                   </Grid>
-                  <Grid container spacing={1}>
-                    {animal.images?.map((image) => (
-                        <Grid
-                            item
-                            key={image.id}
-                            lg={4}
-                            md={6}
-                            position="relative"
-                            xs={12}
+                  {animal.images && animal.images?.length > 0 && (
+                      <Grid item xs={12}>
+                        <Typography
+                            alignItems="center"
+                            display="flex"
+                            gutterBottom
+                            variant="h5"
                         >
-                          <Image
-                              style={{
-                                borderRadius: '20px',
-                                width: '100%',
-                                height: 'auto',
-                              }}
-                              loading="lazy"
-                              alt={animal.name}
-                              src={image.path}
-                              width="0"
-                              height="0"
-                              sizes="100vw"
-                          />
-                        </Grid>
-                    ))}
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
+                          <PhotoLibraryIcon color="primary" sx={{mr: 1}}/>
+                          Fotos
+                        </Typography>
+                      </Grid>
+                  )}
+                </Grid>
+                <Grid container spacing={1}>
+                  {animal.images?.map((image) => (
+                      <Grid
+                          item
+                          key={image.id}
+                          lg={4}
+                          md={6}
+                          position="relative"
+                          xs={12}
+                      >
+                        <Image
+                            style={{
+                              borderRadius: '20px',
+                              width: '100%',
+                              height: 'auto',
+                            }}
+                            loading="lazy"
+                            alt={animal.name}
+                            src={image.path}
+                            width="0"
+                            height="0"
+                            sizes="100vw"
+                        />
+                      </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
           </Grid>
+        </Grid>
       </>
   );
 };

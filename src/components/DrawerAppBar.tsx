@@ -96,12 +96,12 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
     {
       label: 'Interessados',
       guarded: true,
-      href: '/interests',
+      href: '/interest',
     },
     {
       label: 'Meus Interesses',
       guarded: true,
-      href: '/interests/me',
+      href: '/interest/me',
     },
     {
       label: 'Minhas Doações',

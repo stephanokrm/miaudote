@@ -47,6 +47,7 @@ import {
 import {useGetBreedsQuery} from '../hooks/queries/useGetBreedsQuery';
 import {useGetStatesQuery} from '../hooks/queries/useGetStatesQuery';
 import {getGenderPrefix} from '../utils';
+import {ControlledTextField} from './ControlledTextField';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -277,14 +278,7 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
             </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <Controller
-                name="name"
-                control={control}
-                render={({field}) => <TextField {...field} label="Nome"
-                                                variant="filled"
-                                                fullWidth error={!!errors.name}
-                                                helperText={errors.name?.message}/>}
-            />
+            <ControlledTextField name="name" label="Nome" control={control}/>
           </Grid>
           <Grid item xs={12}>
             <Controller
@@ -532,22 +526,22 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
             </Stack>
           </Grid>
           <Grid item xs={12}>
-            <Controller
+            <ControlledTextField
                 name="description"
+                label="Descrição"
                 control={control}
-                render={({field}) => <TextField {...field} multiline
-                                                label="Descrição"
-                                                variant="filled"
-                                                rows={3}
-                                                fullWidth
-                                                error={!!errors.description}
-                                                helperText={errors.description?.message}/>}
+                multiline
+                rows={4}
             />
           </Grid>
           <Grid item xs={12}>
-            <LoadingButton fullWidth variant="contained" size="large"
-                           type="submit"
-                           loading={isLoading}>
+            <LoadingButton
+                fullWidth
+                variant="contained"
+                size="large"
+                type="submit"
+                loading={isLoading}
+            >
               Atualizar
             </LoadingButton>
           </Grid>

@@ -42,6 +42,7 @@ import {
 import {useGetBreedsQuery} from '../../src/hooks/queries/useGetBreedsQuery';
 import {useGetStatesQuery} from '../../src/hooks/queries/useGetStatesQuery';
 import {getGenderPrefix} from '../../src/utils';
+import {ControlledTextField} from '../../src/components/ControlledTextField';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -153,7 +154,7 @@ const AnimalCreate: NextPage = () => {
                           </InteractableAvatar>
                         </Grid>
                         <Grid item xs={12}>
-                          <Typography variant="h3">{watch('name') ??
+                          <Typography variant="h3">{getValues('name') ??
                               'Doar'}</Typography>
                         </Grid>
                         {message && (
@@ -262,15 +263,10 @@ const AnimalCreate: NextPage = () => {
                           </FormControl>
                         </Grid>
                         <Grid item xs={12}>
-                          <Controller
+                          <ControlledTextField
                               name="name"
+                              label="Nome"
                               control={control}
-                              render={({field}) => <TextField {...field}
-                                                              label="Nome"
-                                                              variant="filled"
-                                                              fullWidth
-                                                              error={!!errors.name}
-                                                              helperText={errors.name?.message}/>}
                           />
                         </Grid>
                         <Grid item xs={12}>
@@ -525,17 +521,12 @@ const AnimalCreate: NextPage = () => {
                           </Stack>
                         </Grid>
                         <Grid item xs={12}>
-                          <Controller
+                          <ControlledTextField
                               name="description"
+                              label="Descrição"
                               control={control}
-                              render={({field}) => <TextField {...field}
-                                                              multiline
-                                                              label="Descrição"
-                                                              variant="filled"
-                                                              rows={3}
-                                                              fullWidth
-                                                              error={!!errors.description}
-                                                              helperText={errors.description?.message}/>}
+                              multiline
+                              rows={4}
                           />
                         </Grid>
                         <Grid item xs={12}>

@@ -1,4 +1,4 @@
-import {ChangeEvent, FC} from 'react';
+import {FC} from 'react';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
@@ -18,6 +18,7 @@ import {
   useGetCitiesByStateQuery,
 } from '../hooks/queries/useGetCitiesByStateQuery';
 import {useGetStatesQuery} from '../hooks/queries/useGetStatesQuery';
+import {ControlledTextField} from './ControlledTextField';
 
 type UserEditFormProps = {
   user: User,
@@ -116,13 +117,10 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
             <Typography variant="h5">Dados Pessoais</Typography>
           </Grid>
           <Grid item xs={12}>
-            <Controller
+            <ControlledTextField
                 name="name"
+                label="Nome"
                 control={control}
-                render={({field}) => <TextField {...field} label="Nome"
-                                                variant="filled"
-                                                fullWidth error={!!errors.name}
-                                                helperText={errors.name?.message}/>}
             />
           </Grid>
           <Grid item xs={12}>
@@ -161,22 +159,12 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
                 }}/>
           </Grid>
           <Grid item xs={12}>
-            <Controller
+            <ControlledTextField
                 name="phone"
+                label="Celular"
                 control={control}
-                render={({field}) => (
-                    <TextField
-                        {...field}
-                        label="Celular"
-                        variant="filled"
-                        fullWidth
-                        error={!!errors.phone}
-                        helperText={errors.phone?.message}
-                        onChange={(event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-                          field.onChange(
-                              new AsYouType('BR').input(event.target.value));
-                        }}
-                    />
+                transform={(value) => (
+                    new AsYouType('BR').input(value)
                 )}
             />
           </Grid>
@@ -241,14 +229,11 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
             <Typography variant="h5">Usuário</Typography>
           </Grid>
           <Grid item xs={12}>
-            <Controller
+            <ControlledTextField
                 name="email"
+                type="email"
+                label="E-mail"
                 control={control}
-                render={({field}) => <TextField {...field} label="E-mail"
-                                                type="email"
-                                                variant="filled"
-                                                fullWidth error={!!errors.email}
-                                                helperText={errors.email?.message}/>}
             />
           </Grid>
           <Grid item xs={12}>

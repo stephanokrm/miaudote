@@ -16,7 +16,6 @@ import Head from 'next/head';
 import {Controller} from 'react-hook-form';
 import * as yup from 'yup';
 import {addDays, format, subYears} from 'date-fns';
-import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
@@ -43,6 +42,7 @@ import {useGetBreedsQuery} from '../../src/hooks/queries/useGetBreedsQuery';
 import {useGetStatesQuery} from '../../src/hooks/queries/useGetStatesQuery';
 import {getGenderPrefix} from '../../src/utils';
 import {ControlledTextField} from '../../src/components/ControlledTextField';
+import {ControlledDatePicker} from '../../src/components/ControlledDatePicker';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -236,7 +236,9 @@ const AnimalCreate: NextPage = () => {
                         </Grid>
                         <Grid item xs={12}>
                           <FormControl>
-                            <FormLabel id="castratedLabel">Castrad{getGenderPrefix(getValues('gender'))}</FormLabel>
+                            <FormLabel
+                                id="castratedLabel">Castrad{getGenderPrefix(
+                                getValues('gender'))}</FormLabel>
                             <Controller name="castrated" control={control}
                                         render={({field}) => (
                                             <RadioGroup
@@ -270,39 +272,16 @@ const AnimalCreate: NextPage = () => {
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <Controller
-                              name="bornAt"
+                          <ControlledDatePicker
                               control={control}
-                              render={({field}) => {
-                                return <DatePicker
-                                    label="Mês de Nascimento"
-                                    inputFormat="MM/yyyy"
-                                    value={getValues('bornAt') ?? ''}
-                                    onChange={(bornAt) => {
-                                      if (bornAt) setValue('bornAt', bornAt);
-                                    }}
-                                    disableFuture
-                                    openTo="year"
-                                    views={['year', 'month']}
-                                    minDate={minDate}
-                                    maxDate={maxDate}
-                                    renderInput={(params) => {
-                                      const inputProps = {
-                                        ...field,
-                                        ...params.inputProps,
-                                      };
-
-                                      return (
-                                          <TextField {...params}
-                                                     fullWidth
-                                                     inputProps={inputProps}
-                                                     variant="filled"
-                                                     error={!!errors.bornAt}
-                                                     helperText={errors.bornAt?.message}/>
-                                      );
-                                    }}
-                                />;
-                              }}/>
+                              disableFuture
+                              label="Data de Nascimento"
+                              maxDate={maxDate}
+                              minDate={minDate}
+                              name="bornAt"
+                              openTo="year"
+                              views={['year', 'month']}
+                          />
                         </Grid>
                         <Grid item xs={12}>
                           <Autocomplete

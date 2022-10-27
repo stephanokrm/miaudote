@@ -11,7 +11,6 @@ import Typography from '@mui/material/Typography';
 import {Controller} from 'react-hook-form';
 import * as yup from 'yup';
 import {addDays, format, parseISO, subYears} from 'date-fns';
-import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
@@ -48,6 +47,7 @@ import {useGetBreedsQuery} from '../hooks/queries/useGetBreedsQuery';
 import {useGetStatesQuery} from '../hooks/queries/useGetStatesQuery';
 import {getGenderPrefix} from '../utils';
 import {ControlledTextField} from './ControlledTextField';
+import {ControlledDatePicker} from './ControlledDatePicker';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -281,39 +281,16 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
             <ControlledTextField name="name" label="Nome" control={control}/>
           </Grid>
           <Grid item xs={12}>
-            <Controller
-                name="bornAt"
+            <ControlledDatePicker
                 control={control}
-                render={({field}) => {
-                  return <DatePicker
-                      label="Mês de Nascimento"
-                      inputFormat="MM/yyyy"
-                      value={getValues('bornAt') ?? ''}
-                      onChange={(bornAt) => {
-                        if (bornAt) setValue('bornAt', bornAt);
-                      }}
-                      disableFuture
-                      openTo="year"
-                      views={['year', 'month']}
-                      minDate={minDate}
-                      maxDate={maxDate}
-                      renderInput={(params) => {
-                        const inputProps = {
-                          ...field,
-                          ...params.inputProps,
-                        };
-
-                        return (
-                            <TextField {...params}
-                                       fullWidth
-                                       inputProps={inputProps}
-                                       variant="filled"
-                                       error={!!errors.bornAt}
-                                       helperText={errors.bornAt?.message}/>
-                        );
-                      }}
-                  />;
-                }}/>
+                disableFuture
+                label="Data de Nascimento"
+                maxDate={maxDate}
+                minDate={minDate}
+                name="bornAt"
+                openTo="year"
+                views={['year', 'month']}
+            />
           </Grid>
           <Grid item xs={12}>
             <Autocomplete

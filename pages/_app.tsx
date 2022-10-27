@@ -7,6 +7,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {CacheProvider, EmotionCache} from '@emotion/react';
+import {ptBR} from 'date-fns/locale';
 import {
   Hydrate,
   QueryClient,
@@ -18,7 +19,6 @@ import createEmotionCache from '../src/createEmotionCache';
 import {useState} from 'react';
 import {DrawerAppBar} from '../src/components/DrawerAppBar';
 
-// Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
 
 interface MyAppProps extends AppProps {
@@ -45,8 +45,10 @@ export default function MyApp(props: MyAppProps) {
                     content="initial-scale=1, width=device-width"/>
             </Head>
             <ThemeProvider theme={theme}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+              <LocalizationProvider
+                  adapterLocale={ptBR}
+                  dateAdapter={AdapterDateFns}
+              >
                 <CssBaseline/>
                 {globalStyles}
                 <DrawerAppBar>

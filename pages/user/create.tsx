@@ -13,8 +13,6 @@ import Typography from '@mui/material/Typography';
 import PetsIcon from '@mui/icons-material/Pets';
 import Head from 'next/head';
 import Link from 'next/link';
-import {DatePicker} from '@mui/x-date-pickers/DatePicker';
-import {Controller} from 'react-hook-form';
 import * as yup from 'yup';
 import {format, subYears} from 'date-fns';
 import {AsYouType} from 'libphonenumber-js';
@@ -32,6 +30,7 @@ import {
 } from '../../src/hooks/mutations/useUserStoreMutation';
 import {useGetStatesQuery} from '../../src/hooks/queries/useGetStatesQuery';
 import {ControlledTextField} from '../../src/components/ControlledTextField';
+import {ControlledDatePicker} from '../../src/components/ControlledDatePicker';
 
 const minDate = subYears(new Date(), 150);
 const maxDate = subYears(new Date(), 18);
@@ -151,39 +150,16 @@ const UserCreate: NextPage = () => {
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <Controller
-                              name="bornAt"
+                          <ControlledDatePicker
                               control={control}
-                              render={({field}) => {
-                                return <DatePicker
-                                    label="Data de Nascimento"
-                                    inputFormat="dd/MM/yyyy"
-                                    value={getValues('bornAt') ?? ''}
-                                    onChange={(bornAt) => {
-                                      if (bornAt) setValue('bornAt', bornAt);
-                                    }}
-                                    disableFuture
-                                    openTo="year"
-                                    views={['year', 'month', 'day']}
-                                    minDate={minDate}
-                                    maxDate={maxDate}
-                                    renderInput={(params) => {
-                                      const inputProps = {
-                                        ...field,
-                                        ...params.inputProps,
-                                      };
-
-                                      return (
-                                          <TextField {...params}
-                                                     fullWidth
-                                                     inputProps={inputProps}
-                                                     variant="filled"
-                                                     error={!!errors.bornAt}
-                                                     helperText={errors.bornAt?.message}/>
-                                      );
-                                    }}
-                                />;
-                              }}/>
+                              disableFuture
+                              label="Data de Nascimento"
+                              maxDate={maxDate}
+                              minDate={minDate}
+                              name="bornAt"
+                              openTo="year"
+                              views={['year', 'month', 'day']}
+                          />
                         </Grid>
                         <Grid item xs={12}>
                           <ControlledTextField

@@ -170,6 +170,8 @@ export type UserEditFieldValues =
   file: File,
 };
 
+export type UserLoginFieldValues = Pick<User, 'email' | 'password'>;
+
 export type UserStoreData = RawUser & {
   file: File,
 };

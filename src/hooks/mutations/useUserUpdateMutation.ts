@@ -27,8 +27,8 @@ export const useUserUpdateMutation = ({setError}: UseUserStoreMutation) => {
             post<Response, SuccessResponse, UserUpdateData>(
                 `${process.env.NEXT_PUBLIC_SERVICE_URL}/api/user/${user.id}`, {
                   ...await userToRawUser(user as User),
+                  ...file ? {file} : {},
                   _method: 'PUT',
-                  file,
                 }, {
                   headers: {
                     'Accept': 'application/json',

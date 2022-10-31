@@ -177,7 +177,7 @@ export type UserStoreData = RawUser & {
 };
 
 export type UserUpdateData = RawUser & {
-  file: File,
+  file?: File,
   _method: 'PUT',
 };
 

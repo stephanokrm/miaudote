@@ -158,17 +158,19 @@ export type User = {
   deletedAtISO: string | null,
 };
 
-export type UserStoreFieldValues =
+export type UserCreateFieldValues =
     Pick<User, 'avatar' | 'name' | 'bornAt' | 'email' | 'phone' | 'city' | 'password' | 'passwordConfirmation'>
     & {
   file: File,
 };
 
-export type UserStoreData = RawUser & {
+export type UserEditFieldValues =
+    Pick<User, 'id' | 'avatar' | 'name' | 'bornAt' | 'email' | 'phone' | 'city'>
+    & {
   file: File,
 };
 
-export type UserUpdateFieldValues = User & {
+export type UserStoreData = RawUser & {
   file: File,
 };
 

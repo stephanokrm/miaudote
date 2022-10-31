@@ -4,11 +4,10 @@ import {
   date as yupDate,
   number as yupNumber,
   object as yupObject,
-  ref as yupRef,
   string as yupString,
 } from 'yup';
 
-type UseUserCreateSchema = {
+type UseUserEditSchema = {
   minDate: Date,
   maxDate: Date,
 };
@@ -18,11 +17,12 @@ const stateSchema = yupObject().shape({
   initials: yupString().required(),
 });
 
-export const useUserCreateSchema = ({
+export const useUserEditSchema = ({
   minDate,
   maxDate,
-}: UseUserCreateSchema) => {
+}: UseUserEditSchema) => {
   return useMemo(() => yupObject().shape({
+    id: yupString().required(),
     avatar: yupString().required('O campo avatar é obrigatório.'),
     name: yupString().required('O campo nome é obrigatório.'),
     bornAt: yupDate().
@@ -41,11 +41,6 @@ export const useUserCreateSchema = ({
       name: yupString().required(),
       state: stateSchema.required('O campo estado é obrigatório.'),
     }).required('O campo cidade é obrigatório.'),
-    password: yupString().required('O campo senha é obrigatório.'),
-    passwordConfirmation: yupString().
-        required('O campo confirmação de senha é obrigatório.').
-        oneOf([yupRef('password'), null],
-            'O campo confirmação de senha não confere.'),
     file: yupObject().shape({}).required('O campo avatar é obrigatório.'),
   }), [minDate, maxDate]);
 };

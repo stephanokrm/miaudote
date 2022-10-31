@@ -14,7 +14,7 @@ import Link from 'next/link';
 import {subYears} from 'date-fns';
 import {AsYouType} from 'libphonenumber-js';
 import useForm from '../../src/hooks/useForm';
-import {UserStoreFieldValues} from '../../src/types';
+import {UserCreateFieldValues} from '../../src/types';
 import {
   AvatarChangeEvent,
   InteractableAvatar,
@@ -45,7 +45,7 @@ const UserCreate: NextPage = () => {
     trigger,
     setError,
     watch,
-  } = useForm<UserStoreFieldValues>({
+  } = useForm<UserCreateFieldValues>({
     schema,
     defaultValues: {
       bornAt: null,
@@ -64,7 +64,7 @@ const UserCreate: NextPage = () => {
   } = useUserStoreMutation({setError});
 
   const onSubmit = handleSubmit(
-      (data: UserStoreFieldValues) => storeUser(data));
+      (data: UserCreateFieldValues) => storeUser(data));
 
   const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
     if (!file || !avatar) {
@@ -96,11 +96,17 @@ const UserCreate: NextPage = () => {
                         <Grid item xs={12} textAlign="center">
                           <PetsIcon fontSize="large" color="primary"/>
                         </Grid>
-                        <Grid item xs={12} justifyContent="center"
-                              display="flex">
-                          <InteractableAvatar onChange={onAvatarChange}
-                                              alt={watch('name')}
-                                              src={watch('avatar')}/>
+                        <Grid
+                            item
+                            xs={12}
+                            justifyContent="center"
+                            display="flex"
+                        >
+                          <InteractableAvatar
+                              onChange={onAvatarChange}
+                              alt={watch('name')}
+                              src={watch('avatar')}
+                          />
                         </Grid>
                         {storeUserMessage && (
                             <Grid item xs={12}>
@@ -201,9 +207,13 @@ const UserCreate: NextPage = () => {
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <LoadingButton fullWidth variant="contained"
-                                         size="large" type="submit"
-                                         loading={isStoringUser}>
+                          <LoadingButton
+                              fullWidth
+                              loading={isStoringUser}
+                              size="large"
+                              type="submit"
+                              variant="contained"
+                          >
                             Cadastrar
                           </LoadingButton>
                         </Grid>

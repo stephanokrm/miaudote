@@ -1,16 +1,13 @@
 import {FC} from 'react';
 import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
 import LoadingButton from '@mui/lab/LoadingButton';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import {format, parseISO, subYears} from 'date-fns';
+import {parseISO, subYears} from 'date-fns';
 import {AsYouType} from 'libphonenumber-js';
 import {AvatarChangeEvent, InteractableAvatar} from './InteractableAvatar';
-import {User, UserUpdateFieldValues} from '../types';
+import {User, UserEditFieldValues} from '../types';
 import useForm from '../hooks/useForm';
-import * as yup from 'yup';
 import {useUserUpdateMutation} from '../hooks/mutations/useUserUpdateMutation';
 import {
   useGetCitiesByStateQuery,
@@ -18,51 +15,28 @@ import {
 import {useGetStatesQuery} from '../hooks/queries/useGetStatesQuery';
 import {ControlledTextField} from './ControlledTextField';
 import {ControlledDatePicker} from './ControlledDatePicker';
+import {useUserEditSchema} from '../hooks/schemas/useUserEditSchema';
+import {ControlledAutocomplete} from './ControlledAutocomplete';
 
 type UserEditFormProps = {
   user: User,
 };
 
-const minDate = subYears(new Date(), 150);
+const minDate = subYears(new Date(), 100);
 const maxDate = subYears(new Date(), 18);
-const stateObject = yup.object({
-  name: yup.string().required(),
-  initials: yup.string().required(),
-  label: yup.string().required(),
-});
-const schema = yup.object({
-  name: yup.string().required('O campo nome é obrigatório.'),
-  bornAt: yup.date().
-      required('O campo data de nascimento é obrigatório.').
-      min(minDate, 'O campo data de nascimento deve ser maior que ' +
-          format(minDate, 'dd/MM/yyyy') + '.').
-      max(maxDate, 'A sua idade deve ser maior que 18 anos.'),
-  email: yup.string().
-      email('O campo e-mail deve ser um endereço de e-mail válido.').
-      required('O campo e-mail é obrigatório.'),
-  phone: yup.string().required('O campo celular é obrigatório.'),
-  city: yup.object({
-    id: yup.number().required(),
-    name: yup.string().required(),
-    label: yup.string().required(),
-    state: stateObject,
-  }).nullable().required('O campo cidade é obrigatório.'),
-});
 
 export const UserEditForm: FC<UserEditFormProps> = (props) => {
   const {user} = props;
 
+  const schema = useUserEditSchema({minDate, maxDate});
   const {
     control,
     handleSubmit,
-    formState: {errors},
     setValue,
-    getValues,
     setError,
     trigger,
     watch,
-  } = useForm<UserUpdateFieldValues>({
-    // @ts-ignore
+  } = useForm<UserEditFieldValues>({
     schema,
     defaultValues: {
       ...user,
@@ -72,21 +46,18 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
 
   const {
     mutate: updateUser,
-    message,
+    message: updateUserMessage,
     isLoading: isUpdatingUser,
   } = useUserUpdateMutation({setError});
   const {data: states, isLoading: isLoadingStates} = useGetStatesQuery();
   const {
     data: cities,
     isLoading: isLoadingCities,
-    refetch: refetchCities,
-    isRefetching: refethingCities,
-  } = useGetCitiesByStateQuery(getValues('city.state').initials);
+  } = useGetCitiesByStateQuery(watch('city.state')?.initials);
 
-  const loading = isLoadingStates || isUpdatingUser || isLoadingCities ||
-      refethingCities;
   const onSubmit = handleSubmit(
-      (data: UserUpdateFieldValues) => updateUser(data));
+      (data: UserEditFieldValues) => updateUser(data));
+
   const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
     if (!file || !avatar) {
       return setError('avatar', {
@@ -103,13 +74,21 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
   return (
       <form onSubmit={onSubmit}>
         <Grid container spacing={2} justifyContent="center">
-          <Grid item xs={12} justifyContent="center" display="flex">
-            <InteractableAvatar onChange={onAvatarChange} alt={watch('name')}
-                                src={getValues('avatar')}/>
+          <Grid
+              item
+              xs={12}
+              justifyContent="center"
+              display="flex"
+          >
+            <InteractableAvatar
+                onChange={onAvatarChange}
+                alt={watch('name')}
+                src={watch('avatar')}
+            />
           </Grid>
-          {message && (
+          {updateUserMessage && (
               <Grid item xs={12}>
-                <Alert severity="error">{message}</Alert>
+                <Alert severity="error">{updateUserMessage}</Alert>
               </Grid>
           )}
           <Grid item xs={12}>
@@ -148,57 +127,34 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
             <Typography variant="h5">Endereço</Typography>
           </Grid>
           <Grid item xs={12}>
-            <Autocomplete
-                value={getValues('city.state') ?? ''}
-                autoComplete
-                disableClearable
-                disabled={loading}
-                onChange={async (event, state) => {
+            <ControlledAutocomplete
+                name="city.state"
+                label="Estado"
+                control={control}
+                disabled={isLoadingStates || states?.length === 0}
+                options={states ?? []}
+                getOptionLabel={(state) => state.name}
+                onChange={(state) => {
                   setValue('city', {
                     id: 0,
-                    label: '',
                     name: '',
-                    state,
+                    state: state ?? {
+                      name: '',
+                      initials: '',
+                    },
                   });
-
-                  await trigger('city');
-                  await refetchCities();
                 }}
-                options={states ?? []}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        variant="filled"
-                        fullWidth
-                        label="Estado"
-                        error={!!errors.city?.state}
-                        helperText={errors.city?.state?.message}
-                    />
-                )}
             />
           </Grid>
           <Grid item xs={12}>
-            <Autocomplete
-                value={getValues('city') ?? ''}
-                autoComplete
-                disableClearable
-                disabled={loading || cities?.length === 0}
-                onChange={async (event, city) => {
-                  setValue('city', city);
-
-                  await trigger('city');
-                }}
+            <ControlledAutocomplete
+                name="city"
+                label="Cidade"
+                control={control}
+                loading={isLoadingCities}
+                disabled={isLoadingCities || cities?.length === 0}
                 options={cities ?? []}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        variant="filled"
-                        fullWidth
-                        label="Cidade"
-                        error={!!errors.city}
-                        helperText={errors.city?.message}
-                    />
-                )}
+                getOptionLabel={(city) => city.name ?? ''}
             />
           </Grid>
           <Grid item xs={12}>
@@ -213,9 +169,13 @@ export const UserEditForm: FC<UserEditFormProps> = (props) => {
             />
           </Grid>
           <Grid item xs={12}>
-            <LoadingButton fullWidth variant="contained" size="large"
-                           type="submit"
-                           loading={loading}>
+            <LoadingButton
+                fullWidth
+                loading={isUpdatingUser}
+                size="large"
+                type="submit"
+                variant="contained"
+            >
               Atualizar
             </LoadingButton>
           </Grid>

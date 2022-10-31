@@ -181,7 +181,19 @@ export type UserUpdateData = RawUser & {
   _method: 'PUT',
 };
 
-export type AnimalStoreFieldValues = Animal & {
+export type AnimalCreateFieldValues = Pick<Animal,
+    'name' |
+    'description' |
+    'avatar' |
+    'bornAt' |
+    'gender' |
+    'breed' |
+    'castrated' |
+    'playfulness' |
+    'familyFriendly' |
+    'petFriendly' |
+    'childrenFriendly' |
+    'city'> & {
   file: File,
 };
 

@@ -1,27 +1,21 @@
 import {NextPage} from 'next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-import RadioGroup from '@mui/material/RadioGroup';
-import Radio from '@mui/material/Radio';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Head from 'next/head';
 import {Controller} from 'react-hook-form';
-import * as yup from 'yup';
-import {addDays, format, subYears} from 'date-fns';
+import {addDays, subYears} from 'date-fns';
 import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import {AnimalStoreFieldValues, Breed} from '../../src/types';
-import Autocomplete, {createFilterOptions} from '@mui/material/Autocomplete';
+import {AnimalCreateFieldValues, Breed} from '../../src/types';
+import {createFilterOptions} from '@mui/material/Autocomplete';
 import useForm from '../../src/hooks/useForm';
 import Alert from '@mui/material/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -43,77 +37,46 @@ import {useGetStatesQuery} from '../../src/hooks/queries/useGetStatesQuery';
 import {getGenderPrefix} from '../../src/utils';
 import {ControlledTextField} from '../../src/components/ControlledTextField';
 import {ControlledDatePicker} from '../../src/components/ControlledDatePicker';
+import {
+  ControlledAutocomplete,
+} from '../../src/components/ControlledAutocomplete';
+import {
+  useAnimalCreateSchema,
+} from '../../src/hooks/schemas/useAnimalCreateSchema';
+import {ControlledRadioGroup} from '../../src/components/ControlledRadioGroup';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
-const stateObject = yup.object({
-  name: yup.string().required(),
-  initials: yup.string().required(),
-  label: yup.string().required(),
-});
-const schema = yup.object({
-  name: yup.string().required('O campo nome é obrigatório.'),
-  description: yup.string().required('O campo descrição é obrigatório.'),
-  avatar: yup.string().required('O campo avatar é obrigatório.'),
-  bornAt: yup.date().
-      required('O campo mês de nascimento é obrigatório.').
-      min(minDate, 'O campo mês de nascimento deve ser maior que ' +
-          format(minDate, 'MM/yyyy') + '.').
-      max(maxDate, 'O campo mês de nascimento deve ser maior que hoje.'),
-  gender: yup.string().
-      oneOf(Object.values(Gender)).
-      required('O campo espécie é obrigatório.'),
-  castrated: yup.boolean().required('O campo castrado é obrigatório.'),
-  playfulness: yup.number().required('O campo playfulness é obrigatório.'),
-  familyFriendly: yup.number().
-      required('O campo familyFriendly é obrigatório.'),
-  petFriendly: yup.number().required('O campo petFriendly é obrigatório.'),
-  childrenFriendly: yup.number().
-      required('O campo childrenFriendly é obrigatório.'),
-  city: yup.object({
-    id: yup.number().required(),
-    name: yup.string().required(),
-    label: yup.string().required(),
-    state: stateObject,
-  }).required('O campo cidade é obrigatório.'),
-  breed: yup.object({
-    id: yup.string(),
-    name: yup.string(),
-    species: yup.string().oneOf(Object.values(Species)),
-  }).required('O campo raça é obrigatório.'),
-});
-
 const filter = createFilterOptions<Breed>();
 
 const AnimalCreate: NextPage = () => {
+  const schema = useAnimalCreateSchema({minDate, maxDate});
   const {
     control,
     handleSubmit,
-    formState: {errors},
     setError,
     setValue,
-    getValues,
     trigger,
     watch,
-  } = useForm<AnimalStoreFieldValues>({
-    // @ts-ignore
+  } = useForm<AnimalCreateFieldValues>({
     schema,
     defaultValues: {
       playfulness: 3,
       familyFriendly: 3,
       petFriendly: 3,
       childrenFriendly: 3,
+      bornAt: null,
     },
   });
   const {
     data: cities,
     isLoading: isLoadingCities,
-    refetch: refetchCities,
-  } = useGetCitiesByStateQuery(getValues('city.state')?.initials);
+  } = useGetCitiesByStateQuery(watch('city.state')?.initials);
   const {data: breeds, isLoading: isLoadingBreeds} = useGetBreedsQuery();
   const {data: states, isLoading: isLoadingStates} = useGetStatesQuery();
   const {mutate, isLoading, message} = useAnimalStoreMutation({setError});
-  const onSubmit = handleSubmit((data: AnimalStoreFieldValues) => mutate(data));
+  const onSubmit = handleSubmit(
+      (data: AnimalCreateFieldValues) => mutate(data));
 
   const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
     if (!file || !avatar) {
@@ -145,16 +108,22 @@ const AnimalCreate: NextPage = () => {
                         <Grid item xs={12} textAlign="center">
                           <PetsIcon fontSize="large" color="primary"/>
                         </Grid>
-                        <Grid item xs={12} justifyContent="center"
-                              display="flex">
-                          <InteractableAvatar onChange={onAvatarChange}
-                                              alt={watch('name')}
-                                              src={getValues('avatar')}>
+                        <Grid
+                            item
+                            xs={12}
+                            justifyContent="center"
+                            display="flex"
+                        >
+                          <InteractableAvatar
+                              onChange={onAvatarChange}
+                              alt={watch('name')}
+                              src={watch('avatar')}
+                          >
                             <PetsIcon fontSize="large"/>
                           </InteractableAvatar>
                         </Grid>
                         <Grid item xs={12}>
-                          <Typography variant="h3">{getValues('name') ??
+                          <Typography variant="h3">{watch('name') ??
                               'Doar'}</Typography>
                         </Grid>
                         {message && (
@@ -163,106 +132,39 @@ const AnimalCreate: NextPage = () => {
                             </Grid>
                         )}
                         <Grid item xs={12}>
-                          <FormControl>
-                            <FormLabel id="speciesLabel">Espécie</FormLabel>
-                            <Controller
-                                name="breed.species"
-                                control={control}
-                                render={({field}) => (
-                                    <RadioGroup
-                                        {...field}
-                                        onChange={async (...event) => {
-                                          field.onChange(...event);
-
-                                          setValue('breed', {
-                                            id: '',
-                                            name: '',
-                                            species: event[0].target.value as Species,
-                                            createdAt: null,
-                                            createdAtISO: '',
-                                            updatedAt: null,
-                                            updatedAtISO: '',
-                                          });
-
-                                          await trigger('breed');
-                                        }}
-                                        aria-labelledby="speciesLabel"
-                                    >
-                                      <FormControlLabel
-                                          value={Species.Cat}
-                                          control={<Radio/>}
-                                          label="Gato"
-                                      />
-                                      <FormControlLabel
-                                          value={Species.Dog}
-                                          control={<Radio/>}
-                                          label="Cachorro"
-                                      />
-                                    </RadioGroup>
-                                )}
-                            />
-                            {!!errors.breed?.species && (
-                                <FormHelperText
-                                    error>{errors.breed?.species?.message}</FormHelperText>
-                            )}
-                          </FormControl>
+                          <ControlledRadioGroup
+                              control={control}
+                              name="breed.species"
+                              label="Espécie"
+                              options={[
+                                {label: 'Gato', value: Species.Cat},
+                                {label: 'Cachorro', value: Species.Dog},
+                              ]}
+                          />
                         </Grid>
                         <Grid item xs={12}>
-                          <FormControl>
-                            <FormLabel id="genderLabel">Sexo</FormLabel>
-                            <Controller name="gender" control={control}
-                                        render={({field}) => (
-                                            <RadioGroup
-                                                {...field}
-                                                aria-labelledby="genderLabel"
-                                            >
-                                              <FormControlLabel
-                                                  value={Gender.Female}
-                                                  control={<Radio/>}
-                                                  label="Fêmea"
-                                              />
-                                              <FormControlLabel
-                                                  value={Gender.Male}
-                                                  control={<Radio/>}
-                                                  label="Macho"
-                                              />
-                                            </RadioGroup>
-                                        )}/>
-                            {!!errors.gender && (
-                                <FormHelperText
-                                    error>{errors.gender?.message}</FormHelperText>
-                            )}
-                          </FormControl>
+                          <ControlledRadioGroup
+                              control={control}
+                              name="gender"
+                              label="Sexo"
+                              options={[
+                                {label: 'Fêmea', value: Gender.Female},
+                                {label: 'Macho', value: Gender.Male},
+                              ]}
+                          />
                         </Grid>
                         <Grid item xs={12}>
-                          <FormControl>
-                            <FormLabel
-                                id="castratedLabel">Castrad{getGenderPrefix(
-                                getValues('gender'))}</FormLabel>
-                            <Controller name="castrated" control={control}
-                                        render={({field}) => (
-                                            <RadioGroup
-                                                {...field}
-                                                aria-labelledby="castratedLabel"
-                                            >
-                                              <FormControlLabel
-                                                  value={true}
-                                                  control={<Radio/>}
-                                                  label="Sim"
-                                              />
-                                              <FormControlLabel
-                                                  value={false}
-                                                  control={<Radio/>}
-                                                  label="Não"
-                                              />
-                                            </RadioGroup>
-                                        )}/>
-                            {!!errors.castrated && (
-                                <FormHelperText error>
-                                  {errors.castrated?.message}
-                                </FormHelperText>
-                            )}
-                          </FormControl>
+                          <ControlledRadioGroup
+                              control={control}
+                              name="castrated"
+                              label={
+                                `Castrad${getGenderPrefix(watch('gender'))}`
+                              }
+                              options={[
+                                {label: 'Sim', value: true},
+                                {label: 'Não', value: false},
+                              ]}
+                          />
                         </Grid>
                         <Grid item xs={12}>
                           <ControlledTextField
@@ -284,35 +186,35 @@ const AnimalCreate: NextPage = () => {
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <Autocomplete
-                              value={getValues('breed') ?? ''}
-                              selectOnFocus
-                              clearOnBlur
-                              handleHomeEndKeys
-                              freeSolo
-                              disabled={!watch('breed.species') ||
-                                  isLoadingBreeds}
+                          <ControlledAutocomplete
+                              name="breed"
+                              label="Raça"
+                              control={control}
+                              disabled={
+                                  !watch('breed.species') || isLoadingBreeds
+                              }
+                              options={breeds ?? []}
                               getOptionLabel={(breed) => {
                                 if (typeof breed === 'string') return breed;
 
-                                return breed.id ? breed.name : breed.name
-                                    ? `Novo: ${breed.name}`
-                                    : '';
+                                return breed.id
+                                    ? breed.name
+                                    : breed.name
+                                        ? `Adicionar Nova Raça: ${breed.name}`
+                                        : '';
                               }}
-                              onChange={async (event, breed) => {
+                              onChange={(breed) => {
                                 if (!breed) return;
 
                                 setValue('breed', typeof breed === 'string' ? {
                                   id: '',
                                   name: breed,
-                                  species: getValues('breed.species'),
+                                  species: watch('breed.species'),
                                   createdAt: null,
                                   createdAtISO: '',
                                   updatedAt: null,
                                   updatedAtISO: '',
                                 } : breed);
-
-                                await trigger('breed');
                               }}
                               filterOptions={(options, params) => {
                                 const filtered = filter(options, params);
@@ -321,7 +223,7 @@ const AnimalCreate: NextPage = () => {
                                   filtered.push({
                                     id: '',
                                     name: params.inputValue,
-                                    species: getValues('breed.species'),
+                                    species: watch('breed.species'),
                                     createdAt: null,
                                     createdAtISO: '',
                                     updatedAt: null,
@@ -329,73 +231,41 @@ const AnimalCreate: NextPage = () => {
                                   });
                                 }
 
-                                return filtered.filter(
-                                    ({species}) => species ===
-                                        getValues('breed.species'));
+                                return filtered.filter(({species}) => (
+                                    species === watch('breed.species')
+                                ));
                               }}
-                              options={breeds ?? []}
-                              renderInput={(params) => (
-                                  <TextField {...params}
-                                             variant="filled"
-                                             fullWidth
-                                             label="Raça"
-                                             error={!!errors.breed}
-                                             helperText={errors.breed?.message}/>
-                              )}
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <Autocomplete
-                              value={getValues('city.state') ?? ''}
-                              autoComplete
-                              disableClearable
+                          <ControlledAutocomplete
+                              name="city.state"
+                              label="Estado"
+                              control={control}
                               disabled={isLoadingStates || states?.length === 0}
-                              onChange={async (event, state) => {
+                              options={states ?? []}
+                              getOptionLabel={(state) => state.name}
+                              onChange={(state) => {
                                 setValue('city', {
                                   id: 0,
-                                  label: '',
                                   name: '',
-                                  state,
+                                  state: state ?? {
+                                    name: '',
+                                    initials: '',
+                                  },
                                 });
-
-                                await trigger('city');
-                                await refetchCities();
                               }}
-                              options={states ?? []}
-                              renderInput={(params) => (
-                                  <TextField
-                                      {...params}
-                                      variant="filled"
-                                      fullWidth
-                                      label="Estado"
-                                      error={!!errors.city?.state}
-                                      helperText={errors.city?.state?.message}
-                                  />
-                              )}
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <Autocomplete
-                              value={getValues('city') ?? ''}
-                              autoComplete
-                              disableClearable
+                          <ControlledAutocomplete
+                              name="city"
+                              label="Cidade"
+                              control={control}
+                              loading={isLoadingCities}
                               disabled={isLoadingCities || cities?.length === 0}
-                              onChange={async (event, city) => {
-                                setValue('city', city);
-
-                                await trigger('city');
-                              }}
                               options={cities ?? []}
-                              renderInput={(params) => (
-                                  <TextField
-                                      {...params}
-                                      variant="filled"
-                                      fullWidth
-                                      label="Cidade"
-                                      error={!!errors.city}
-                                      helperText={errors.city?.message}
-                                  />
-                              )}
+                              getOptionLabel={(city) => city.name ?? ''}
                           />
                         </Grid>
                         <Grid item xs={12} alignContent="center">
@@ -509,9 +379,13 @@ const AnimalCreate: NextPage = () => {
                           />
                         </Grid>
                         <Grid item xs={12}>
-                          <LoadingButton fullWidth variant="contained"
-                                         size="large" type="submit"
-                                         loading={isLoading}>
+                          <LoadingButton
+                              fullWidth
+                              loading={isLoading}
+                              size="large"
+                              type="submit"
+                              variant="contained"
+                          >
                             Cadastrar
                           </LoadingButton>
                         </Grid>

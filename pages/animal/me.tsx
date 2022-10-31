@@ -4,7 +4,6 @@ import SentimentDissatisfiedIcon
   from '@mui/icons-material/SentimentDissatisfied';
 import {NextPage} from 'next';
 import Head from 'next/head';
-import Container from '@mui/material/Container';
 import {AnimalCard} from '../../src/components/AnimalCard';
 import {
   useGetAnimalsByMeQuery,

@@ -90,7 +90,7 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
     },
     {
       label: 'Doar',
-      guarded: false,
+      guarded: true,
       href: '/animal/create',
     },
     {

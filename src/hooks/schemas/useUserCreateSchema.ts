@@ -6,6 +6,7 @@ import {
   object as yupObject,
   ref as yupRef,
   string as yupString,
+  mixed as yupMixed,
 } from 'yup';
 
 type UseUserCreateSchema = {
@@ -46,6 +47,6 @@ export const useUserCreateSchema = ({
         required('O campo confirmação de senha é obrigatório.').
         oneOf([yupRef('password'), null],
             'O campo confirmação de senha não confere.'),
-    file: yupObject().shape({}).required('O campo avatar é obrigatório.'),
+    file: yupMixed<File>().defined(),
   }), [minDate, maxDate]);
 };

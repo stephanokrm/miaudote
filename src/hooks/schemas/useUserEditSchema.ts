@@ -1,7 +1,7 @@
 import {useMemo} from 'react';
 import {format} from 'date-fns';
 import {
-  date as yupDate,
+  date as yupDate, mixed as yupMixed,
   number as yupNumber,
   object as yupObject,
   string as yupString,
@@ -41,6 +41,6 @@ export const useUserEditSchema = ({
       name: yupString().required(),
       state: stateSchema.required('O campo estado é obrigatório.'),
     }).required('O campo cidade é obrigatório.'),
-    file: yupObject().shape({}).nullable(),
+    file: yupMixed<File>(),
   }), [minDate, maxDate]);
 };

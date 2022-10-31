@@ -58,6 +58,6 @@ export const useAnimalEditSchema = ({
       name: yupString(),
       species: yupString().oneOf(Object.values(Species)),
     }).required('O campo raça é obrigatório.'),
-    file: yupObject().shape({}).nullable(),
+    file: yupMixed<File>(),
   }), [minDate, maxDate]);
 };

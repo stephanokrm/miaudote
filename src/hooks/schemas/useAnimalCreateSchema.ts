@@ -57,6 +57,6 @@ export const useAnimalCreateSchema = ({
       name: yupString(),
       species: yupString().oneOf(Object.values(Species)),
     }).required('O campo raça é obrigatório.'),
-    file: yupObject().shape({}).required('O campo avatar é obrigatório.'),
+    file: yupMixed<File>().defined(),
   }), [minDate, maxDate]);
 };

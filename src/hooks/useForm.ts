@@ -9,7 +9,7 @@ import {SchemaOf} from 'yup';
 type UseForm<FieldValue extends FieldValues = FieldValues> =
     Pick<UseFormProps<FieldValue>, 'defaultValues'>
     & {
-  schema: SchemaOf<FieldValue>
+  schema: SchemaOf<FieldValue, File>
 }
 
 const useForm = <FieldValue extends FieldValues = FieldValues>({

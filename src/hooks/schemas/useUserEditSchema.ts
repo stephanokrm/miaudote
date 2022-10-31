@@ -41,6 +41,6 @@ export const useUserEditSchema = ({
       name: yupString().required(),
       state: stateSchema.required('O campo estado é obrigatório.'),
     }).required('O campo cidade é obrigatório.'),
-    file: yupObject().shape({}).required('O campo avatar é obrigatório.'),
+    file: yupObject().shape({}).nullable(),
   }), [minDate, maxDate]);
 };

@@ -1,22 +1,9 @@
 import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
-import RadioGroup from '@mui/material/RadioGroup';
-import Radio from '@mui/material/Radio';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import {Controller} from 'react-hook-form';
-import * as yup from 'yup';
-import {addDays, format, parseISO, subYears} from 'date-fns';
-import Slider from '@mui/material/Slider';
-import Stack from '@mui/material/Stack';
-import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
-import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
-import {Animal, AnimalUpdateFieldValues, Breed} from '../types';
-import Autocomplete, {createFilterOptions} from '@mui/material/Autocomplete';
+import {addDays, parseISO, subYears} from 'date-fns';
+import {Animal, AnimalEditFieldValues, Breed} from '../types';
+import {createFilterOptions} from '@mui/material/Autocomplete';
 import useForm from '../hooks/useForm';
 import Alert from '@mui/material/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -48,64 +35,30 @@ import {useGetStatesQuery} from '../hooks/queries/useGetStatesQuery';
 import {getGenderPrefix} from '../utils';
 import {ControlledTextField} from './ControlledTextField';
 import {ControlledDatePicker} from './ControlledDatePicker';
+import PetsIcon from '@mui/icons-material/Pets';
+import {ControlledRadioGroup} from './ControlledRadioGroup';
+import {ControlledAutocomplete} from './ControlledAutocomplete';
+import {ControlledSlider} from './ControlledSlider';
+import {useAnimalEditSchema} from '../hooks/schemas/useAnimalEditSchema';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
-const stateObject = yup.object({
-  name: yup.string().required(),
-  initials: yup.string().required(),
-  label: yup.string().required(),
-});
-const schema = yup.object({
-  name: yup.string().required('O campo nome é obrigatório.'),
-  description: yup.string().required('O campo descrição é obrigatório.'),
-  avatar: yup.string().required('O campo avatar é obrigatório.'),
-  bornAt: yup.date().
-      required('O campo mês de nascimento é obrigatório.').
-      min(minDate, 'O campo mês de nascimento deve ser maior que ' +
-          format(minDate, 'MM/yyyy') + '.').
-      max(maxDate, 'O campo mês de nascimento deve ser maior que hoje.'),
-  gender: yup.string().
-      oneOf(Object.values(Gender)).
-      required('O campo espécie é obrigatório.'),
-  castrated: yup.boolean().required('O campo castrado é obrigatório.'),
-  playfulness: yup.number().required('O campo playfulness é obrigatório.'),
-  familyFriendly: yup.number().
-      required('O campo familyFriendly é obrigatório.'),
-  petFriendly: yup.number().required('O campo petFriendly é obrigatório.'),
-  childrenFriendly: yup.number().
-      required('O campo childrenFriendly é obrigatório.'),
-  city: yup.object({
-    id: yup.number().required(),
-    name: yup.string().required(),
-    label: yup.string().required(),
-    state: stateObject,
-  }).required('O campo cidade é obrigatório.'),
-  breed: yup.object({
-    id: yup.string(),
-    name: yup.string(),
-    species: yup.string().oneOf(Object.values(Species)),
-  }).required('O campo raça é obrigatório.'),
-});
+const filter = createFilterOptions<Breed>();
 
 type AnimalEditFormProps = {
   animal: Animal,
 }
 
-const filter = createFilterOptions<Breed>();
-
 export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditFormProps) => {
+  const schema = useAnimalEditSchema({minDate, maxDate});
   const {
     control,
     handleSubmit,
-    formState: {errors},
     setError,
     setValue,
-    getValues,
     trigger,
     watch,
-  } = useForm<AnimalUpdateFieldValues>({
-    // @ts-ignore
+  } = useForm<AnimalEditFieldValues>({
     schema,
     defaultValues: {
       ...animal,
@@ -118,14 +71,12 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
   const {
     data: cities,
     isLoading: isLoadingCities,
-    refetch: refetchCities,
-    isRefetching: isRefetchingCities,
-  } = useGetCitiesByStateQuery(getValues('city.state').initials);
+  } = useGetCitiesByStateQuery(watch('city.state')?.initials);
   const {mutate, isLoading, message} = useAnimalUpdateMutation({setError});
   const {
-    mutate: destroyImage,
-    isLoading: isDestroyingImage,
-    message: destroyImageMessage,
+    mutate: destroyAnimalImage,
+    isLoading: isDestroyingAnimalImage,
+    message: destroyAnimalImageMessage,
   } = useImageDestroyMutation();
   const {
     mutate: storeAnimalImage,
@@ -133,7 +84,8 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
     message: storeAnimalImageMessage,
   } = useAnimalImageStoreMutation(animal.id);
   const onSubmit = handleSubmit(
-      (data: AnimalUpdateFieldValues) => mutate(data));
+      (data: AnimalEditFieldValues) => mutate(data),
+  );
 
   const onAvatarChange = async ({file, avatar}: AvatarChangeEvent) => {
     if (!file || !avatar) {
@@ -151,134 +103,70 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
   return (
       <form onSubmit={onSubmit}>
         <Grid container spacing={2}>
-          <Grid item xs={12} justifyContent="center" display="flex">
-            <InteractableAvatar onChange={onAvatarChange} alt={watch('name')}
-                                src={getValues('avatar')}/>
+          <Grid
+              item
+              xs={12}
+              justifyContent="center"
+              display="flex"
+          >
+            <InteractableAvatar
+                onChange={onAvatarChange}
+                alt={watch('name')}
+                src={watch('avatar')}
+            >
+              <PetsIcon fontSize="large"/>
+            </InteractableAvatar>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h3">{watch('name')}</Typography>
+            <Typography variant="h3">{watch('name') ??
+                'Doar'}</Typography>
           </Grid>
           {message && (
               <Grid item xs={12}>
                 <Alert severity="error">{message}</Alert>
               </Grid>
           )}
-          {storeAnimalImageMessage && (
-              <Grid item xs={12}>
-                <Alert severity="error">{storeAnimalImageMessage}</Alert>
-              </Grid>
-          )}
-          {destroyImageMessage && (
-              <Grid item xs={12}>
-                <Alert severity="error">{destroyImageMessage}</Alert>
-              </Grid>
-          )}
           <Grid item xs={12}>
-            <FormControl>
-              <FormLabel id="speciesLabel">Espécie</FormLabel>
-              <Controller
-                  name="breed.species"
-                  control={control}
-                  render={({field}) => (
-                      <RadioGroup
-                          {...field}
-                          onChange={async (...event) => {
-                            field.onChange(...event);
-
-                            setValue('breed', {
-                              id: '',
-                              name: '',
-                              species: event[0].target.value as Species,
-                              createdAt: null,
-                              createdAtISO: '',
-                              updatedAt: null,
-                              updatedAtISO: '',
-                            });
-
-                            await trigger('breed');
-                          }}
-                          aria-labelledby="speciesLabel"
-                      >
-                        <FormControlLabel
-                            value={Species.Cat}
-                            control={<Radio/>}
-                            label="Gato"
-                        />
-                        <FormControlLabel
-                            value={Species.Dog}
-                            control={<Radio/>}
-                            label="Cachorro"
-                        />
-                      </RadioGroup>
-                  )}
-              />
-              {!!errors.breed?.species && (
-                  <FormHelperText
-                      error>{errors.breed?.species?.message}</FormHelperText>
-              )}
-            </FormControl>
+            <ControlledRadioGroup
+                control={control}
+                name="breed.species"
+                label="Espécie"
+                options={[
+                  {label: 'Gato', value: Species.Cat},
+                  {label: 'Cachorro', value: Species.Dog},
+                ]}
+            />
           </Grid>
           <Grid item xs={12}>
-            <FormControl>
-              <FormLabel id="genderLabel">Sexo</FormLabel>
-              <Controller name="gender" control={control} render={({field}) => (
-                  <RadioGroup
-                      {...field}
-                      aria-labelledby="speciesLabel"
-                  >
-                    <FormControlLabel
-                        value={Gender.Female}
-                        control={<Radio/>}
-                        label="Fêmea"
-                    />
-                    <FormControlLabel
-                        value={Gender.Male}
-                        control={<Radio/>}
-                        label="Macho"
-                    />
-                  </RadioGroup>
-              )}/>
-              {!!errors.gender && (
-                  <FormHelperText
-                      error>{errors.gender?.message}</FormHelperText>
-              )}
-            </FormControl>
+            <ControlledRadioGroup
+                control={control}
+                name="gender"
+                label="Sexo"
+                options={[
+                  {label: 'Fêmea', value: Gender.Female},
+                  {label: 'Macho', value: Gender.Male},
+                ]}
+            />
           </Grid>
           <Grid item xs={12}>
-            <FormControl>
-              <FormLabel id="castratedLabel">
-                Castrad{getGenderPrefix(getValues('gender'))}
-              </FormLabel>
-              <Controller
-                  name="castrated"
-                  control={control}
-                  render={({field}) => (
-                      <RadioGroup
-                          {...field}
-                          aria-labelledby="castratedLabel"
-                      >
-                        <FormControlLabel
-                            value={true}
-                            control={<Radio/>}
-                            label="Sim"
-                        />
-                        <FormControlLabel
-                            value={false}
-                            control={<Radio/>}
-                            label="Não"
-                        />
-                      </RadioGroup>
-                  )}
-              />
-              {!!errors.castrated && (
-                  <FormHelperText error>
-                    {errors.castrated?.message}
-                  </FormHelperText>
-              )}
-            </FormControl>
+            <ControlledRadioGroup
+                control={control}
+                name="castrated"
+                label={
+                  `Castrad${getGenderPrefix(watch('gender'))}`
+                }
+                options={[
+                  {label: 'Sim', value: true},
+                  {label: 'Não', value: false},
+                ]}
+            />
           </Grid>
           <Grid item xs={12}>
-            <ControlledTextField name="name" label="Nome" control={control}/>
+            <ControlledTextField
+                name="name"
+                label="Nome"
+                control={control}
+            />
           </Grid>
           <Grid item xs={12}>
             <ControlledDatePicker
@@ -293,34 +181,35 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
             />
           </Grid>
           <Grid item xs={12}>
-            <Autocomplete
-                value={getValues('breed') ?? ''}
-                selectOnFocus
-                clearOnBlur
-                handleHomeEndKeys
-                freeSolo
-                disabled={!watch('breed.species') || isLoadingBreeds}
+            <ControlledAutocomplete
+                name="breed"
+                label="Raça"
+                control={control}
+                disabled={
+                    !watch('breed.species') || isLoadingBreeds
+                }
+                options={breeds ?? []}
                 getOptionLabel={(breed) => {
                   if (typeof breed === 'string') return breed;
 
-                  return breed.id ? breed.name : breed.name
-                      ? `Novo: ${breed.name}`
-                      : '';
+                  return breed.id
+                      ? breed.name
+                      : breed.name
+                          ? `Adicionar Nova Raça: ${breed.name}`
+                          : '';
                 }}
-                onChange={async (event, breed) => {
+                onChange={(breed) => {
                   if (!breed) return;
 
                   setValue('breed', typeof breed === 'string' ? {
                     id: '',
                     name: breed,
-                    species: getValues('breed.species'),
+                    species: watch('breed.species'),
                     createdAt: null,
                     createdAtISO: '',
                     updatedAt: null,
                     updatedAtISO: '',
                   } : breed);
-
-                  await trigger('breed');
                 }}
                 filterOptions={(options, params) => {
                   const filtered = filter(options, params);
@@ -329,7 +218,7 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
                     filtered.push({
                       id: '',
                       name: params.inputValue,
-                      species: getValues('breed.species'),
+                      species: watch('breed.species'),
                       createdAt: null,
                       createdAtISO: '',
                       updatedAt: null,
@@ -337,170 +226,90 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
                     });
                   }
 
-                  return filtered.filter(
-                      ({species}) => species === getValues('breed.species'));
+                  return filtered.filter(({species}) => (
+                      species === watch('breed.species')
+                  ));
                 }}
-                options={breeds ?? []}
-                renderInput={(params) => (
-                    <TextField {...params}
-                               variant="filled"
-                               fullWidth
-                               label="Raça"
-                               error={!!errors.breed}
-                               helperText={errors.breed?.message}/>
-                )}
             />
           </Grid>
           <Grid item xs={12}>
-            <Autocomplete
-                value={getValues('city.state')}
-                autoComplete
-                disableClearable
+            <ControlledAutocomplete
+                name="city.state"
+                label="Estado"
+                control={control}
                 disabled={isLoadingStates || states?.length === 0}
-                onChange={async (event, state) => {
+                options={states ?? []}
+                getOptionLabel={(state) => state.name}
+                onChange={(state) => {
                   setValue('city', {
                     id: 0,
-                    label: '',
                     name: '',
-                    state,
+                    state: state ?? {
+                      name: '',
+                      initials: '',
+                    },
                   });
-
-                  await trigger('city');
-                  await refetchCities();
                 }}
-                options={states ?? []}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        variant="filled"
-                        fullWidth
-                        label="Estado"
-                        error={!!errors.city?.state}
-                        helperText={errors.city?.state?.message}
-                    />
-                )}
             />
           </Grid>
           <Grid item xs={12}>
-            <Autocomplete
-                value={getValues('city') ?? ''}
-                autoComplete
-                disableClearable
-                disabled={isLoadingCities || isRefetchingCities ||
-                    cities?.length === 0}
-                onChange={async (event, city) => {
-                  setValue('city', city);
-
-                  await trigger('city');
-                }}
+            <ControlledAutocomplete
+                name="city"
+                label="Cidade"
+                control={control}
+                loading={isLoadingCities}
+                disabled={isLoadingCities || cities?.length === 0}
                 options={cities ?? []}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        variant="filled"
-                        fullWidth
-                        label="Cidade"
-                        error={!!errors.city}
-                        helperText={errors.city?.message}
-                    />
-                )}
+                getOptionLabel={(city) => city.name ?? ''}
             />
           </Grid>
-          <Grid item xs={12} alignContent="center">
-            <FormLabel>Brincadeiras</FormLabel>
-            <FormHelperText sx={{display: 'flex'}}>
-              O quão brincalhão é
-            </FormHelperText>
+          <Grid item xs={12}>
+            <ControlledSlider
+                control={control}
+                helperText="O quão brincalhão é"
+                label="Brincadeiras"
+                marks
+                max={5}
+                min={1}
+                name="playfulness"
+                step={1}
+            />
           </Grid>
           <Grid item xs={12}>
-            <Stack spacing={2} direction="row" alignItems="center">
-              <ThumbDownOffAltIcon/>
-              <Controller
-                  name="playfulness"
-                  control={control}
-                  render={({field}) => (
-                      <Slider {...field}
-                              defaultValue={3}
-                              step={1}
-                              marks
-                              min={1}
-                              max={5}/>
-                  )}
-              />
-              <ThumbUpOffAltIcon/>
-            </Stack>
-          </Grid>
-          <Grid item xs={12} alignContent="center">
-            <FormLabel>Amigável Com Família</FormLabel>
-            <FormHelperText sx={{display: 'flex'}}>
-              O quão carinhoso é com a família
-            </FormHelperText>
+            <ControlledSlider
+                control={control}
+                helperText="O quão bem é carinhoso com a família"
+                label="Amigável Com Família"
+                marks
+                max={5}
+                min={1}
+                name="familyFriendly"
+                step={1}
+            />
           </Grid>
           <Grid item xs={12}>
-            <Stack spacing={2} direction="row" alignItems="center">
-              <ThumbDownOffAltIcon/>
-              <Controller
-                  name="familyFriendly"
-                  control={control}
-                  render={({field}) => (
-                      <Slider {...field}
-                              defaultValue={3}
-                              step={1}
-                              marks
-                              min={1}
-                              max={5}/>
-                  )}
-              />
-              <ThumbUpOffAltIcon/>
-            </Stack>
-          </Grid>
-          <Grid item xs={12} alignContent="center">
-            <FormLabel>Amigável Com Outros Animais</FormLabel>
-            <FormHelperText sx={{display: 'flex'}}>
-              O quão bem se dá com outros animais de estimação da casa
-            </FormHelperText>
+            <ControlledSlider
+                control={control}
+                helperText="O quão bem se dá com outros animais de estimação da casa"
+                label="Amigável Com Outros Animais"
+                marks
+                max={5}
+                min={1}
+                name="petFriendly"
+                step={1}
+            />
           </Grid>
           <Grid item xs={12}>
-            <Stack spacing={2} direction="row" alignItems="center">
-              <ThumbDownOffAltIcon/>
-              <Controller
-                  name="petFriendly"
-                  control={control}
-                  render={({field}) => (
-                      <Slider {...field}
-                              defaultValue={3}
-                              step={1}
-                              marks
-                              min={1}
-                              max={5}/>
-                  )}
-              />
-              <ThumbUpOffAltIcon/>
-            </Stack>
-          </Grid>
-          <Grid item xs={12} alignContent="center">
-            <FormLabel>Amigável Com Crianças</FormLabel>
-            <FormHelperText sx={{display: 'flex'}}>
-              O quão bem se dá com crianças
-            </FormHelperText>
-          </Grid>
-          <Grid item xs={12}>
-            <Stack spacing={2} direction="row" alignItems="center">
-              <ThumbDownOffAltIcon/>
-              <Controller
-                  name="childrenFriendly"
-                  control={control}
-                  render={({field}) => (
-                      <Slider {...field}
-                              defaultValue={3}
-                              step={1}
-                              marks
-                              min={1}
-                              max={5}/>
-                  )}
-              />
-              <ThumbUpOffAltIcon/>
-            </Stack>
+            <ControlledSlider
+                control={control}
+                helperText="O quão bem se dá com crianças"
+                label="Amigável Com Crianças"
+                marks
+                max={5}
+                min={1}
+                name="childrenFriendly"
+                step={1}
+            />
           </Grid>
           <Grid item xs={12}>
             <ControlledTextField
@@ -514,14 +323,21 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
           <Grid item xs={12}>
             <LoadingButton
                 fullWidth
-                variant="contained"
+                loading={isLoading}
                 size="large"
                 type="submit"
-                loading={isLoading}
+                variant="contained"
             >
               Atualizar
             </LoadingButton>
           </Grid>
+          {storeAnimalImageMessage || destroyAnimalImageMessage ? (
+              <Grid item xs={12}>
+                <Alert severity="error">
+                  {storeAnimalImageMessage ?? destroyAnimalImageMessage}
+                </Alert>
+              </Grid>
+          ) : null}
           <Grid item xs={12} md={6}>
             <Box display="flex" justifyContent="center" alignItems="center"
                  sx={{aspectRatio: '1 / 1'}}>
@@ -555,10 +371,10 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
               <Grid item xs={12} md={6} key={image.id}>
                 <InteractableImage
                     alt={watch('name')}
-                    onDelete={() => destroyImage(image)}
+                    onDelete={() => destroyAnimalImage(image)}
                     src={image.path}
-                    disabled={isDestroyingImage}
-                    loading={isDestroyingImage}
+                    disabled={isDestroyingAnimalImage}
+                    loading={isDestroyingAnimalImage}
                 />
               </Grid>
           ))}

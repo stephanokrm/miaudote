@@ -167,7 +167,7 @@ export type UserCreateFieldValues =
 export type UserEditFieldValues =
     Pick<User, 'id' | 'avatar' | 'name' | 'bornAt' | 'email' | 'phone' | 'city'>
     & {
-  file: File,
+  file?: File,
 };
 
 export type UserLoginFieldValues = Pick<User, 'email' | 'password'>;
@@ -202,12 +202,25 @@ export type AnimalStoreData = Omit<RawAnimal, 'castrated'> & {
   file: File,
 };
 
-export type AnimalUpdateFieldValues = Animal & {
-  file: File,
+export type AnimalEditFieldValues = Pick<Animal,
+    'id' |
+    'name' |
+    'description' |
+    'avatar' |
+    'bornAt' |
+    'gender' |
+    'breed' |
+    'castrated' |
+    'playfulness' |
+    'familyFriendly' |
+    'petFriendly' |
+    'childrenFriendly' |
+    'city'> & {
+  file?: File,
 };
 
 export type AnimalUpdateData = Omit<RawAnimal, 'castrated'> & {
-  file: File,
+  file?: File,
   castrated: 1 | 0,
   _method: 'PUT',
 };

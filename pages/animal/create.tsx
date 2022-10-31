@@ -1,19 +1,12 @@
 import {NextPage} from 'next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import FormLabel from '@mui/material/FormLabel';
-import FormHelperText from '@mui/material/FormHelperText';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Head from 'next/head';
-import {Controller} from 'react-hook-form';
 import {addDays, subYears} from 'date-fns';
-import Slider from '@mui/material/Slider';
-import Stack from '@mui/material/Stack';
-import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
-import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import {AnimalCreateFieldValues, Breed} from '../../src/types';
 import {createFilterOptions} from '@mui/material/Autocomplete';
 import useForm from '../../src/hooks/useForm';
@@ -44,6 +37,7 @@ import {
   useAnimalCreateSchema,
 } from '../../src/hooks/schemas/useAnimalCreateSchema';
 import {ControlledRadioGroup} from '../../src/components/ControlledRadioGroup';
+import {ControlledSlider} from '../../src/components/ControlledSlider';
 
 const minDate = subYears(new Date(), 30);
 const maxDate = addDays(new Date(), 1);
@@ -268,106 +262,53 @@ const AnimalCreate: NextPage = () => {
                               getOptionLabel={(city) => city.name ?? ''}
                           />
                         </Grid>
-                        <Grid item xs={12} alignContent="center">
-                          <FormLabel>Brincadeiras</FormLabel>
-                          <FormHelperText sx={{display: 'flex'}}>
-                            O quão brincalhão é
-                          </FormHelperText>
+                        <Grid item xs={12}>
+                          <ControlledSlider
+                              control={control}
+                              helperText="O quão brincalhão é"
+                              label="Brincadeiras"
+                              marks
+                              max={5}
+                              min={1}
+                              name="playfulness"
+                              step={1}
+                          />
                         </Grid>
                         <Grid item xs={12}>
-                          <Stack spacing={2} direction="row"
-                                 alignItems="center">
-                            <ThumbDownOffAltIcon/>
-                            <Controller
-                                name="playfulness"
-                                control={control}
-                                render={({field}) => (
-                                    <Slider {...field}
-                                            defaultValue={3}
-                                            step={1}
-                                            marks
-                                            min={1}
-                                            max={5}/>
-                                )}
-                            />
-                            <ThumbUpOffAltIcon/>
-                          </Stack>
-                        </Grid>
-                        <Grid item xs={12} alignContent="center">
-                          <FormLabel>Amigável Com Família</FormLabel>
-                          <FormHelperText sx={{display: 'flex'}}>
-                            O quão bem é carinhoso com a família
-                          </FormHelperText>
+                          <ControlledSlider
+                              control={control}
+                              helperText="O quão bem é carinhoso com a família"
+                              label="Amigável Com Família"
+                              marks
+                              max={5}
+                              min={1}
+                              name="familyFriendly"
+                              step={1}
+                          />
                         </Grid>
                         <Grid item xs={12}>
-                          <Stack spacing={2} direction="row"
-                                 alignItems="center">
-                            <ThumbDownOffAltIcon/>
-                            <Controller
-                                name="familyFriendly"
-                                control={control}
-                                render={({field}) => (
-                                    <Slider {...field}
-                                            defaultValue={3}
-                                            step={1}
-                                            marks
-                                            min={1}
-                                            max={5}/>
-                                )}
-                            />
-                            <ThumbUpOffAltIcon/>
-                          </Stack>
-                        </Grid>
-                        <Grid item xs={12} alignContent="center">
-                          <FormLabel>Amigável Com Outros Animais</FormLabel>
-                          <FormHelperText sx={{display: 'flex'}}>
-                            O quão bem se dá com outros animais de estimação da
-                            casa
-                          </FormHelperText>
+                          <ControlledSlider
+                              control={control}
+                              helperText="O quão bem se dá com outros animais de estimação da casa"
+                              label="Amigável Com Outros Animais"
+                              marks
+                              max={5}
+                              min={1}
+                              name="petFriendly"
+                              step={1}
+                          />
                         </Grid>
                         <Grid item xs={12}>
-                          <Stack spacing={2} direction="row"
-                                 alignItems="center">
-                            <ThumbDownOffAltIcon/>
-                            <Controller
-                                name="petFriendly"
-                                control={control}
-                                render={({field}) => (
-                                    <Slider {...field}
-                                            defaultValue={3}
-                                            step={1}
-                                            marks
-                                            min={1}
-                                            max={5}/>
-                                )}
-                            />
-                            <ThumbUpOffAltIcon/>
-                          </Stack>
-                        </Grid>
-                        <Grid item xs={12} alignContent="center">
-                          <FormLabel>Amigável Com Crianças</FormLabel>
-                          <FormHelperText sx={{display: 'flex'}}>
-                            O quão bem se dá com crianças
-                          </FormHelperText>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Stack spacing={2} direction="row"
-                                 alignItems="center">
-                            <ThumbDownOffAltIcon/>
-                            <Controller
-                                name="childrenFriendly"
-                                control={control}
-                                render={({field}) => (
-                                    <Slider {...field}
-                                            defaultValue={3}
-                                            step={1}
-                                            marks
-                                            min={1}
-                                            max={5}/>
-                                )}
-                            />
-                            <ThumbUpOffAltIcon/>
-                          </Stack>
+                          <ControlledSlider
+                              control={control}
+                              helperText="O quão bem se dá com crianças"
+                              label="Amigável Com Crianças"
+                              marks
+                              max={5}
+                              min={1}
+                              name="childrenFriendly"
+                              step={1}
+                          />
                         </Grid>
                         <Grid item xs={12}>
                           <ControlledTextField

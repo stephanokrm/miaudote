@@ -35,7 +35,7 @@ const theme = responsiveFontSizes(createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: '15px',
+          borderRadius: '30px',
         },
       },
     },

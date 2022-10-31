@@ -1,21 +1,22 @@
 import {ChangeEvent} from 'react';
-import {Controller, FieldValues, UseControllerProps} from 'react-hook-form';
+import {
+  Controller,
+  ControllerProps,
+  FieldValues,
+} from 'react-hook-form';
 import TextField from '@mui/material/TextField';
 import {TextFieldProps} from '@mui/material/TextField/TextField';
 
-type ControlledTextFieldProps<T extends FieldValues> =
+type ControlledTextFieldProps<FieldValue extends FieldValues> =
     Omit<TextFieldProps, 'name'>
-    & UseControllerProps<T>
+    & Pick<ControllerProps<FieldValue>, 'name' | 'control'>
     & {
   transform?: (value: string) => any,
 };
 
-export function ControlledTextField<T extends FieldValues>(props: ControlledTextFieldProps<T>) {
+export function ControlledTextField<FieldValue extends FieldValues>(props: ControlledTextFieldProps<FieldValue>) {
   const {
     name,
-    rules,
-    shouldUnregister,
-    defaultValue,
     control,
     transform = (value) => value,
     ...rest
@@ -24,10 +25,7 @@ export function ControlledTextField<T extends FieldValues>(props: ControlledText
   return (
       <Controller
           name={name}
-          rules={rules}
           control={control}
-          shouldUnregister={shouldUnregister}
-          defaultValue={defaultValue}
           render={({field, fieldState}) => (
               <TextField
                   {...field}

@@ -1,18 +1,19 @@
-import {Controller, FieldValues, UseControllerProps} from 'react-hook-form';
+import {
+  Controller,
+  ControllerProps,
+  FieldValues,
+} from 'react-hook-form';
 import TextField from '@mui/material/TextField';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {DatePickerProps} from '@mui/x-date-pickers/DatePicker/DatePicker';
 
-type ControlledDatePickerProps<T extends FieldValues> =
+type ControlledDatePickerProps<FieldValue extends FieldValues> =
     Omit<DatePickerProps<Date, Date>, 'name' | 'onChange' | 'value' | 'renderInput'>
-    & UseControllerProps<T>;
+    & Pick<ControllerProps<FieldValue>, 'name' | 'control'>;
 
-export function ControlledDatePicker<T extends FieldValues>(props: ControlledDatePickerProps<T>) {
+export function ControlledDatePicker<FieldValue extends FieldValues>(props: ControlledDatePickerProps<FieldValue>) {
   const {
     name,
-    rules,
-    shouldUnregister,
-    defaultValue,
     control,
     ...rest
   } = props;
@@ -20,10 +21,7 @@ export function ControlledDatePicker<T extends FieldValues>(props: ControlledDat
   return (
       <Controller
           name={name}
-          rules={rules}
           control={control}
-          shouldUnregister={shouldUnregister}
-          defaultValue={defaultValue}
           render={({field, fieldState}) => (
               <DatePicker
                   {...rest}

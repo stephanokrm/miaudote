@@ -232,3 +232,7 @@ export type AnimalImageStoreFieldValues = {
 export type AnimalImageStoreData = {
   file: File,
 }
+export interface ChipData {
+    key: string;
+    label: string;
+}

@@ -18,10 +18,10 @@ import PetsIcon from '@mui/icons-material/Pets';
 import LoadingButton from '@mui/lab/LoadingButton';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import IconButton from '@mui/material/IconButton';
-import { useRouter } from 'next/router';
 import Box from '@mui/material/Box';
 import Friendly from '../enums/Friendly';
 import Playfulness from '../enums/Playfulness';
+import  Modal  from '@mui/material/Modal';
 
 const ModalFilter = ({
 	id = 'modal',
@@ -42,8 +42,7 @@ const ModalFilter = ({
 		gender: '',
 	},
 }) => {
-	const router = useRouter();
-
+ 
 	const schema = yup.object({
 		gender: yup.string().oneOf(Object.values(Gender)) || undefined,
 		breed: yup.object({
@@ -116,17 +115,16 @@ const ModalFilter = ({
 			onClick={handleOutSideClick}
 			zIndex={1300}
 			style={{
-				paddingTop: '40%',
-				width: '100%',
+ 				width: '100%',
 				height: '100vh',
 				position: 'absolute',
 				top: '0',
 				left: '0',
-				display: 'flex',
+				// display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
-				overflow: 'auto',
-
+				// overflow: 'auto',
+				display: 'table',
 				backgroundColor: 'rgba(0,0,0,0.8)',
 			}}
 		>

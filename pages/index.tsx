@@ -1,327 +1,251 @@
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
-import { NextPage } from 'next';
+import SentimentDissatisfiedIcon
+  from '@mui/icons-material/SentimentDissatisfied';
+import {NextPage} from 'next';
 import Head from 'next/head';
-import Container from '@mui/material/Container';
-import { AnimalCard } from '../src/components/AnimalCard';
+import {AnimalCard} from '../src/components/AnimalCard';
 import useGetAnimalsQuery from '../src/hooks/queries/useGetAnimalsQuery';
-import { ListHeader } from '../src/components/ListHeader';
-import { useState } from 'react';
-import { Animal, ChipData } from '../src/types';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import {ListHeader} from '../src/components/ListHeader';
+import Fab from '@mui/material/Fab';
+import FilterAltTwoToneIcon from '@mui/icons-material/FilterAltTwoTone';
+import CloseIcon from '@mui/icons-material/Close';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import CircularProgress from '@mui/material/CircularProgress';
+import {Chip, Theme, useMediaQuery} from '@mui/material';
+import {useEffect, useState} from 'react';
+import useForm from '../src/hooks/useForm';
+import {
+  AnimalFilterFieldValues, AnimalQuery, AnimalQueryParam,
+} from '../src/types';
+import {
+  useAnimalFilterSchema,
+} from '../src/hooks/schemas/useAnimalFilterSchema';
+import {ControlledRadioGroup} from '../src/components/ControlledRadioGroup';
+import Species from '../src/enums/Species';
+import Gender from '../src/enums/Gender';
+import {getGenderPrefix} from '../src/utils';
 import IconButton from '@mui/material/IconButton';
-import ModalFilter from '../src/components/ModalFilter';
-import Chip from '@mui/material/Chip';
+import {useRouter} from 'next/router';
+
+const chips = {
+  castrated: {
+    'true': 'Castrado',
+    'false': 'Não Castrado',
+  },
+  gender: {
+    [Gender.Female]: 'Fêmea',
+    [Gender.Male]: 'Macho',
+  },
+  species: {
+    [Species.Dog]: 'Cachorro',
+    [Species.Cat]: 'Gato',
+  },
+};
+
+const filters: AnimalQueryParam[] = ['castrated', 'gender', 'species'];
 
 const Home: NextPage = () => {
-	const {
-		data: animals,
-		isLoading,
-		isError,
-		isFetched,
-		isRefetching,
-	} = useGetAnimalsQuery();
-	const [isModalVisible, setIsModalVisible] = useState(false);
-	const [filtersSelected, setFiltersSelected] = useState({
-		childrenFriendly: 0,
-		petFriendly: 0,
-		familyFriendly: 0,
-		playfulness: 0,
-		breed: {
-			species: '',
-		},
-		species: '',
-		gender: '',
-	});
-	const [animaisMostrar, setAnimals] = useState(animals);
-	const [currentFilters, setCurrentFilters] = useState({});
-	function filtrarGender(
-		animalsGender: Animal[] | undefined,
-		gender: string
-	): Animal[] {
-		let currentAnimals: Animal[] = [];
-		animalsGender?.forEach((animal) => {
-			if (animal.gender === gender) {
-				currentAnimals.push(animal);
-			}
-		});
+  const router = useRouter();
+  const query = router.query as AnimalQuery;
+  const [open, setOpen] = useState(false);
+  const schema = useAnimalFilterSchema();
+  const {
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    setValue,
+  } = useForm<AnimalQuery>({schema});
+  const {
+    data: animals,
+    isLoading,
+    isError,
+    isFetched,
+    isRefetching,
+  } = useGetAnimalsQuery(query);
 
-		return currentAnimals;
-	}
-	function filtrarSpecie(
-		animalsSpecie: Animal[] | undefined,
-		specie: string
-	): Animal[] {
-		let currentAnimals: Animal[] = [];
-		animalsSpecie?.forEach((animal) => {
-			if (animal.breed.species === specie) {
-				currentAnimals.push(animal);
-			}
-		});
-		return currentAnimals;
-	}
-	function filtrarFamilyFriendly(
-		animalsFamily: Animal[] | undefined,
-		filter: number
-	): Animal[] {
-		let currentAnimals: Animal[] = [];
-		animalsFamily?.forEach((animal) => {
-			if (animal.familyFriendly >= 3 && filter === 5) {
-				currentAnimals.push(animal);
-			}
-			if (animal.familyFriendly <= 3 && filter === 1) {
-				currentAnimals.push(animal);
-			}
-		});
-		return currentAnimals;
-	}
-	function filtrarChildrenFriendly(
-		animalsChildren: Animal[] | undefined,
-		filter: number
-	): Animal[] {
-		let currentAnimals: Animal[] = [];
-		animalsChildren?.forEach((animal) => {
-			if (animal.childrenFriendly >= 3 && filter === 5) {
-				currentAnimals.push(animal);
-			}
-			if (animal.childrenFriendly <= 3 && filter === 1) {
-				currentAnimals.push(animal);
-			}
-		});
-		return currentAnimals;
-	}
-	function filtrarPetFriendly(
-		animalsFriendly: Animal[] | undefined,
-		filter: number
-	): Animal[] {
-		let currentAnimals: Animal[] = [];
-		animalsFriendly?.forEach((animal) => {
-			if (animal.petFriendly >= 3 && filter === 5) {
-				currentAnimals.push(animal);
-			}
-			if (animal.petFriendly <= 3 && filter === 1) {
-				currentAnimals.push(animal);
-			}
-		});
-		return currentAnimals;
-	}
-	function filtrarPlayfulness(
-		animalsPlayfulness: Animal[] | undefined,
-		filter: number
-	): Animal[] {
-		let currentAnimals: Animal[] = [];
-		animalsPlayfulness?.forEach((animal) => {
-			if (animal.playfulness >= 3 && filter === 5) {
-				currentAnimals.push(animal);
-			}
-			if (animal.playfulness <= 3 && filter === 1) {
-				currentAnimals.push(animal);
-			}
-		});
-		return currentAnimals;
-	}
+  useEffect(() => {
+    filters.forEach(filter => setValue(filter, query[filter]));
+  }, [query, setValue]);
 
-	function Filtrar(value: any) {
-		let currentAnimals = animals;
-		let chips: ChipData[] = [];
-		setCurrentFilters(value);
-		value.species = value.breed.species || value.species;
-		setFiltersSelected(value);
-		if (value.gender) {
-			currentAnimals = filtrarGender(currentAnimals, value.gender);
-			if (value.gender === 'MALE') {
-				chips.push({ key: 'gender', label: 'Macho' });
-			} else {
-				chips.push({ key: 'gender', label: 'Fêmea' });
-			}
-		}
-		if (value.breed.species) {
-			currentAnimals = filtrarSpecie(currentAnimals, value.breed.species);
-			if (value.breed.species === 'DOG') {
-				chips.push({ key: 'species', label: 'Cachorro' });
-			} else {
-				chips.push({ key: 'species', label: 'Gato' });
-			}
-		}
-		if (value.familyFriendly) {
-			currentAnimals = filtrarFamilyFriendly(
-				currentAnimals,
-				value.familyFriendly
-			);
-			if (value.familyFriendly === 5) {
-				chips.push({ key: 'familyFriendly', label: 'Carinhoso' });
-			} else {
-				chips.push({ key: 'familyFriendly', label: 'Envergonhado' });
-			}
-		}
-		if (value.childrenFriendly) {
-			currentAnimals = filtrarChildrenFriendly(
-				currentAnimals,
-				value.childrenFriendly
-			);
-			if (value.childrenFriendly === 5) {
-				chips.push({ key: 'childrenFriendly', label: 'Amigável Com Crianças' });
-			} else {
-				chips.push({ key: 'childrenFriendly', label: 'Prefere Adultos' });
-			}
-		}
-		if (value.petFriendly) {
-			currentAnimals = filtrarPetFriendly(currentAnimals, value.petFriendly);
-			if (value.petFriendly === 5) {
-				chips.push({ key: 'petFriendly', label: 'Amigável Com Animais' });
-			} else {
-				chips.push({ key: 'petFriendly', label: 'Prefere Ser o Único' });
-			}
-		}
-		if (value.playfulness) {
-			currentAnimals = filtrarPlayfulness(currentAnimals, value.playfulness);
-			if (value.playfulness === 5) {
-				chips.push({ key: 'playfulness', label: 'Brincalhão' });
-			} else {
-				chips.push({ key: 'playfulness', label: 'Calmo' });
-			}
-		}
-		setAnimals(currentAnimals);
+  const fullScreen = useMediaQuery(
+      (theme: Theme) => theme.breakpoints.down('md'),
+  );
 
-		setChipData(chips);
-	}
-	function limparFiltro() {
-		setChipData([]);
-		setAnimals(animals);
-		setFiltersSelected({
-			childrenFriendly: 0,
-			petFriendly: 0,
-			familyFriendly: 0,
-			playfulness: 0,
-			breed: {
-				species: '',
-			},
-			species: '',
-			gender: '',
-		});
-	}
+  const onSubmit = handleSubmit(async (data: AnimalFilterFieldValues) => {
+    filters.forEach(filter => router.query[filter] = data[filter] ?? '');
 
-	const [chipData, setChipData] = useState<readonly ChipData[]>([]);
+    await router.push(router);
 
-	const handleDelete = (chipToDelete: ChipData) => () => {
-		let filters = { ...filtersSelected, [chipToDelete.key]: undefined };
-		if (chipToDelete.key === 'species') {
-			filters.breed.species = '';
-		}
-		setFiltersSelected(filters);
-		Filtrar(filters);
-		setChipData((chips) =>
-			chips.filter((chip) => chip.key !== chipToDelete.key)
-		);
-	};
+    handleClose();
+  });
+  const handleReset = async () => {
+    router.query = {};
 
-	return (
-		<>
-			<Head>
-				<title>MiAudote - Doações</title>
-			</Head>
-			<Container maxWidth='xl'>
-				<Grid container spacing={2} sx={{ marginY: 2 }} flexDirection='column'>
-					<Grid>
-						<Grid item xs={12} display='flex' alignItems='center'>
-							<ListHeader label='Doações' loading={isLoading || isRefetching} />
-							<IconButton
-								style={{
-									borderRadius: '100%',
-								}}
-								onClick={() => {
-									setIsModalVisible(true);
-								}}
-							>
-								<FilterAltIcon />
-							</IconButton>
-						</Grid>
-						<Grid display='flex' alignItems='center'>
-							{chipData.map((data) => {
-								let icon;
+    await router.push(router);
 
-								return (
-									<Grid key={data.key}>
-										<Chip
-											icon={icon}
-											label={data.label}
-											onDelete={handleDelete(data)}
-										/>
-									</Grid>
-								);
-							})}
-						</Grid>
-					</Grid>
-					<Grid display='flex'>
-						{isError && 'ERRO'}
-						{isFetched && animaisMostrar?.length === 0 && (
-							<Grid item xs={12} textAlign='center'>
-								<SentimentDissatisfiedIcon fontSize='large' />
-								<Typography variant='h4' color='white'>
-									Nenhuma doação disponível
-								</Typography>
-							</Grid>
-						)}
-						{isFetched &&
-							animaisMostrar?.map((animal) => (
-								<Grid
-									item
-									key={animal.name}
-									xs={12}
-									sm={6}
-									md={4}
-									lg={3}
-									paddingRight='2%'
-									paddingTop='2%'
-								>
-									<AnimalCard animal={animal} />
-								</Grid>
-							))}
-						{isFetched && !animaisMostrar && animals?.length === 0 && (
-							<Grid item xs={12} textAlign='center'>
-								<SentimentDissatisfiedIcon fontSize='large' />
-								<Typography variant='h4' color='white'>
-									Nenhuma doação disponível
-								</Typography>
-							</Grid>
-						)}
-						{isFetched &&
-							!animaisMostrar &&
-							animals?.map((animal) => (
-								<Grid
-									item
-									key={animal.name}
-									xs={12}
-									sm={6}
-									md={4}
-									lg={3}
-									paddingRight='2%'
-									paddingTop='2%'
-								>
-									<AnimalCard animal={animal} />
-								</Grid>
-							))}
-					</Grid>
-				</Grid>
-			</Container>
-			{isModalVisible ? (
-				<ModalFilter
-					onClose={() => {
-						setIsModalVisible(false);
-					}}
-					filter={(data) => {
-						Filtrar(data);
-						setIsModalVisible(false);
-						setCurrentFilters(data);
-					}}
-					clearFilter={() => {
-						limparFiltro();
-					}}
-					filtersSelected={filtersSelected}
-				/>
-			) : null}
-		</>
-	);
+    handleClose();
+  };
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleChipDelete = async (param: AnimalQueryParam) => {
+    router.query = {
+      ...query,
+      [param]: '',
+    };
+
+    await router.push(router);
+  };
+
+  const loading = isLoading || isRefetching;
+
+  return (
+      <>
+        <Head>
+          <title>MiAudote - Doações</title>
+        </Head>
+        <Grid container spacing={2} sx={{marginY: 2}}>
+          <Grid item xs={12}>
+            <Grid container>
+              <Grid item display="flex" alignItems="center">
+                <ListHeader label="Doações"/>
+              </Grid>
+              <Grid item display="flex" alignItems="center">
+                <Fab
+                    size="small"
+                    aria-label="Filter"
+                    onClick={handleClickOpen}
+                    disabled={loading}
+                >
+                  {loading ? (
+                      <CircularProgress color="primary" size={25}/>
+                  ) : (
+                      <FilterAltTwoToneIcon/>
+                  )}
+                </Fab>
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid item xs={12}>
+            <Grid container spacing={2}>
+              {filters.
+                  map((filter) =>
+                      query[filter] ? (
+                          <Grid key={filter} item>
+                            <Chip
+                                // @ts-ignore
+                                label={chips[filter][query[filter]]}
+                                color="secondary"
+                                onDelete={() => handleChipDelete(filter)}
+                            />
+                          </Grid>
+                      ) : null)
+              }
+            </Grid>
+          </Grid>
+          {isError && (
+              'ERRO'
+          )}
+          {isFetched && animals?.length === 0 && (
+              <Grid item xs={12} textAlign="center">
+                <SentimentDissatisfiedIcon fontSize="large"/>
+                <Typography variant="h4" color="white">Nenhuma doação
+                  disponível</Typography>
+              </Grid>
+          )}
+          {isFetched && animals?.map((animal) => (
+              <Grid item key={animal.name} xs={12} sm={6} md={4} lg={3}>
+                <AnimalCard animal={animal}/>
+              </Grid>
+          ))}
+        </Grid>
+        <Dialog
+            fullScreen={fullScreen}
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="responsive-dialog-title"
+            scroll="paper"
+        >
+          <form onSubmit={onSubmit}>
+            <DialogTitle id="responsive-dialog-title">
+              <Grid container spacing={1} alignItems="center">
+                <Grid item>
+                  <IconButton
+                      edge="start"
+                      color="inherit"
+                      onClick={handleClose}
+                      aria-label="close"
+                  >
+                    <CloseIcon/>
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  Filtros
+                </Grid>
+              </Grid>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Grid container spacing={2} justifyContent="center">
+                <Grid item xs={12}>
+                  <ControlledRadioGroup
+                      control={control}
+                      name="species"
+                      label="Espécie"
+                      options={[
+                        {label: 'Gato', value: Species.Cat},
+                        {label: 'Cachorro', value: Species.Dog},
+                      ]}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <ControlledRadioGroup
+                      control={control}
+                      name="gender"
+                      label="Sexo"
+                      options={[
+                        {label: 'Fêmea', value: Gender.Female},
+                        {label: 'Macho', value: Gender.Male},
+                      ]}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <ControlledRadioGroup
+                      control={control}
+                      name="castrated"
+                      label={
+                        `Castrad${getGenderPrefix(watch('gender'))}`
+                      }
+                      options={[
+                        {label: 'Sim', value: 'true'},
+                        {label: 'Não', value: 'false'},
+                      ]}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button autoFocus onClick={handleReset}>
+                Limpar
+              </Button>
+              <Button autoFocus variant="contained" type="submit">
+                Filtrar
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
+      </>
+  );
 };
+
 export default Home;

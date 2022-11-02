@@ -197,6 +197,20 @@ export type AnimalCreateFieldValues = Pick<Animal,
   file: File,
 };
 
+export interface AnimalQuery {
+  gender?: Gender,
+  castrated?: 'true' | 'false',
+  species?: Species,
+}
+
+export type AnimalQueryParam = keyof AnimalQuery;
+
+export type AnimalFilterFieldValues = {
+  gender?: Gender | null,
+  castrated?: 'true' | 'false' | null,
+  species?: Species | null,
+};
+
 export type AnimalStoreData = Omit<RawAnimal, 'castrated'> & {
   castrated: 1 | 0,
   file: File,
@@ -231,8 +245,4 @@ export type AnimalImageStoreFieldValues = {
 
 export type AnimalImageStoreData = {
   file: File,
-}
-export interface ChipData {
-    key: string;
-    label: string;
 }

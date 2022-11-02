@@ -1,7 +1,7 @@
 import Gender from './enums/Gender';
 import {Animal} from './types';
 
-export const getGenderPrefix = (gender: Gender) => (
+export const getGenderPrefix = (gender?: Gender | null) => (
     gender === Gender.Female ? 'a' : 'o'
 );
 

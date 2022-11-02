@@ -4,7 +4,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 type ListHeaderProps = {
   label: string,
-  loading: boolean,
+  loading?: boolean,
 }
 
 export const ListHeader: FC<ListHeaderProps> = (props) => {

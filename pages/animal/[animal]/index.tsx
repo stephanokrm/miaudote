@@ -35,7 +35,7 @@ import getUserByMe from '../../../src/services/getUserByMe';
 
 type AnimalShowProps = {
   animal: Animal,
-  user?: User,
+  user: User | null,
 }
 
 const today = new Date();
@@ -54,7 +54,7 @@ export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: s
     const animal = await getAnimal({animal: params.animal});
     const user = req.cookies.authorization
         ? await getUserByMe({authorization: req.cookies.authorization})
-        : undefined;
+        : null;
 
     return {props: {animal, user}};
   } catch (e) {

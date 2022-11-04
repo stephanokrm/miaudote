@@ -10,23 +10,21 @@ import CardActions from '@mui/material/CardActions';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {Animal} from '../types';
-import {FC, ReactNode, useState} from 'react';
+import {FC, useState} from 'react';
 import LoadingButton from '@mui/lab/LoadingButton';
+import {Animal} from '../../types';
+import {getAnimalMention} from '../../utils';
 import {
   useAnimalDestroyMutation,
-} from '../hooks/mutations/useAnimalDestroyMutation';
-import {getAnimalMention} from '../utils';
-import {AnimalCardContent} from './AnimalCard/AnimalCardContent';
+} from '../../hooks/mutations/useAnimalDestroyMutation';
+import {AnimalCardContent} from './AnimalCardContent';
 
-type AnimalCardProps = {
+type AnimalMeCardProps = {
   animal: Animal,
-  editable?: boolean,
-  CardHeader?: ReactNode,
 };
 
-export const AnimalCard: FC<AnimalCardProps> = (props) => {
-  const {animal, editable = false, CardHeader = null} = props;
+export const AnimalMeCard: FC<AnimalMeCardProps> = (props) => {
+  const {animal} = props;
   const theAnimal = getAnimalMention(animal);
   const [open, setOpen] = useState(false);
   const {
@@ -50,23 +48,20 @@ export const AnimalCard: FC<AnimalCardProps> = (props) => {
   return (
       <>
         <Card>
-          {CardHeader}
           <AnimalCardContent animal={animal}/>
-          {editable && (
-              <CardActions>
-                <IconButton color="error" onClick={handleClickOpen}>
-                  <DeleteIcon/>
-                </IconButton>
-                <Link href={{
-                  pathname: '/animal/[animal]/edit',
-                  query: {animal: animal.id},
-                }} passHref>
-                  <IconButton color="primary">
-                    <EditIcon/>
-                  </IconButton>
-                </Link>
-              </CardActions>
-          )}
+          <CardActions>
+            <IconButton color="error" onClick={handleClickOpen}>
+              <DeleteIcon/>
+            </IconButton>
+            <Link href={{
+              pathname: '/animal/[animal]/edit',
+              query: {animal: animal.id},
+            }} passHref>
+              <IconButton color="primary">
+                <EditIcon/>
+              </IconButton>
+            </Link>
+          </CardActions>
         </Card>
         <Dialog
             open={open}

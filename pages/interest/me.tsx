@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import {
   useGetInterestsByMeQuery,
 } from '../../src/hooks/queries/useGetInterestsByMeQuery';
-import {AnimalCard} from '../../src/components/AnimalCard';
+import {InterestMeCard} from '../../src/components/AnimalCard/InterestMeCard';
 
 const InterestMe: NextPage = () => {
   const {
@@ -38,7 +38,7 @@ const InterestMe: NextPage = () => {
           )}
           {isFetched && interests?.map((interest) => (
               <Grid item key={interest.name} xs={12} sm={6} md={4} lg={3}>
-                <AnimalCard animal={interest}/>
+                <InterestMeCard animal={interest}/>
               </Grid>
           ))}
         </Grid>

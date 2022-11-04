@@ -30,9 +30,9 @@ export const useAnimalStoreMutation = ({ setError }: UseAnimalStoreMutation) => 
         })
     }, {
         setError,
-        onSuccess: async () => {
+        onSuccess: async (response) => {
             await queryClient.invalidateQueries(['getAnimalByMe']);
-            await router.push(`/animal/me`);
+            await router.push(`/animal/${response.data.data.id}/edit`);
         },
     })
 };

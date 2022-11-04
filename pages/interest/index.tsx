@@ -17,9 +17,12 @@ import IconButton from '@mui/material/IconButton';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import {parsePhoneNumber} from 'libphonenumber-js';
 import Tooltip from '@mui/material/Tooltip';
+import SentimentDissatisfiedIcon
+  from '@mui/icons-material/SentimentDissatisfied';
+import Box from '@mui/material/Box';
 
 const Interest: NextPage = () => {
-  const {data: interests = [], isLoading} = useGetInterestsQuery();
+  const {data: interests = [], isLoading, isFetched} = useGetInterestsQuery();
 
   return (
       <>
@@ -31,48 +34,70 @@ const Interest: NextPage = () => {
             <ListHeader label="Interessados" loading={isLoading}/>
           </Grid>
           <Grid item xs={12}>
-            <Card>
-              <CardContent sx={{padding: 0}}>
-                <List>
-                  {interests?.map((interest) => (
-                      <>
-                        <ListItem alignItems="flex-start" secondaryAction={
-                          <Tooltip title={`Conversar com ${interest?.user?.name}`}>
-                            <IconButton aria-label="WhatsApp" color="primary"
-                                        href={interest?.user?.phone
-                                            ? `https://wa.me/${parsePhoneNumber(
-                                                interest?.user?.phone,
-                                                'BR').number}`
-                                            : ''} target="_blank">
-                              <WhatsAppIcon/>
-                            </IconButton>
-                          </Tooltip>
-                        }>
-                          <ListItemAvatar>
-                            <Avatar alt={interest.name} src={interest.avatar}/>
-                          </ListItemAvatar>
-                          <ListItemText
-                              primary={interest.name}
-                              secondary={
-                                <>
-                                  <Typography
-                                      sx={{display: 'inline'}}
-                                      component="span"
-                                      variant="body2"
-                                      color="text.primary"
-                                  >
-                                    {interest.user?.name} quer adotar
-                                  </Typography>
-                                </>
-                              }
-                          />
-                        </ListItem>
-                        <Divider variant="inset" component="li"/>
-                      </>
-                  ))}
-                </List>
-              </CardContent>
-            </Card>
+            {interests?.length > 0 ? (
+                <Card>
+                  <CardContent sx={{padding: 0}}>
+                    <List>
+                      {interests.map((interest, index) => (
+                          <>
+                            <ListItem
+                                alignItems="flex-start"
+                                sx={{paddingBottom: 3}}
+                                secondaryAction={
+                                  <Tooltip
+                                      title={`Conversar com ${interest?.user?.name}`}>
+                                    <IconButton aria-label="WhatsApp"
+                                                color="primary"
+                                                href={interest?.user?.phone
+                                                    ? `https://wa.me/${parsePhoneNumber(
+                                                        interest?.user?.phone,
+                                                        'BR').number}`
+                                                    : ''} target="_blank">
+                                      <WhatsAppIcon/>
+                                    </IconButton>
+                                  </Tooltip>
+                                }>
+                              <ListItemAvatar>
+                                <Avatar
+                                    alt={interest.name}
+                                    src={interest.avatar}
+                                    sx={{width: 75, height: 75}}
+                                />
+                              </ListItemAvatar>
+                              <ListItemText
+                                  sx={{paddingLeft: 2}}
+                                  primary={interest.name}
+                                  secondary={
+                                    <>
+                                      <Typography
+                                          sx={{display: 'inline'}}
+                                          component="span"
+                                          variant="body2"
+                                          color="text.primary"
+                                      >
+                                        {interest.user?.name} quer adotar
+                                      </Typography>
+                                    </>
+                                  }
+                              />
+                            </ListItem>
+                            {index + 1 < interests.length ? (
+                                <Divider variant="inset" component="li"/>
+                            ) : null}
+                          </>
+                      ))}
+                    </List>
+                  </CardContent>
+                </Card>
+            ) : null}
+            {isFetched && interests.length === 0 && (
+                <Box textAlign="center">
+                  <SentimentDissatisfiedIcon fontSize="large"/>
+                  <Typography variant="h5" color="white">
+                    Os interesses irão aparecer aqui
+                  </Typography>
+                </Box>
+            )}
           </Grid>
         </Grid>
       </>

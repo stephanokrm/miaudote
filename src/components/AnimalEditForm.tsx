@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import {addDays, parseISO, subYears} from 'date-fns';
@@ -7,26 +6,13 @@ import {createFilterOptions} from '@mui/material/Autocomplete';
 import useForm from '../hooks/useForm';
 import Alert from '@mui/material/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
-import {ChangeEvent, FC} from 'react';
+import {FC} from 'react';
 import Species from '../enums/Species';
 import Gender from '../enums/Gender';
 import {AvatarChangeEvent, InteractableAvatar} from './InteractableAvatar';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import Fab from '@mui/material/Fab';
-import {InteractableImage} from './InteractableImage';
-import CircularProgress from '@mui/material/CircularProgress';
 import {
   useAnimalUpdateMutation,
 } from '../hooks/mutations/useAnimalUpdateMutation';
-import {
-  useAnimalImageStoreMutation,
-} from '../hooks/mutations/useAnimalImageStoreMutation';
-import {
-  useImageDestroyMutation,
-} from '../hooks/mutations/useImageDestroyMutation';
-import {
-  useGetImagesByAnimalQuery,
-} from '../hooks/queries/useGetImagesByAnimalQuery';
 import {
   useGetCitiesByStateQuery,
 } from '../hooks/queries/useGetCitiesByStateQuery';
@@ -65,7 +51,6 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
       bornAt: parseISO(animal.bornAtISO),
     },
   });
-  const {data: images} = useGetImagesByAnimalQuery(animal.id);
   const {data: breeds, isLoading: isLoadingBreeds} = useGetBreedsQuery();
   const {data: states, isLoading: isLoadingStates} = useGetStatesQuery();
   const {
@@ -73,16 +58,7 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
     isLoading: isLoadingCities,
   } = useGetCitiesByStateQuery(watch('city.state')?.initials);
   const {mutate, isLoading, message} = useAnimalUpdateMutation({setError});
-  const {
-    mutate: destroyAnimalImage,
-    isLoading: isDestroyingAnimalImage,
-    message: destroyAnimalImageMessage,
-  } = useImageDestroyMutation();
-  const {
-    mutate: storeAnimalImage,
-    isLoading: isStoringAnimalImage,
-    message: storeAnimalImageMessage,
-  } = useAnimalImageStoreMutation(animal.id);
+
   const onSubmit = handleSubmit(
       (data: AnimalEditFieldValues) => mutate(data),
   );
@@ -331,53 +307,6 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
               Atualizar
             </LoadingButton>
           </Grid>
-          {storeAnimalImageMessage || destroyAnimalImageMessage ? (
-              <Grid item xs={12}>
-                <Alert severity="error">
-                  {storeAnimalImageMessage ?? destroyAnimalImageMessage}
-                </Alert>
-              </Grid>
-          ) : null}
-          <Grid item xs={12} md={6}>
-            <Box display="flex" justifyContent="center" alignItems="center"
-                 sx={{aspectRatio: '1 / 1'}}>
-              <Fab
-                  color="primary"
-                  aria-label="Upload Picture"
-                  component="label"
-                  disabled={isStoringAnimalImage}
-              >
-                <input
-                    hidden
-                    accept="image/*"
-                    type="file"
-                    onChange={async (event: ChangeEvent<HTMLInputElement>) => {
-                      const file = event.currentTarget.files?.[0];
-
-                      if (!file) return;
-
-                      await storeAnimalImage({file});
-                    }}
-                />
-                {isStoringAnimalImage ? (
-                    <CircularProgress color="secondary"/>
-                ) : (
-                    <PhotoCameraIcon/>
-                )}
-              </Fab>
-            </Box>
-          </Grid>
-          {images?.map((image) => (
-              <Grid item xs={12} md={6} key={image.id}>
-                <InteractableImage
-                    alt={watch('name')}
-                    onDelete={() => destroyAnimalImage(image)}
-                    src={image.path}
-                    disabled={isDestroyingAnimalImage}
-                    loading={isDestroyingAnimalImage}
-                />
-              </Grid>
-          ))}
         </Grid>
       </form>
   );

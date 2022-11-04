@@ -58,7 +58,6 @@ const Home: NextPage = () => {
     control,
     handleSubmit,
     watch,
-    reset,
     setValue,
   } = useForm<AnimalQuery>({schema});
   const {

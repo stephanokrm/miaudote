@@ -2,22 +2,14 @@ import {GetServerSideProps, NextPage} from 'next';
 import {Animal, User} from '../../../src/types';
 import {getAnimal} from '../../../src/services/getAnimal';
 import Head from 'next/head';
-import {ptBR} from 'date-fns/locale';
 import Image from 'next/image';
-import CardHeader from '@mui/material/CardHeader';
 import Grid from '@mui/material/Grid';
 import CardContent from '@mui/material/CardContent';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import {intlFormatDistance, parseISO} from 'date-fns';
-import Avatar from '@mui/material/Avatar';
 import PetsIcon from '@mui/icons-material/Pets';
-import {AnimalCard} from '../../../src/components/AnimalCard';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import DescriptionIcon from '@mui/icons-material/Description';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -25,20 +17,19 @@ import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
 import ChildCareSharpIcon from '@mui/icons-material/ChildCareSharp';
 import Face6Icon from '@mui/icons-material/Face6';
 import {getAnimalMention} from '../../../src/utils';
-import {parsePhoneNumber} from 'libphonenumber-js';
 import Box from '@mui/material/Box';
-import LoadingButton from '@mui/lab/LoadingButton';
 import {
   useAnimalInterestStoreMutation,
 } from '../../../src/hooks/mutations/useAnimalInterestStoreMutation';
 import getUserByMe from '../../../src/services/getUserByMe';
+import {
+  AnimalShowCard,
+} from '../../../src/components/AnimalCard/AnimalShowCard';
 
 type AnimalShowProps = {
   animal: Animal,
   user: User | null,
 }
-
-const today = new Date();
 
 export const getServerSideProps: GetServerSideProps<AnimalShowProps, { animal: string }> = async ({
   req,
@@ -101,32 +92,7 @@ const AnimalShow: NextPage<AnimalShowProps> = ({
         </Head>
         <Grid container spacing={2} sx={{marginY: 2}}>
           <Grid item xs={12} sm={6} md={4} lg={3}>
-            <AnimalCard animal={animal} CardHeader={(
-                <CardHeader
-                    avatar={(
-                        <Avatar
-                            alt={animal?.user?.name}
-                            src={animal?.user?.avatar}
-                        />
-                    )}
-                    title={animal.user?.name}
-                    subheader={intlFormatDistance(
-                        parseISO(animal.createdAtISO),
-                        today, {locale: ptBR.code})}
-                    action={
-                      <Tooltip title={`Conversar com ${animal?.user?.name}`}>
-                        <IconButton aria-label="WhatsApp" color="primary"
-                                    href={animal?.user?.phone
-                                        ? `https://wa.me/${parsePhoneNumber(
-                                            animal?.user?.phone,
-                                            'BR').number}`
-                                        : ''} target="_blank">
-                          <WhatsAppIcon/>
-                        </IconButton>
-                      </Tooltip>
-                    }
-                />
-            )}/>
+            <AnimalShowCard animal={animal} user={user}/>
           </Grid>
           <Grid item xs={12} sm={6} md={8} lg={9}>
             <Card>
@@ -135,23 +101,19 @@ const AnimalShow: NextPage<AnimalShowProps> = ({
                   <Grid item xs={12} textAlign="center">
                     <PetsIcon fontSize="large" color="primary"/>
                   </Grid>
-                  {user ? (
-                      <Grid item xs={12}>
-                        <LoadingButton variant="contained" size="large"
-                                       loading={isLoading} disabled={isSuccess}
-                                       onClick={mutate}>
-                          {isSuccess ? 'Interesse salvo!' : 'Quero adotar!'}
-                        </LoadingButton>
-                      </Grid>
-                  ) : null}
                   <Grid item xs={12}>
                     <Typography
-                        variant="h5" display="flex" alignItems="center"
-                        gutterBottom>
+                        variant="h5"
+                        display="flex"
+                        alignItems="center"
+                        gutterBottom
+                    >
                       <DescriptionIcon color="primary" sx={{mr: 1}}/>
-                      Sobre {theAnimal}</Typography>
-                    <Typography
-                        variant="body1">{animal.description}</Typography>
+                      Sobre {theAnimal}
+                    </Typography>
+                    <Typography variant="body1">
+                      {animal.description}
+                    </Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Grid container spacing={2} justifyContent="center">

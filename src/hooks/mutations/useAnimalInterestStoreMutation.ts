@@ -13,6 +13,7 @@ export const useAnimalInterestStoreMutation = (animal: string) => {
   }, {
     onSuccess: async () => {
       await queryClient.invalidateQueries(['getInterestsByMe']);
+      await queryClient.invalidateQueries(['getInterestsByAnimalQuery', animal]);
     },
   });
 };

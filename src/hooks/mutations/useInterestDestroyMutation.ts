@@ -3,14 +3,15 @@ import {Animal} from '../../types';
 import {useFormMutation} from './useFormMutation';
 import {deleteInterest} from '../../services/deleteInterest';
 
-export const useInterestDestroyMutation = () => {
+export const useInterestDestroyMutation = (animal: Animal) => {
   const queryClient = useQueryClient();
 
-  return useFormMutation(async (animal: Animal) => {
+  return useFormMutation(async () => {
     return deleteInterest({animal});
   }, {
     onSuccess: async () => {
       await queryClient.invalidateQueries(['getInterestsByMe']);
+      await queryClient.invalidateQueries(['getInterestsByAnimalQuery', animal.id]);
     },
   });
 };

@@ -8,6 +8,12 @@ import {
   useAnimalInterestStoreMutation,
 } from '../../hooks/mutations/useAnimalInterestStoreMutation';
 import {AnimalCardHeader} from './AnimalCardHeader';
+import {
+  useGetInterestsByAnimalQuery,
+} from '../../hooks/queries/useGetInterestByAnimalQuery';
+import {
+  useInterestDestroyMutation,
+} from '../../hooks/mutations/useInterestDestroyMutation';
 
 type AnimalShowCardProps = {
   animal: Animal,
@@ -20,8 +26,17 @@ export const AnimalShowCard: FC<AnimalShowCardProps> = (props) => {
   const {
     mutate,
     isLoading,
-    isSuccess,
   } = useAnimalInterestStoreMutation(animal.id);
+
+  const {
+    mutate: destroyInterest,
+    isLoading: isDestroyingInterest,
+  } = useInterestDestroyMutation(animal);
+
+  const {
+    data: interested,
+    isLoading: isLoadingInterested,
+  } = useGetInterestsByAnimalQuery(animal.id);
 
   return (
       <>
@@ -34,12 +49,13 @@ export const AnimalShowCard: FC<AnimalShowCardProps> = (props) => {
                     fullWidth
                     variant="contained"
                     size="large"
-                    loading={isLoading}
-                    disabled={isSuccess}
-                    onClick={mutate}
+                    color={interested ? 'error' : 'primary'}
+                    loading={isLoading || isDestroyingInterest ||
+                        isLoadingInterested}
+                    onClick={interested ? destroyInterest : mutate}
                     sx={{m: 1}}
                 >
-                  {isSuccess ? 'Interesse salvo!' : 'Quero adotar!'}
+                  {interested ? 'Remover interesse' : 'Quero adotar!'}
                 </LoadingButton>
               </CardActions>
           ) : null}

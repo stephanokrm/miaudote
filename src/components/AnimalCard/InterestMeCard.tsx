@@ -27,7 +27,7 @@ export const InterestMeCard: FC<InterestMeCardProps> = (props) => {
   const {
     mutate: destroyInterest,
     isLoading: isDestroyingInterest,
-  } = useInterestDestroyMutation();
+  } = useInterestDestroyMutation(animal);
 
   const handleClickOpen = () => {
     setOpen(true);

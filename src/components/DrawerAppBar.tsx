@@ -165,7 +165,7 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
                   aria-label="open drawer"
                   edge="start"
                   onClick={handleDrawerToggle}
-                  sx={{mr: 2, display: {sm: 'none'}}}
+                  sx={{mr: 2, display: {md: 'none'}}}
               >
                 <MenuIcon/>
               </IconButton>
@@ -188,12 +188,12 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
                   </Typography>
                 </Link>
               </Box>
-              <Box alignItems="center" sx={{display: {xs: 'flex', sm: 'none'}}}>
+              <Box alignItems="center" sx={{display: {xs: 'flex', md: 'none'}}}>
                 {user ? (
                     <Avatar alt={user.name} src={user.avatar}/>
                 ) : null}
               </Box>
-              <Box sx={{display: {xs: 'none', sm: 'block'}}}>
+              <Box sx={{display: {xs: 'none', md: 'block'}}}>
                 {navigations.map((item) => (
                     <Link key={item.label} href={item.href} passHref>
                       <Button sx={{color: '#fff'}}>
@@ -253,7 +253,7 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
                 keepMounted: true,
               }}
               sx={{
-                display: {xs: 'block', sm: 'none'},
+                display: {xs: 'block', md: 'none'},
                 '& .MuiDrawer-paper': {
                   boxSizing: 'border-box',
                   width: drawerWidth,

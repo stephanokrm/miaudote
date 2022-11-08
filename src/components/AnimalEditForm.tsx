@@ -254,7 +254,7 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
           <Grid item xs={12}>
             <ControlledSlider
                 control={control}
-                helperText="O quão bem é carinhoso com a família"
+                helperText="O quão carinhoso é com a família"
                 label="Amigável Com Família"
                 marks
                 max={5}

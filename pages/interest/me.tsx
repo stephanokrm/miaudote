@@ -37,7 +37,15 @@ const InterestMe: NextPage = () => {
               </Grid>
           )}
           {isFetched && interests?.map((interest) => (
-              <Grid item key={interest.name} xs={12} sm={6} md={4} lg={3}>
+              <Grid
+                  item
+                  key={interest.id}
+                  display="flex"
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  lg={3}
+              >
                 <InterestMeCard animal={interest}/>
               </Grid>
           ))}

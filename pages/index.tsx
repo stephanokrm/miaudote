@@ -164,7 +164,15 @@ const Home: NextPage = () => {
               </Grid>
           )}
           {isFetched && animals?.map((animal) => (
-              <Grid item key={animal.name} xs={12} sm={6} md={4} lg={3}>
+              <Grid
+                  item
+                  key={animal.id}
+                  display="flex"
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  lg={3}
+              >
                 <AnimalCard animal={animal}/>
               </Grid>
           ))}

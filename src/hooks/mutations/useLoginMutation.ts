@@ -47,6 +47,8 @@ export const useLoginMutation = ({setError}: UseLoginMutation = {}) => {
     onSuccess: async (response) => {
       setCookie('authorization', response.data.access_token, {
         expires: addSeconds(new Date(), response.data.expires_in),
+        sameSite: 'strict',
+        secure: true,
       });
 
       await queryClient.invalidateQueries(['getUserByMe']);

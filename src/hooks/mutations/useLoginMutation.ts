@@ -1,9 +1,10 @@
+import {AxiosResponse} from 'axios';
+import {addSeconds} from 'date-fns';
+import {useRouter} from 'next/router';
+import {useCookies} from 'react-cookie';
 import {useQueryClient} from '@tanstack/react-query';
 import axios from '../../axios';
 import {UserLoginFieldValues} from '../../types';
-import {AxiosResponse} from 'axios';
-import {useRouter} from 'next/router';
-import {useCookies} from 'react-cookie';
 import {UseFormSetError} from 'react-hook-form';
 import {useFormMutation} from './useFormMutation';
 
@@ -17,6 +18,7 @@ type Data = {
 
 type Response = {
   access_token: string,
+  expires_in: number,
 };
 
 type SuccessResponse = AxiosResponse<Response>
@@ -43,7 +45,9 @@ export const useLoginMutation = ({setError}: UseLoginMutation = {}) => {
   }, {
     setError,
     onSuccess: async (response) => {
-      setCookie('authorization', response.data.access_token);
+      setCookie('authorization', response.data.access_token, {
+        expires: addSeconds(new Date(), response.data.expires_in),
+      });
 
       await queryClient.invalidateQueries(['getUserByMe']);
       await router.push('/');

@@ -188,7 +188,7 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
                   </Typography>
                 </Link>
               </Box>
-              <Box sx={{display: {xs: 'block', sm: 'none'}}}>
+              <Box alignItems="center" sx={{display: {xs: 'flex', sm: 'none'}}}>
                 {user ? (
                     <Avatar alt={user.name} src={user.avatar}/>
                 ) : null}

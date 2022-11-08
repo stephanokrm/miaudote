@@ -29,7 +29,7 @@ interface DrawerAppBarProps {
   window?: () => Window;
 }
 
-const drawerWidth = 240;
+const drawerWidth = 300;
 
 type NavigationItem = {
   label: string,
@@ -187,6 +187,11 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
                     MIAUDOTE
                   </Typography>
                 </Link>
+              </Box>
+              <Box sx={{display: {xs: 'block', sm: 'none'}}}>
+                {user ? (
+                    <Avatar alt={user.name} src={user.avatar}/>
+                ) : null}
               </Box>
               <Box sx={{display: {xs: 'none', sm: 'block'}}}>
                 {navigations.map((item) => (

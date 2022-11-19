@@ -29,6 +29,16 @@ export type City = {
   state: State,
 };
 
+export type RawForm = {
+  species: Species;
+  id: string,
+};
+
+export type Form = {
+  id: string,
+  species: Species,
+};
+
 export type RawImage = {
   id: string,
   path: string,
@@ -245,4 +255,32 @@ export type AnimalImageStoreFieldValues = {
 
 export type AnimalImageStoreData = {
   file: File,
+}
+
+export interface FormCreateFieldValues {
+  species: Species,
+}
+
+export interface FormStoreData {
+  species: Species,
+}
+
+export interface RawQuestion {
+  value: string,
+  type: string,
+}
+
+export interface QuestionCreateFieldValues {
+  value: string,
+  type: string,
+}
+
+export interface QuestionStoreData {
+  value: string,
+  type: string,
+}
+
+export interface Question {
+  value: string,
+  type: string,
 }

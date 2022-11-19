@@ -73,6 +73,14 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
       },
     },
     {
+      label: 'Formulários',
+      onClick: async () => {
+        handleCloseUserMenu();
+
+        await router.push('/form');
+      },
+    },
+    {
       label: 'Sair',
       onClick: async () => {
         handleCloseUserMenu();

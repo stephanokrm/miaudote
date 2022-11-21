@@ -16,11 +16,13 @@ type SuccessResponse = AxiosResponse<Response>;
 type UseQuestionStoreMutation = {
   form?: Form,
   setError: UseFormSetError<QuestionCreateFieldValues>,
+  onSuccess: () => void | Promise<void>,
 };
 
 export const useQuestionStoreMutation = ({
   form,
   setError,
+  onSuccess,
 }: UseQuestionStoreMutation) => {
   const queryClient = useQueryClient();
 
@@ -29,11 +31,16 @@ export const useQuestionStoreMutation = ({
         return axios().
             post<Response, SuccessResponse, QuestionStoreData>(
                 `${process.env.NEXT_PUBLIC_SERVICE_URL}/api/form/${form?.id}/question`,
-                question);
+                {
+                  ...question,
+                  type: 'TEXT',
+                });
       }, {
         setError,
         onSuccess: async () => {
           await queryClient.invalidateQueries(['getQuestionByForm', form?.id]);
+          await queryClient.invalidateQueries(['getFormByAnimal']);
+          await onSuccess();
         },
       });
 };

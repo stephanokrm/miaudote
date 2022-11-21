@@ -4,9 +4,6 @@ import {Animal, User} from '../../types';
 import {AnimalCardContent} from './AnimalCardContent';
 import CardActions from '@mui/material/CardActions';
 import LoadingButton from '@mui/lab/LoadingButton';
-import {
-  useAnimalInterestStoreMutation,
-} from '../../hooks/mutations/useAnimalInterestStoreMutation';
 import {AnimalCardHeader} from './AnimalCardHeader';
 import {
   useGetInterestsByAnimalQuery,
@@ -14,6 +11,8 @@ import {
 import {
   useInterestDestroyMutation,
 } from '../../hooks/mutations/useInterestDestroyMutation';
+import Link from 'next/link';
+import Button from '@mui/material/Button';
 
 type AnimalShowCardProps = {
   animal: Animal,
@@ -22,11 +21,6 @@ type AnimalShowCardProps = {
 
 export const AnimalShowCard: FC<AnimalShowCardProps> = (props) => {
   const {animal, user} = props;
-
-  const {
-    mutate,
-    isLoading,
-  } = useAnimalInterestStoreMutation(animal.id);
 
   const {
     mutate: destroyInterest,
@@ -45,18 +39,34 @@ export const AnimalShowCard: FC<AnimalShowCardProps> = (props) => {
           <AnimalCardContent animal={animal}/>
           {user ? (
               <CardActions>
-                <LoadingButton
-                    fullWidth
-                    variant="contained"
-                    size="large"
-                    color={interested ? 'error' : 'primary'}
-                    loading={isLoading || isDestroyingInterest ||
-                        isLoadingInterested}
-                    onClick={interested ? destroyInterest : mutate}
-                    sx={{m: 1}}
-                >
-                  {interested ? 'Remover interesse' : 'Quero adotar!'}
-                </LoadingButton>
+                {interested ? (
+                    <LoadingButton
+                        fullWidth
+                        variant="contained"
+                        size="large"
+                        color="error"
+                        loading={isDestroyingInterest || isLoadingInterested}
+                        onClick={destroyInterest}
+                        sx={{m: 1}}
+                    >
+                      Remover interesse
+                    </LoadingButton>
+                ) : (
+                    <Link passHref href={{
+                      pathname: '/animal/[animal]/form',
+                      query: {animal: animal.id},
+                    }}>
+                      <Button
+                          fullWidth
+                          variant="contained"
+                          size="large"
+                          color="primary"
+                          sx={{m: 1}}
+                      >
+                        Quero adotar!
+                      </Button>
+                    </Link>
+                )}
               </CardActions>
           ) : null}
         </Card>

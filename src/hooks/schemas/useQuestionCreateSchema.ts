@@ -7,6 +7,5 @@ import {
 export const useQuestionCreateSchema = () => {
   return useMemo(() => yupObject().shape({
     value: yupString().required('O campo espécie é obrigatório.'),
-    type: yupString().required('O campo espécie é obrigatório.'),
   }), []);
 };

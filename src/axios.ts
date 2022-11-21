@@ -2,7 +2,11 @@ import axios from "axios";
 import {Cookies} from 'react-cookie';
 
 const browserAxios = () => {
-    const instance = axios.create();
+    const instance = axios.create({
+        headers: {
+            Accept: 'application/json',
+        }
+    });
 
     instance.interceptors.request.use((config) => {
         const token = new Cookies().get('authorization');
@@ -35,6 +39,7 @@ const browserAxios = () => {
 
 const serverAxios = (authorization?: string) => axios.create({
     headers: {
+        Accept: 'application/json',
         Authorization: authorization ? `Bearer ${authorization}` : '',
     }
 });

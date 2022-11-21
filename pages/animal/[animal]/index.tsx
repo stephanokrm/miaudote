@@ -18,9 +18,6 @@ import ChildCareSharpIcon from '@mui/icons-material/ChildCareSharp';
 import Face6Icon from '@mui/icons-material/Face6';
 import {getAnimalMention} from '../../../src/utils';
 import Box from '@mui/material/Box';
-import {
-  useAnimalInterestStoreMutation,
-} from '../../../src/hooks/mutations/useAnimalInterestStoreMutation';
 import getUserByMe from '../../../src/services/getUserByMe';
 import {
   AnimalShowCard,
@@ -63,12 +60,6 @@ const AnimalShow: NextPage<AnimalShowProps> = ({
   const url = typeof window === 'undefined'
       ? `https://miaudote-alpha.vercel.app/animal/${animal.id}`
       : window.location.href;
-
-  const {
-    mutate,
-    isLoading,
-    isSuccess,
-  } = useAnimalInterestStoreMutation(animal.id);
 
   return (
       <>

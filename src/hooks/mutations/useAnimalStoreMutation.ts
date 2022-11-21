@@ -24,7 +24,6 @@ export const useAnimalStoreMutation = ({ setError }: UseAnimalStoreMutation) => 
             file,
         }, {
             headers: {
-                'Accept': 'application/json',
                 'Content-Type': 'multipart/form-data'
             }
         })

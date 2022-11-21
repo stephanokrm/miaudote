@@ -32,11 +32,13 @@ export type City = {
 export type RawForm = {
   species: Species;
   id: string,
+  questions?: Question[],
 };
 
 export type Form = {
   id: string,
   species: Species,
+  questions?: Question[],
 };
 
 export type RawImage = {
@@ -191,6 +193,10 @@ export type UserUpdateData = RawUser & {
   _method: 'PUT',
 };
 
+export type AnswerCreateFieldValues = {
+  [key: string]: string,
+};
+
 export type AnimalCreateFieldValues = Pick<Animal,
     'name' |
     'description' |
@@ -266,13 +272,13 @@ export interface FormStoreData {
 }
 
 export interface RawQuestion {
+  id: string,
   value: string,
   type: string,
 }
 
 export interface QuestionCreateFieldValues {
   value: string,
-  type: string,
 }
 
 export interface QuestionStoreData {
@@ -281,6 +287,23 @@ export interface QuestionStoreData {
 }
 
 export interface Question {
+  id: string,
   value: string,
   type: string,
+}
+
+export interface Answer {
+  id: string,
+  value: string,
+  question?: Question,
+}
+
+export interface RawAnswer {
+  id: string,
+  value: string,
+  question?: RawQuestion,
+}
+
+export interface AnswerStoreData {
+  [key: string]: string,
 }

@@ -20,6 +20,9 @@ import Tooltip from '@mui/material/Tooltip';
 import SentimentDissatisfiedIcon
   from '@mui/icons-material/SentimentDissatisfied';
 import Box from '@mui/material/Box';
+import FeedIcon from '@mui/icons-material/Feed';
+import Badge from '@mui/material/Badge';
+import Link from 'next/link';
 
 const Interest: NextPage = () => {
   const {data: interests = [], isLoading, isFetched} = useGetInterestsQuery();
@@ -44,25 +47,62 @@ const Interest: NextPage = () => {
                                 alignItems="flex-start"
                                 sx={{paddingBottom: 3}}
                                 secondaryAction={
-                                  <Tooltip
-                                      title={`Conversar com ${interest?.user?.name}`}>
-                                    <IconButton aria-label="WhatsApp"
-                                                color="primary"
-                                                href={interest?.user?.phone
-                                                    ? `https://wa.me/${parsePhoneNumber(
-                                                        interest?.user?.phone,
-                                                        'BR').number}`
-                                                    : ''} target="_blank">
-                                      <WhatsAppIcon/>
-                                    </IconButton>
-                                  </Tooltip>
+                                  <>
+                                    <Tooltip title="Ver respostas">
+                                      <Link passHref href={{
+                                        pathname: '/animal/[animal]/user/[user]',
+                                        query: {
+                                          animal: interest.id,
+                                          user: interest.user?.id,
+                                        }
+                                      }}>
+                                      <IconButton
+                                          aria-label="Ver respostas"
+                                          color="primary"
+                                      >
+                                        <FeedIcon/>
+                                      </IconButton>
+                                      </Link>
+                                    </Tooltip>
+                                    <Tooltip
+                                        title={`Conversar com ${interest?.user?.name}`}>
+                                      <IconButton aria-label="WhatsApp"
+                                                  color="primary"
+                                                  href={interest?.user?.phone
+                                                      ? `https://wa.me/${parsePhoneNumber(
+                                                          interest?.user?.phone,
+                                                          'BR').number}`
+                                                      : ''} target="_blank">
+                                        <WhatsAppIcon/>
+                                      </IconButton>
+                                    </Tooltip>
+                                  </>
                                 }>
                               <ListItemAvatar>
-                                <Avatar
-                                    alt={interest.name}
-                                    src={interest.avatar}
-                                    sx={{width: 75, height: 75}}
-                                />
+                                <Badge
+                                    overlap="circular"
+                                    anchorOrigin={{
+                                      vertical: 'bottom',
+                                      horizontal: 'right',
+                                    }}
+                                    badgeContent={
+                                      <Avatar
+                                          alt={interest.user?.name}
+                                          src={interest.user?.avatar}
+                                          sx={{
+                                            width: 50,
+                                            height: 50,
+                                            border: `2px solid white`,
+                                          }}
+                                      />
+                                    }
+                                >
+                                  <Avatar
+                                      alt={interest.name}
+                                      src={interest.avatar}
+                                      sx={{width: 75, height: 75}}
+                                  />
+                                </Badge>
                               </ListItemAvatar>
                               <ListItemText
                                   sx={{paddingLeft: 2}}

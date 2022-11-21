@@ -117,7 +117,7 @@ const AnimalCreate: NextPage = () => {
                           </InteractableAvatar>
                         </Grid>
                         <Grid item xs={12}>
-                          <Typography variant="h3">{watch('name') ??
+                          <Typography variant="h4">{watch('name') ??
                               'Doar'}</Typography>
                         </Grid>
                         {message && (

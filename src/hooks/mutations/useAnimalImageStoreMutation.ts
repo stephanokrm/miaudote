@@ -24,7 +24,6 @@ export const useAnimalImageStoreMutation = (animal?: string) => {
                   file,
                 }, {
                   headers: {
-                    'Accept': 'application/json',
                     'Content-Type': 'multipart/form-data',
                   },
                 });

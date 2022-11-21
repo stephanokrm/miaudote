@@ -14,6 +14,11 @@ import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import Link from 'next/link';
 import AddIcon from '@mui/icons-material/Add';
+import {ListItem, ListItemIcon} from '@mui/material';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import FeedIcon from '@mui/icons-material/Feed';
+import {getSpecies} from '../../src/utils';
 
 const Form: NextPage = () => {
   const {data: forms = [], isLoading, isFetched} = useGetFormsQuery();
@@ -51,10 +56,22 @@ const Form: NextPage = () => {
                 <Card>
                   <CardContent sx={{padding: 0}}>
                     <List>
-                      {forms.map((form, index) => (
-                          <>
-
-                          </>
+                      {forms.map((form) => (
+                          <Link passHref key={form.id} href={{
+                            pathname: '/form/[form]/edit',
+                            query: {form: form.id},
+                          }}>
+                            <ListItem disablePadding>
+                              <ListItemButton>
+                                <ListItemIcon>
+                                  <FeedIcon color="primary" />
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={`${getSpecies(form.species)}s`}
+                                />
+                              </ListItemButton>
+                            </ListItem>
+                          </Link>
                       ))}
                     </List>
                   </CardContent>

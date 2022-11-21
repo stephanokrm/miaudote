@@ -38,54 +38,52 @@ const FormCreate: NextPage = () => {
           <title>MiAudote - Novo Formulário</title>
         </Head>
         <Container maxWidth="md" disableGutters>
-          <Box paddingY={3}>
-            <Grid container justifyContent="center" alignContent="center"
-                  spacing={2}>
-              <Grid item>
-                <Card>
-                  <CardContent>
-                    <form onSubmit={onSubmit}>
-                      <Grid container spacing={2} justifyContent="center">
-                        <Grid item xs={12} textAlign="center">
-                          <PetsIcon fontSize="large" color="primary"/>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Typography variant="h3">Novo Formulário</Typography>
-                        </Grid>
-                        {message && (
-                            <Grid item xs={12}>
-                              <Alert severity="error">{message}</Alert>
-                            </Grid>
-                        )}
-                        <Grid item xs={12}>
-                          <ControlledRadioGroup
-                              control={control}
-                              name="species"
-                              label="Espécie"
-                              options={[
-                                {label: 'Gato', value: Species.Cat},
-                                {label: 'Cachorro', value: Species.Dog},
-                              ]}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <LoadingButton
-                              fullWidth
-                              loading={isLoading}
-                              size="large"
-                              type="submit"
-                              variant="contained"
-                          >
-                            Continuar
-                          </LoadingButton>
-                        </Grid>
+          <Grid container justifyContent="center" alignContent="center"
+                spacing={2} py={3}>
+            <Grid item xs={12}>
+              <Card sx={{width: '100%'}}>
+                <CardContent>
+                  <form onSubmit={onSubmit}>
+                    <Grid container spacing={2} justifyContent="center">
+                      <Grid item xs={12} textAlign="center">
+                        <PetsIcon fontSize="large" color="primary"/>
                       </Grid>
-                    </form>
-                  </CardContent>
-                </Card>
-              </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="h4">Novo Formulário</Typography>
+                      </Grid>
+                      {message && (
+                          <Grid item xs={12}>
+                            <Alert severity="error">{message}</Alert>
+                          </Grid>
+                      )}
+                      <Grid item xs={12}>
+                        <ControlledRadioGroup
+                            control={control}
+                            name="species"
+                            label="Espécie"
+                            options={[
+                              {label: 'Gato', value: Species.Cat},
+                              {label: 'Cachorro', value: Species.Dog},
+                            ]}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <LoadingButton
+                            fullWidth
+                            loading={isLoading}
+                            size="large"
+                            type="submit"
+                            variant="contained"
+                        >
+                          Continuar
+                        </LoadingButton>
+                      </Grid>
+                    </Grid>
+                  </form>
+                </CardContent>
+              </Card>
             </Grid>
-          </Box>
+          </Grid>
         </Container>
       </>
   );

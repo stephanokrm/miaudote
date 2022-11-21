@@ -163,6 +163,45 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
       ? () => window().document.body
       : undefined;
 
+  const UserAvatar = user ? (
+      <>
+        <Tooltip title="Configurações">
+          <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
+            <Avatar alt={user.name} src={user.avatar}/>
+          </IconButton>
+        </Tooltip>
+        <Menu
+            sx={{mt: '45px'}}
+            id="menu-appbar"
+            anchorEl={anchorElUser}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorElUser)}
+            onClose={handleCloseUserMenu}
+        >
+          {settings.map((setting) => (
+              <MenuItem key={setting.label}
+                        onClick={async () => {
+                          handleCloseUserMenu();
+
+                          await setting.onClick();
+                        }}>
+                <Typography textAlign="center">
+                  {setting.label}
+                </Typography>
+              </MenuItem>
+          ))}
+        </Menu>
+      </>
+  ) : null;
+
   return (
       <Box>
         <AppBar component="nav" elevation={1}>
@@ -197,9 +236,7 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
                 </Link>
               </Box>
               <Box alignItems="center" sx={{display: {xs: 'flex', md: 'none'}}}>
-                {user ? (
-                    <Avatar alt={user.name} src={user.avatar}/>
-                ) : null}
+                {UserAvatar}
               </Box>
               <Box sx={{display: {xs: 'none', md: 'block'}}}>
                 {navigations.map((item) => (
@@ -209,44 +246,7 @@ export const DrawerAppBar: FC<PropsWithChildren<DrawerAppBarProps>> = (props) =>
                       </Button>
                     </Link>
                 ))}
-                {user ? (
-                    <>
-                      <Tooltip title="Configurações">
-                        <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
-                          <Avatar alt={user.name} src={user.avatar}/>
-                        </IconButton>
-                      </Tooltip>
-                      <Menu
-                          sx={{mt: '45px'}}
-                          id="menu-appbar"
-                          anchorEl={anchorElUser}
-                          anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                          }}
-                          keepMounted
-                          transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                          }}
-                          open={Boolean(anchorElUser)}
-                          onClose={handleCloseUserMenu}
-                      >
-                        {settings.map((setting) => (
-                            <MenuItem key={setting.label}
-                                      onClick={async () => {
-                                        handleCloseUserMenu();
-
-                                        await setting.onClick();
-                                      }}>
-                              <Typography textAlign="center">
-                                {setting.label}
-                              </Typography>
-                            </MenuItem>
-                        ))}
-                      </Menu>
-                    </>
-                ) : null}
+                {UserAvatar}
               </Box>
             </Container>
           </Toolbar>

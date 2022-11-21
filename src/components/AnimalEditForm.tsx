@@ -18,7 +18,7 @@ import {
 } from '../hooks/queries/useGetCitiesByStateQuery';
 import {useGetBreedsQuery} from '../hooks/queries/useGetBreedsQuery';
 import {useGetStatesQuery} from '../hooks/queries/useGetStatesQuery';
-import {getGenderPrefix} from '../utils';
+import {getGenderPrefix, getSpecies} from '../utils';
 import {ControlledTextField} from './ControlledTextField';
 import {ControlledDatePicker} from './ControlledDatePicker';
 import PetsIcon from '@mui/icons-material/Pets';
@@ -94,7 +94,7 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
             </InteractableAvatar>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h3">{watch('name') ??
+            <Typography variant="h4">{watch('name') ??
                 'Doar'}</Typography>
           </Grid>
           {message && (
@@ -108,8 +108,8 @@ export const AnimalEditForm: FC<AnimalEditFormProps> = ({animal}: AnimalEditForm
                 name="breed.species"
                 label="Espécie"
                 options={[
-                  {label: 'Gato', value: Species.Cat},
-                  {label: 'Cachorro', value: Species.Dog},
+                  {label: getSpecies(Species.Cat), value: Species.Cat},
+                  {label: getSpecies(Species.Dog), value: Species.Dog},
                 ]}
             />
           </Grid>

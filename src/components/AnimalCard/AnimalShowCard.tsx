@@ -12,7 +12,6 @@ import {
   useInterestDestroyMutation,
 } from '../../hooks/mutations/useInterestDestroyMutation';
 import Link from 'next/link';
-import Button from '@mui/material/Button';
 
 type AnimalShowCardProps = {
   animal: Animal,
@@ -56,15 +55,16 @@ export const AnimalShowCard: FC<AnimalShowCardProps> = (props) => {
                       pathname: '/animal/[animal]/form',
                       query: {animal: animal.id},
                     }}>
-                      <Button
-                          fullWidth
-                          variant="contained"
-                          size="large"
+                      <LoadingButton
                           color="primary"
+                          fullWidth
+                          loading={isLoadingInterested}
+                          size="large"
                           sx={{m: 1}}
+                          variant="contained"
                       >
                         Quero adotar!
-                      </Button>
+                      </LoadingButton>
                     </Link>
                 )}
               </CardActions>

@@ -40,9 +40,10 @@ import {getSpecies} from '../../../src/utils';
 const FormEdit: NextPage = () => {
   const {query} = useRouter();
   const [addingQuestion, setAddingQuestion] = useState(false);
-  const {data: form, isLoading: isLoadingForm, isFetched} = useGetFormQuery(
-      query.form as string,
-  );
+  const {
+    data: form,
+    isLoading: isLoadingForm,
+  } = useGetFormQuery(query.form as string);
   const schema = useQuestionCreateSchema();
   const {
     handleSubmit,
@@ -52,10 +53,6 @@ const FormEdit: NextPage = () => {
   } = useForm<QuestionCreateFieldValues>({
     schema,
   });
-  const onQuestionStoreSuccess = () => {
-    setAddingQuestion(false);
-    setValue('value', '');
-  };
   const {
     mutate: storeQuestion,
     message,
@@ -63,24 +60,30 @@ const FormEdit: NextPage = () => {
   } = useQuestionStoreMutation({
     form,
     setError,
-    onSuccess: onQuestionStoreSuccess,
+    onSuccess: () => {
+      setAddingQuestion(false);
+      setValue('value', '');
+    },
   });
   const {
     mutate: destroyQuestion,
   } = useQuestionDestroyMutation(form);
-  const {data: questions} = useGetQuestionsByFormQuery(form);
-  const onSubmit = handleSubmit(
-      (data: QuestionCreateFieldValues) => storeQuestion(data));
+  const {
+    data: questions,
+    isLoading: isLoadingQuestions,
+  } = useGetQuestionsByFormQuery(form);
 
-  const title = form
-      ? `${getSpecies(form.species)}s`
-      : 'Carregando...';
+  const onSubmit = handleSubmit(
+      (data: QuestionCreateFieldValues) => storeQuestion(data),
+  );
+
+  const isLoading = isLoadingForm || isLoadingQuestions;
 
   return (
       <>
         <Head>
           <title>
-            MiAudote - {isFetched && form
+            MiAudote - {form
               ? `${getSpecies(form.species)}s`
               : 'Carregando...'}
           </title>
@@ -96,16 +99,20 @@ const FormEdit: NextPage = () => {
                         <Grid item xs={12} textAlign="center">
                           <PetsIcon fontSize="large" color="primary"/>
                         </Grid>
-                        {isLoadingForm ? (
-                            <Box display="flex" paddingY={2}
-                                 justifyContent="center">
+                        {isLoading ? (
+                            <Grid
+                                item
+                                xs={12}
+                                display="flex"
+                                justifyContent="center"
+                            >
                               <CircularProgress/>
-                            </Box>
-                        ) : null}
-                        {form?.species ? (
+                            </Grid>
+                        ) : form?.species ? (
                             <Grid item xs={12}>
-                              <Typography variant="h4">Formulário
-                                de {title}</Typography>
+                              <Typography variant="h4">
+                                Formulário de {getSpecies(form.species)}s
+                              </Typography>
                             </Grid>
                         ) : null}
                         {message && (

@@ -6,8 +6,6 @@ import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import SentimentDissatisfiedIcon
-  from '@mui/icons-material/SentimentDissatisfied';
 import Box from '@mui/material/Box';
 import {useGetFormsQuery} from '../../src/hooks/queries/useGetFormsQuery';
 import Fab from '@mui/material/Fab';
@@ -64,7 +62,7 @@ const Form: NextPage = () => {
                             <ListItem disablePadding>
                               <ListItemButton>
                                 <ListItemIcon>
-                                  <FeedIcon color="primary" />
+                                  <FeedIcon color="primary"/>
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={`${getSpecies(form.species)}s`}
@@ -76,15 +74,13 @@ const Form: NextPage = () => {
                     </List>
                   </CardContent>
                 </Card>
-            ) : null}
-            {isFetched && forms.length === 0 && (
+            ) : isFetched && forms.length === 0 ? (
                 <Box textAlign="center">
-                  <SentimentDissatisfiedIcon fontSize="large"/>
-                  <Typography variant="h5" color="white">
-                    Os formulários irão aparecer aqui
+                  <Typography variant="h4" color="white">
+                    Os formulários cadastrados irão aparecer aqui
                   </Typography>
                 </Box>
-            )}
+            ) : null}
           </Grid>
         </Grid>
       </>
